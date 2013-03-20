@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time
-from BeautifulSoup import BeautifulSoup
+from resources.lib.BeautifulSoup import BeautifulSoup
 import os
 import urlparse
 import os.path
@@ -15,9 +15,14 @@ author = "sofaking"
 
 settings = xbmcaddon.Addon(id='plugin.video.orftvthek')
 pluginhandle = int(sys.argv[1])
-logopath = os.path.join(settings.getAddonInfo('path'),"logos")
-bannerpath = os.path.join(settings.getAddonInfo('path'),"banners")
-backdroppath = os.path.join(settings.getAddonInfo('path'),"backdrops")
+basepath = settings.getAddonInfo('path')
+resourcespath = os.path.join(basepath,"resources")
+mediapath =  os.path.join(resourcespath,"media")
+
+logopath = os.path.join(mediapath,"logos")
+bannerpath = os.path.join(mediapath,"banners")
+backdroppath = os.path.join(mediapath,"backdrops")
+defaultbackdrop = os.path.join(basepath,"fanart.jpg")
 mp4stream = settings.getSetting("mp4stream") == "true"
 
 base_url="http://tvthek.orf.at"
@@ -84,6 +89,9 @@ def addFile(name,videourl,banner,summary,runtime,backdrop):
         liz.setInfo( type="Video", infoLabels={ "Plotoutline": cleanText(summary) } )
         liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(name) } )
         liz.setInfo( type="Video", infoLabels={ "Runtime": runtime } )
+        liz.setProperty('fanart_image',backdrop)
+        if backdrop == '':
+           liz.setProperty('fanart_image',defaultbackdrop)
         liz.setProperty('IsPlayable', 'true')
         xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=videourl, listitem=liz, isFolder=False)
 
@@ -131,7 +139,10 @@ def getLogo(html,show):
     for string in tmpimg:
        string = string.findAll('img')
        for img in string:
-         urllib.urlretrieve(img['src'], os.path.join(logopath, "%s.jpg" % show.replace(" ",".")))
+         try:
+		    urllib.urlretrieve(img['src'], os.path.join(logopath, "%s.jpg" % show.replace(" ",".")))
+         except:
+		    return ""
          print "SAVING TO %s" % os.path.join(logopath, "%s.jpg" % show.replace(" ","."))
          return img['src']
 
@@ -263,21 +274,21 @@ def getLinks(url,quality):
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     xbmc.executebuiltin("Container.SetViewMode(503)")
-    xbmcplugin.setPluginFanart(int(sys.argv[1]), backdrop, color2='0xFFFF3300')
+    
 
 def getMainMenu():
-    addDirectory("Aktuell","","","","getAktuelles")
-    addDirectory("Sendungen","","","","getSendungen")
-    addDirectory("Themen","","","","getThemen")
-    addDirectory("Live","","","","getLive")
-    addDirectory("ORF Tipps","","","","getTipps")
-    addDirectory("Neu","","","","getNeu")
-    addDirectory("Meist gesehen","","","","getMostViewed")
-    addDirectory("Sendung verpasst?","","","","getArchiv")
+    addDirectory("Aktuell","",defaultbackdrop,"","getAktuelles")
+    addDirectory("Sendungen","",defaultbackdrop,"","getSendungen")
+    addDirectory("Themen","",defaultbackdrop,"","getThemen")
+    addDirectory("Live","",defaultbackdrop,"","getLive")
+    addDirectory("ORF Tipps","",defaultbackdrop,"","getTipps")
+    addDirectory("Neu","",defaultbackdrop,"","getNeu")
+    addDirectory("Meist gesehen","",defaultbackdrop,"","getMostViewed")
+    addDirectory("Sendung verpasst?","",defaultbackdrop,"","getArchiv")
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     xbmc.executebuiltin("Container.SetViewMode(503)")
-
+    xbmcplugin.setPluginFanart(int(sys.argv[1]), defaultbackdrop, color2='0xFFFF3300')
 
 def cleanText(string):
     string = string.replace('\\n', '').replace("&#160;"," ").replace("&quot;","'").replace('&amp;', '&')
@@ -325,6 +336,8 @@ def getCategoryList(category):
           liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(title) } )
           liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(title) } )
           liz.setProperty('fanart_image',backdrop)
+          if backdrop == '':
+               liz.setProperty('fanart_image',defaultbackdrop)
           xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
@@ -444,6 +457,8 @@ def getRecentlyAdded():
             liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(title) } )
             liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(title) } )
             liz.setProperty('fanart_image',backdrop)
+            if backdrop == '':
+               liz.setProperty('fanart_image',defaultbackdrop)
             ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
@@ -496,6 +511,7 @@ def openArchiv(url):
         image = ''
         channellogo = ''
         channel = ''
+        backdrop = ''
         descinfos = clip.findAll('td',{'class':'info'})
         for desc in descinfos:
             title = desc.find('a').text
@@ -523,6 +539,9 @@ def openArchiv(url):
            liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(channel) } )
            liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(duration) } )
            liz.setProperty('poster_image',channellogo)
+           liz.setProperty('fanart_image',backdrop)
+           if backdrop == '':
+               liz.setProperty('fanart_image',defaultbackdrop)
            ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
@@ -550,6 +569,8 @@ def getThemenListe(topicurl):
             liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(title) } )
             liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(title) } )
             liz.setProperty('fanart_image',backdrop)
+            if backdrop == '':
+               liz.setProperty('fanart_image',defaultbackdrop)
             ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
@@ -594,6 +615,8 @@ def getThemen():
             liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(title) } )
             liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(title) } )
             liz.setProperty('fanart_image',backdrop)
+            if backdrop == '':
+               liz.setProperty('fanart_image',defaultbackdrop)
             ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
@@ -620,6 +643,8 @@ def getTabVideos(div):
             liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(title) } )
             liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(title) } )
             liz.setProperty('fanart_image',backdrop)
+            if backdrop == '':
+               liz.setProperty('fanart_image',defaultbackdrop)
             ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
@@ -649,7 +674,7 @@ def getCategories():
              liz.setInfo( type="Video", infoLabels={ "Plotoutline": cleanText(description) } )
              liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(description) } )
              liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(description) } )
-             liz.setProperty('fanart_image',"http://tvthek.orf.at/images/themes/default/bg_carousel.jpg")
+             liz.setProperty('fanart_image',defaultbackdrop)
              xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
