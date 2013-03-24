@@ -9,7 +9,7 @@ import os.path
 from xml.dom import Node;
 from xml.dom import minidom;
 
-version = "0.1.0"
+version = "0.1.1"
 plugin = "ORF-TVthek-" + version
 author = "sofaking"
 
@@ -19,20 +19,27 @@ basepath = settings.getAddonInfo('path')
 resourcespath = os.path.join(basepath,"resources")
 mediapath =  os.path.join(resourcespath,"media")
 
+base_url="http://tvthek.orf.at"
+schedule_url = "http://tvthek.orf.at/schedule"
+
 logopath = os.path.join(mediapath,"logos")
 bannerpath = os.path.join(mediapath,"banners")
 backdroppath = os.path.join(mediapath,"backdrops")
 defaultbackdrop = os.path.join(basepath,"fanart.jpg")
-mp4stream = settings.getSetting("mp4stream") == "true"
+defaultbanner = os.path.join(bannerpath,"Default.png")
+defaultlogo = os.path.join(logopath,"Default.png")
 
-base_url="http://tvthek.orf.at"
+mp4stream = settings.getSetting("mp4stream") == "true"
+hdid = "Q6A"
+sdid = "Q4A"
+
+
 opener = urllib2.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
 playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
  
 
 def parameters_string_to_dict(parameters):
-        ''' Convert parameters encoded in a URL to a dict. '''
         paramDict = {}
         if parameters:
             paramPairs = parameters[1:].split("&")
@@ -42,47 +49,19 @@ def parameters_string_to_dict(parameters):
                     paramDict[paramSplits[0]] = paramSplits[1]
         return paramDict
 
-
-def streamFile(url,dest,name):
-        url = url.replace("%3A",":")
-        url = url.replace("%2F","/")
-        filename_array = url.split("/")
-        filename = filename_array[-1]
-        cj = CookieJar()
-        opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
-        values = {'id': user, 'pw': password}
-        data = urllib.urlencode(values)
-        response = opener.open("http://uploaded.net/io/login", data)
-        playing = False
-        u = opener.open(url)
-        print u.geturl()
-        player = xbmc.Player()
-        listitem = xbmcgui.ListItem('Item',iconImage="DefaultVideo.png")
-        listitem.setInfo('video', {'Title': filename})
-        player.play(u.geturl(), listitem, False)
-
-def convertToSD(videourl):
-        videourl = videourl.replace("%3A",":")
-        videourl = videourl.replace("%2F","/")
-        videourl = videourl.replace("mp4:","")
-        videourl = videourl.replace("rtmp:","mms:")
-        videourl = videourl.replace(".mp4",".wmv")
-        videourl = videourl.replace("apasfw.apa.at","apasf.apa.at")
-        videourl = videourl.replace("_Q6A","")
+def convertToSD(videobase):
+        videourl = videobase.replace("%3A",":").replace("%2F","/").replace("mp4:","").replace("rtmp:","mms:").replace(".mp4",".wmv").replace("apasfw.apa.at","apasf.apa.at").replace("_%s" % hdid,"")
         return videourl
 
-def convertToHD(videourl):
-        videourl = videourl.replace("%3A",":")
-        videourl = videourl.replace("%2F","/")
+def convertToHD(videobase):
+        videourl = videobase.replace("%3A",":").replace("%2F","/")
         return videourl
 
-def addFile(name,videourl,banner,summary,runtime,backdrop):
-        if not mp4stream and not ".sdp" in videourl:
-            videourl = convertToSD(videourl)
-        print "ADDFILE: %s" % videourl
-        videourl = convertToHD(videourl)
-        videourl = videourl.replace("%2F","/")
-
+def createListItem(name,banner,summary,runtime,backdrop,videourl,playable,folder):
+        if backdrop == '':
+               backdrop = defaultbackdrop
+        if banner == '':
+               banner = defaultbanner
         liz=xbmcgui.ListItem(cleanText(name), iconImage=banner, thumbnailImage=banner)
         liz.setInfo( type="Video", infoLabels={ "Title": cleanText(name) } )
         liz.setInfo( type="Video", infoLabels={ "Plot": cleanText(summary) } )
@@ -90,34 +69,32 @@ def addFile(name,videourl,banner,summary,runtime,backdrop):
         liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(name) } )
         liz.setInfo( type="Video", infoLabels={ "Runtime": runtime } )
         liz.setProperty('fanart_image',backdrop)
-        if backdrop == '':
-           liz.setProperty('fanart_image',defaultbackdrop)
-        liz.setProperty('IsPlayable', 'true')
-        xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=videourl, listitem=liz, isFolder=False)
+        liz.setProperty('IsPlayable', playable)
+        xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=videourl, listitem=liz, isFolder=folder)
+
+
+def addFile(name,videourl,banner,summary,runtime,backdrop):
+        if not mp4stream and not ".sdp" in videourl:
+            videourl = convertToSD(videourl)
+        videourl = convertToHD(videourl)
+        createListItem(name,banner,summary,runtime,backdrop,videourl,'true',False)
 
 def addDirectory(title,banner,backdrop,link,mode):
         parameters = {"link" : link,"title" : title,"banner" : banner,"backdrop" : backdrop, "mode" : mode}
         u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-        liz=xbmcgui.ListItem(cleanText(title), iconImage=banner, thumbnailImage=banner)
-        liz.setInfo( type="Video", infoLabels={ "Title": cleanText(title) } )
-        liz.setInfo( type="Video", infoLabels={ "Plot": cleanText(title) } )
-        liz.setInfo( type="Video", infoLabels={ "Plotoutline": cleanText(title) } )
-        liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(title) } )
-        liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(title) } )
-        liz.setProperty('fanart_image',backdrop)
-        xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
+        createListItem(title,banner,title,title,backdrop,u,'false',True)
 
 def getBackdrop(html,show):
     cssVarReg = re.compile('<link .*?href="css/themes/.*?>')
     cssHrefVarReg = re.compile('href=".*?"')
     backdropVarReg = re.compile("/image.*?_image_page.png")
     backdropJPGVarReg = re.compile("/image.*?_image_page.jpg")
-    css = cssVarReg.search(html).group()
-    css = cssHrefVarReg.search(css).group().replace("href=","")
-    css = css.replace('"',"")
-    css = opener.open("%s/%s" % (base_url,css))
-    css = css.read()
     try:
+       css = cssVarReg.search(html).group()
+       css = cssHrefVarReg.search(css).group().replace("href=","")
+       css = css.replace('"',"")
+       css = opener.open("%s/%s" % (base_url,css))
+       css = css.read()
        backdrop = backdropVarReg.search(css).group()
        backdrop = "%s%s" % (base_url,backdrop)
        urllib.urlretrieve(backdrop, os.path.join(backdroppath, "%s.jpg" % show.replace(" ",".")))
@@ -131,20 +108,27 @@ def getBackdrop(html,show):
           print "SAVING TO %s" % os.path.join(backdroppath, "%s.jpg" % show.replace(" ","."))
           return backdrop
        except:
-          return ""
+          return defaultbackdrop
 
 def getLogo(html,show):
     suppn = BeautifulSoup(html)
     tmpimg = suppn.findAll('div',{'id':'more-episodes'})
+    imgpath = os.path.join(logopath, "%s.jpg" % show.replace(" ","."))
+    print "ISFILE: %s" % os.path.isfile(imgpath)
     for string in tmpimg:
        string = string.findAll('img')
        for img in string:
-         try:
-		    urllib.urlretrieve(img['src'], os.path.join(logopath, "%s.jpg" % show.replace(" ",".")))
-         except:
-		    return ""
-         print "SAVING TO %s" % os.path.join(logopath, "%s.jpg" % show.replace(" ","."))
-         return img['src']
+         print "IMG : %s" % img
+         if img['src'] != None and img['src'] != '':
+           urllib.urlretrieve(img['src'], imgpath)
+           if (os.path.isfile(imgpath)):
+             print "IMAGE EXISTS : %s" % imgpath
+             return defaultlogo
+           else:
+             print "NO IMAGE EXISTS : %s" % defaultlogo
+             return imgpath
+    return defaultlogo
+         
 
 def getMoreShows(url,logo,backdrop):
     date = ""
@@ -192,8 +176,6 @@ def getMoreShows(url,logo,backdrop):
     xbmcplugin.setPluginFanart(int(sys.argv[1]), backdrop, color2='0xFFFF3300')
 
 def getLinks(url,quality):
-    print "[ORF TVthek] getLinks - url: %s | quality: %s"
-    print "--------------------------------------------------------------------------------"
     playlist.clear()
     url = urllib.unquote(url)
     html = opener.open(url).read()
@@ -218,21 +200,15 @@ def getLinks(url,quality):
         xml = xmlVarRef.search(flashVar).group()
         image = "%s/%s" % (base_url,imgVarRef.search(html).group())
         flashDom = minidom.parseString(urllib.unquote(xml))
-        print flashDom.toprettyxml().encode('UTF-8');
         asxurl = ""
         asxUrls = flashDom.getElementsByTagName("AsxUrl")
         for asxUrl in asxUrls:
             asxurl = "%s%s" % (base_url,asxUrl.firstChild.data)
-        print "Found ASX %s " % asxurl
         itemNode = flashDom.getElementsByTagName("Item")
-        print "LENGTH %s" % len(itemNode)
         if len(itemNode) > 1:
            parameters = {"mode" : "playList"}
            u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-           liz=xbmcgui.ListItem("[ Alle abspielen ]", iconImage=image, thumbnailImage=image)
-           liz.setInfo( type="Video", infoLabels={ "Title": "[ Alle abspielen ]" } )
-           liz.setProperty('IsPlayable', 'false')
-           xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]), url=u, listitem=liz, isFolder=False)
+           createListItem("[ Alle abspielen ]",image,"Alle Beiträge abspielen","",defaultbackdrop,u,'false',False)
         for item in itemNode:
          videoUrl = ""
          title = ""
@@ -253,15 +229,6 @@ def getLinks(url,quality):
                print url.firstChild.data
                if "%s.mp4" % quality in url.firstChild.data:
                  videoUrl = url.firstChild.data
-         try:
-            print "Title: %s" % title.encode('UTF-8')
-            print "Image: %s" % image
-            print "Description: %s" % description.encode('UTF-8')
-            print "Runtime(Sekunden): %s" % runtime
-            print "VideoUrl: %s" % videoUrl
-            print "Backdrop: %s" % backdrop
-         except:
-            print "SHIT ERROR"
          if videoUrl != '':
             liz=xbmcgui.ListItem(title, iconImage=image, thumbnailImage=image)
             liz.setInfo( type="Video", infoLabels={ "Title": title } )
@@ -295,6 +262,7 @@ def cleanText(string):
     return string
 
 def getCategoryList(category):
+    print "GET CAT"
     category =  urllib.unquote(category)
     html = opener.open(base_url)
     html = html.read()
@@ -304,41 +272,28 @@ def getCategoryList(category):
        if cleanText(column.find('h4').text).encode('UTF-8') == cleanText(category):
          shows = column.findAll('a')
          for show in shows:
+          html = ""
           title = show.text
           link = "%s%s" % (base_url,show['href'])
-          html = ""
           imgFile = os.path.join(logopath, "%s.jpg" % title.encode('ascii','ignore').replace(" ","."))
           backdropFile = os.path.join(backdroppath, "%s.jpg" % title.encode('ascii','ignore').replace(" ","."))
           if (not os.path.isfile(backdropFile)):
                 if html == '':
-                    html = opener.open(link)
-                    html = html.read()
+                   html = opener.open(link)
+                   html = html.read()
                 backdrop = getBackdrop(html,title.encode('ascii','ignore'))
-                if backdrop == None:
-                    backdrop = os.path.join(settings.getAddonInfo('path'), "DefaultBackdrop.png")
           else:
                 backdrop = backdropFile
           if (not os.path.isfile(imgFile)):
                 if html == '':
-                    html = opener.open(link)
-                    html = html.read()
+                   html = opener.open(link)
+                   html = html.read()
                 logo = getLogo(html,title.encode('ascii','ignore'))
-                if logo == None:
-                    logo = os.path.join(settings.getAddonInfo('path'), "banners/Default.png")
           else:
                 logo = imgFile
-          parameters = {"link" : link,"title" : title.encode('UTF-8'),"mode" : "openShowList","logo":logo,"backdrop":backdropFile}
+          parameters = {"link" : link,"title" : title.encode('UTF-8'),"mode" : "openShowList","logo":logo,"backdrop":backdrop}
           u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-          liz=xbmcgui.ListItem(cleanText(title), iconImage=logo, thumbnailImage=logo)
-          liz.setInfo( type="Video", infoLabels={ "Title": cleanText(title) } )
-          liz.setInfo( type="Video", infoLabels={ "Plot": cleanText(title) } )
-          liz.setInfo( type="Video", infoLabels={ "Plotoutline": cleanText(title) } )
-          liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(title) } )
-          liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(title) } )
-          liz.setProperty('fanart_image',backdrop)
-          if backdrop == '':
-               liz.setProperty('fanart_image',defaultbackdrop)
-          xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
+          createListItem(cleanText(title),logo,cleanText(title),cleanText(title),backdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     xbmc.executebuiltin("Container.SetViewMode(503)")
@@ -346,7 +301,6 @@ def getCategoryList(category):
 
 def getLiveStreams():
     liveurl = "%s/%s" % (base_url,"live")
-    quality = "q6a"
     flashVarReg = re.compile("ORF.flashXML = '.*?'");
     xmlVarRef =  re.compile("%3C.*%3E")
     imgVarRef = re.compile("assets/.*?/orf_segments/image.*?.jpeg")
@@ -359,13 +313,14 @@ def getLiveStreams():
     description = ""
     backdrop = ""
     image = ""
+    quality = "q6a"
     html = opener.open(liveurl)
     html = html.read()
     soup = BeautifulSoup(html)
     flashVars = flashVarReg.findall(html)
     for flashVar in flashVars:
         xml = xmlVarRef.search(flashVar).group()
-        image =  os.path.join(bannerpath, "Film.png")
+        image =  ""
         flashDom = minidom.parseString(urllib.unquote(xml))
         itemNode = flashDom.getElementsByTagName("Item")
         for item in itemNode:
@@ -408,7 +363,7 @@ def getLiveStreams():
             for flashVar in flashVars:
                print urllib.unquote(flashVar)
                xml = xmlVarRef.search(flashVar).group()
-               image =  os.path.join(bannerpath, "Film.png")
+               image =  ""
                flashDom = minidom.parseString(urllib.unquote(xml))
                itemNode = flashDom.getElementsByTagName("Item")
                for item in itemNode:
@@ -437,29 +392,23 @@ def getLiveStreams():
     xbmc.executebuiltin("Container.SetViewMode(503)")
 
 def getRecentlyAdded():
-    backdrop = ""
     html = opener.open(base_url)
     html = html.read()
     soup = BeautifulSoup(html)
     teaserbox = soup.findAll('div',{'id':'teaser-container'})
     for teasers in teaserbox:
          for teaser in teasers.findAll('li',{'class':'vod'}):
+            backdrop = ""
             title = teaser.find('strong',{'class':'highlightteasertitle'}).text.encode('UTF-8').replace("&#160;"," ").replace("&quot;","'")
+            backdropFile = os.path.join(backdroppath, "%s.jpg" % title.replace(" ","."))
+            if os.path.isfile(backdropFile):
+                  backdrop = backdropFile
             desc = teaser.find('span',{'class':'bg'}).text.encode('UTF-8').replace("&quot;","").replace("&#160;"," ")
             image = teaser.find('img',{'class':'teaser-img'})['src']
             link = "%s%s" % (base_url,teaser.find('a')['href'])
             parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : backdrop, "mode" : "openSeries"}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz=xbmcgui.ListItem(cleanText(title), iconImage=image, thumbnailImage=image)
-            liz.setInfo( type="Video", infoLabels={ "Title": cleanText(title) } )
-            liz.setInfo( type="Video", infoLabels={ "Plot": cleanText(desc) } )
-            liz.setInfo( type="Video", infoLabels={ "Plotoutline": cleanText(desc) } )
-            liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(title) } )
-            liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(title) } )
-            liz.setProperty('fanart_image',backdrop)
-            if backdrop == '':
-               liz.setProperty('fanart_image',defaultbackdrop)
-            ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
+            createListItem(cleanText(title),image,cleanText(desc),cleanText(title),backdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     xbmc.executebuiltin("Container.SetViewMode(503)")
@@ -480,11 +429,10 @@ def getArchiv(url):
             url = "%s%s" % (base_schedule, link['name'].replace("day[","").replace("]",""))
         parameters = {"link" : url, "mode" : "openArchiv"}
         u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-        liz=xbmcgui.ListItem(cleanText(title), iconImage="", thumbnailImage="")
-        liz.setInfo( type="Video", infoLabels={ "Title": cleanText(title) } )
-        ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
+        createListItem(cleanText(title),defaultbanner,cleanText(title),"",defaultbackdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
+    xbmc.executebuiltin("Container.SetViewMode(503)")
 
 	
 def openArchiv(url):
@@ -530,24 +478,19 @@ def openArchiv(url):
             channel = (date.find('img')['alt']).replace('Logo','').strip()
             channellogo = "%s/%s" % (base_url,date.find('img')['src'])
         if title != '':
+           backdropFile = os.path.join(backdroppath, "%s.jpg" % title.replace(" ","."))
+           if os.path.isfile(backdropFile):
+                  backdrop = backdropFile
            title = "[%s] [%s] %s"  % (channel,time,title)
            parameters = {"link" : url,"title" : cleanText(title).encode('UTF-8'),"banner" : image,"backdrop" : "", "mode" : "openSeries"}
            u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-           liz=xbmcgui.ListItem(cleanText(title), iconImage=image, thumbnailImage=image)
-           liz.setInfo( type="Video", infoLabels={ "Title": cleanText(title) } )
-           liz.setInfo( type="Video", infoLabels={ "Plot": cleanText(description) } )
-           liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(channel) } )
-           liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(duration) } )
-           liz.setProperty('poster_image',channellogo)
-           liz.setProperty('fanart_image',backdrop)
-           if backdrop == '':
-               liz.setProperty('fanart_image',defaultbackdrop)
-           ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
+           
+           createListItem(cleanText(title),image,cleanText(description),cleanText(channel),backdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     xbmc.executebuiltin("Container.SetViewMode(503)")
 
-def getThemenListe(topicurl):
+def getThemenListe(topicurl,title):
     topicurl = urllib.unquote(topicurl)
     backdrop = ""
     html = opener.open(topicurl)
@@ -562,16 +505,7 @@ def getThemenListe(topicurl):
             image = topic.find('img')['src']
             parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : backdrop, "mode" : "openSeries"}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz=xbmcgui.ListItem(cleanText(title), iconImage=image, thumbnailImage=image)
-            liz.setInfo( type="Video", infoLabels={ "Title": cleanText(title) } )
-            liz.setInfo( type="Video", infoLabels={ "Plot": cleanText(desc) } )
-            liz.setInfo( type="Video", infoLabels={ "Plotoutline": cleanText(desc) } )
-            liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(title) } )
-            liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(title) } )
-            liz.setProperty('fanart_image',backdrop)
-            if backdrop == '':
-               liz.setProperty('fanart_image',defaultbackdrop)
-            ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
+            createListItem(cleanText(title),image,cleanText(desc),cleanText(title),backdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     xbmc.executebuiltin("Container.SetViewMode(503)")
@@ -608,16 +542,7 @@ def getThemen():
                 desc += " | "
             parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : backdrop, "mode" : "openTopicPosts"}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz=xbmcgui.ListItem(cleanText(title), iconImage=image, thumbnailImage=image)
-            liz.setInfo( type="Video", infoLabels={ "Title": cleanText(title) } )
-            liz.setInfo( type="Video", infoLabels={ "Plot": cleanText(desc) } )
-            liz.setInfo( type="Video", infoLabels={ "Plotoutline": cleanText(desc) } )
-            liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(title) } )
-            liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(title) } )
-            liz.setProperty('fanart_image',backdrop)
-            if backdrop == '':
-               liz.setProperty('fanart_image',defaultbackdrop)
-            ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
+            createListItem(cleanText(title),image,cleanText(desc),cleanText(title),backdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     xbmc.executebuiltin("Container.SetViewMode(503)")
@@ -636,16 +561,7 @@ def getTabVideos(div):
             link = "%s%s" % (base_url,tipp.find('a')['href'])
             parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : backdrop, "mode" : "openSeries"}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz=xbmcgui.ListItem(cleanText(title), iconImage=image, thumbnailImage=image)
-            liz.setInfo( type="Video", infoLabels={ "Title": cleanText(title) } )
-            liz.setInfo( type="Video", infoLabels={ "Plot": cleanText(desc) } )
-            liz.setInfo( type="Video", infoLabels={ "Plotoutline": cleanText(desc) } )
-            liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(title) } )
-            liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(title) } )
-            liz.setProperty('fanart_image',backdrop)
-            if backdrop == '':
-               liz.setProperty('fanart_image',defaultbackdrop)
-            ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
+            createListItem(cleanText(title),image,cleanText(desc),cleanText(title),backdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     xbmc.executebuiltin("Container.SetViewMode(503)")
@@ -668,14 +584,7 @@ def getCategories():
           if title.encode('UTF-8') != "Wetter":
              parameters = {"title" : title.encode('UTF-8'),"mode" : "openCategoryList","category" : title.encode('UTF-8')}
              u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-             liz=xbmcgui.ListItem(cleanText(title), iconImage="%s" % (os.path.join(settings.getAddonInfo('path'), "banners/%s.png" % title.encode('UTF-8').replace(" ","."))), thumbnailImage="%s" % (os.path.join(settings.getAddonInfo('path'), "banners/%s.png" % title.encode('ascii','ignore').replace(" ","."))))
-             liz.setInfo( type="Video", infoLabels={ "Title": cleanText(title) } )
-             liz.setInfo( type="Video", infoLabels={ "Plot": cleanText(description) } )
-             liz.setInfo( type="Video", infoLabels={ "Plotoutline": cleanText(description) } )
-             liz.setInfo( type="Video", infoLabels={ "tvshowtitle": cleanText(description) } )
-             liz.setInfo( type="Video", infoLabels={ "Runtime": cleanText(description) } )
-             liz.setProperty('fanart_image',defaultbackdrop)
-             xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True)
+             createListItem(cleanText(title),defaultbanner,cleanText(description),cleanText(description),defaultbackdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     xbmc.executebuiltin("Container.SetViewMode(503)")
@@ -691,8 +600,7 @@ backdrop=params.get('backdrop')
 
 
 if mode == 'openSeries':
-    print "LOADING LINK: %s" % link
-    getLinks(link,"Q6A")
+    getLinks(link,hdid)
 elif mode == 'openShowList':
     getMoreShows(link,logo,backdrop)
 elif mode == 'openCategoryList':
@@ -712,13 +620,13 @@ elif mode == 'getMostViewed':
 elif mode == 'getThemen':
     getThemen()
 elif mode == 'openTopicPosts':
-    getThemenListe(link)
+    getThemenListe(link,title)
 elif mode == 'playVideo':
     playFile()
 elif mode == 'playList':
     playFile()
 elif mode == 'getArchiv':
-    getArchiv("http://tvthek.orf.at/schedule")
+    getArchiv(schedule_url)
 elif mode == 'openArchiv':
     openArchiv(link)
 else:
