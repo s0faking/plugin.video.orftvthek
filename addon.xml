@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.orftvthek" name="ORF TVthek" version="0.1.0" provider-name="sofaking [sofaking@gettingmoney.at]">
+<addon id="plugin.video.orftvthek" name="ORF TVthek" version="0.1.1" provider-name="sofaking [sofaking@gettingmoney.at]">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
     </requires>
