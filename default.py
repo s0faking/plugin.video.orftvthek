@@ -27,7 +27,7 @@ bannerpath = os.path.join(mediapath,"banners")
 backdroppath = os.path.join(mediapath,"backdrops")
 defaultbackdrop = os.path.join(basepath,"fanart.jpg")
 defaultbanner = "http://goo.gl/FG03G"
-defaultlogo = os.path.join(logopath,"Default.png")
+defaultlogo = "http://goo.gl/FRLJK"
 
 mp4stream = settings.getSetting("mp4stream") == "true"
 hdid = "Q6A"
@@ -36,8 +36,7 @@ sdid = "Q4A"
 
 opener = urllib2.build_opener()
 opener.addheaders = [('User-agent', 'Mozilla/5.0')]
-playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
- 
+playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO) 
 
 def parameters_string_to_dict(parameters):
         paramDict = {}
