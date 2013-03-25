@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time
-from resources.lib.BeautifulSoup import BeautifulSoup
+from BeautifulSoup import BeautifulSoup
 import os
 import urlparse
 import os.path
@@ -26,7 +26,7 @@ logopath = os.path.join(mediapath,"logos")
 bannerpath = os.path.join(mediapath,"banners")
 backdroppath = os.path.join(mediapath,"backdrops")
 defaultbackdrop = os.path.join(basepath,"fanart.jpg")
-defaultbanner = os.path.join(bannerpath,"Default.png")
+defaultbanner = "http://goo.gl/FG03G"
 defaultlogo = os.path.join(logopath,"Default.png")
 
 mp4stream = settings.getSetting("mp4stream") == "true"
@@ -98,14 +98,12 @@ def getBackdrop(html,show):
        backdrop = backdropVarReg.search(css).group()
        backdrop = "%s%s" % (base_url,backdrop)
        urllib.urlretrieve(backdrop, os.path.join(backdroppath, "%s.jpg" % show.replace(" ",".")))
-       print "SAVING TO %s" % os.path.join(backdroppath, "%s.jpg" % show.replace(" ","."))
        return backdrop
     except:
        try:
           backdrop = backdropJPGVarReg.search(css).group()
           backdrop = "%s%s" % (base_url,backdrop)
           urllib.urlretrieve(backdrop, os.path.join(backdroppath, "%s.jpg" % show.replace(" ",".")))
-          print "SAVING TO %s" % os.path.join(backdroppath, "%s.jpg" % show.replace(" ","."))
           return backdrop
        except:
           return defaultbackdrop
@@ -114,18 +112,14 @@ def getLogo(html,show):
     suppn = BeautifulSoup(html)
     tmpimg = suppn.findAll('div',{'id':'more-episodes'})
     imgpath = os.path.join(logopath, "%s.jpg" % show.replace(" ","."))
-    print "ISFILE: %s" % os.path.isfile(imgpath)
     for string in tmpimg:
        string = string.findAll('img')
        for img in string:
-         print "IMG : %s" % img
          if img['src'] != None and img['src'] != '':
            urllib.urlretrieve(img['src'], imgpath)
            if (os.path.isfile(imgpath)):
-             print "IMAGE EXISTS : %s" % imgpath
              return defaultlogo
            else:
-             print "NO IMAGE EXISTS : %s" % defaultlogo
              return imgpath
     return defaultlogo
          
@@ -226,7 +220,6 @@ def getLinks(url,quality):
          except:
            runtime = "0 min"
          for url in videoUrls:
-               print url.firstChild.data
                if "%s.mp4" % quality in url.firstChild.data:
                  videoUrl = url.firstChild.data
          if videoUrl != '':
@@ -237,21 +230,20 @@ def getLinks(url,quality):
             else:
                playlist.add(convertToSD(videoUrl),liz)
             addFile(title,videoUrl,image,description,runtime,backdrop)
-    print "--------------------------------------------------------------------------------"
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     xbmc.executebuiltin("Container.SetViewMode(503)")
     
 
 def getMainMenu():
-    addDirectory("Aktuell","",defaultbackdrop,"","getAktuelles")
-    addDirectory("Sendungen","",defaultbackdrop,"","getSendungen")
-    addDirectory("Themen","",defaultbackdrop,"","getThemen")
-    addDirectory("Live","",defaultbackdrop,"","getLive")
-    addDirectory("ORF Tipps","",defaultbackdrop,"","getTipps")
-    addDirectory("Neu","",defaultbackdrop,"","getNeu")
-    addDirectory("Meist gesehen","",defaultbackdrop,"","getMostViewed")
-    addDirectory("Sendung verpasst?","",defaultbackdrop,"","getArchiv")
+    addDirectory("Aktuell",defaultbanner,defaultbackdrop,"","getAktuelles")
+    addDirectory("Sendungen",defaultbanner,defaultbackdrop,"","getSendungen")
+    addDirectory("Themen",defaultbanner,defaultbackdrop,"","getThemen")
+    addDirectory("Live",defaultbanner,defaultbackdrop,"","getLive")
+    addDirectory("ORF Tipps",defaultbanner,defaultbackdrop,"","getTipps")
+    addDirectory("Neu",defaultbanner,defaultbackdrop,"","getNeu")
+    addDirectory("Meist gesehen",defaultbanner,defaultbackdrop,"","getMostViewed")
+    addDirectory("Sendung verpasst?",defaultbanner,defaultbackdrop,"","getArchiv")
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     xbmc.executebuiltin("Container.SetViewMode(503)")
@@ -262,7 +254,6 @@ def cleanText(string):
     return string
 
 def getCategoryList(category):
-    print "GET CAT"
     category =  urllib.unquote(category)
     html = opener.open(base_url)
     html = html.read()
@@ -361,7 +352,6 @@ def getLiveStreams():
             
             flashVars = flashVarReg.findall(html)
             for flashVar in flashVars:
-               print urllib.unquote(flashVar)
                xml = xmlVarRef.search(flashVar).group()
                image =  ""
                flashDom = minidom.parseString(urllib.unquote(xml))
@@ -534,7 +524,7 @@ def getThemen():
             try:
               link = "%s%s" % (base_url,topic.find('h3',{'class':'title'}).find('a',{'class':'more'})['href'])
             except:
-               print "WARNING %s" % topic.find('h3',{'class':'title'}).find('a',{'class':'more'})
+              pass
             image = topic.find('img')['src']
             topic_vods = topic.findAll('li',{'class':'vod'})
             for vod in topic_vods:

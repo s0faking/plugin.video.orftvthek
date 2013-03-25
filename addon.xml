@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.orftvthek" name="ORF TVthek" version="0.1.1" provider-name="sofaking [sofaking@gettingmoney.at]">
+<addon id="plugin.video.orftvthek" name="ORF TVthek" version="0.1.1" provider-name="sofaking">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
+        <import addon="script.module.beautifulsoup"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>video</provides>
@@ -14,6 +15,6 @@
         <description lang="de">ORF TVthek - Ermöglicht Ihnen den Zugriff auf die ORF TVthek Video Platform</description>
         <description lang="en">ORF TVthek - This plugin provides access to the Austrian "ORF TVthek"</description>
         <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
-        <email>sofaking@gettingsmoney.at</email>
+        <email>sofaking@gettingmoney.at</email>
     </extension>
 </addon>
