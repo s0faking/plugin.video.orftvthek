@@ -30,6 +30,7 @@ defaultbanner = "http://goo.gl/FG03G"
 defaultlogo = "http://goo.gl/FRLJK"
 
 mp4stream = settings.getSetting("mp4stream") == "true"
+forceView = settings.getSetting("forceView") == "true"
 hdid = "Q6A"
 sdid = "Q4A"
 
@@ -165,7 +166,8 @@ def getMoreShows(url,logo,backdrop):
               date = tmp.text.encode('UTF-8')
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
-    xbmc.executebuiltin("Container.SetViewMode(503)")
+    if forceView:
+       xbmc.executebuiltin("Container.SetViewMode(503)")
     xbmcplugin.setPluginFanart(int(sys.argv[1]), backdrop, color2='0xFFFF3300')
 
 def getLinks(url,quality):
@@ -231,7 +233,8 @@ def getLinks(url,quality):
             addFile(title,videoUrl,image,description,runtime,backdrop)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
-    xbmc.executebuiltin("Container.SetViewMode(503)")
+    if forceView:
+       xbmc.executebuiltin("Container.SetViewMode(503)")
     
 
 def getMainMenu():
@@ -245,7 +248,8 @@ def getMainMenu():
     addDirectory("Sendung verpasst?",defaultbanner,defaultbackdrop,"","getArchiv")
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
-    xbmc.executebuiltin("Container.SetViewMode(503)")
+    if forceView:
+       xbmc.executebuiltin("Container.SetViewMode(503)")
     xbmcplugin.setPluginFanart(int(sys.argv[1]), defaultbackdrop, color2='0xFFFF3300')
 
 def cleanText(string):
@@ -286,7 +290,8 @@ def getCategoryList(category):
           createListItem(cleanText(title),logo,cleanText(title),cleanText(title),backdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
-    xbmc.executebuiltin("Container.SetViewMode(503)")
+    if forceView:
+       xbmc.executebuiltin("Container.SetViewMode(503)")
 
 
 def getLiveStreams():
@@ -378,7 +383,8 @@ def getLiveStreams():
                addFile(title,videoUrl,image,description,runtime,backdrop)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
-    xbmc.executebuiltin("Container.SetViewMode(503)")
+    if forceView:
+       xbmc.executebuiltin("Container.SetViewMode(503)")
 
 def getRecentlyAdded():
     html = opener.open(base_url)
@@ -400,7 +406,8 @@ def getRecentlyAdded():
             createListItem(cleanText(title),image,cleanText(desc),cleanText(title),backdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
-    xbmc.executebuiltin("Container.SetViewMode(503)")
+    if forceView:
+       xbmc.executebuiltin("Container.SetViewMode(503)")
 
 def getArchiv(url):
     base_schedule = "%s/schedule/last/" % base_url
@@ -421,7 +428,8 @@ def getArchiv(url):
         createListItem(cleanText(title),defaultbanner,cleanText(title),"",defaultbackdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
-    xbmc.executebuiltin("Container.SetViewMode(503)")
+    if forceView:
+        xbmc.executebuiltin("Container.SetViewMode(503)")
 
 	
 def openArchiv(url):
@@ -477,7 +485,8 @@ def openArchiv(url):
            createListItem(cleanText(title),image,cleanText(description),cleanText(channel),backdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
-    xbmc.executebuiltin("Container.SetViewMode(503)")
+    if forceView:
+        xbmc.executebuiltin("Container.SetViewMode(503)")
 
 def getThemenListe(topicurl,title):
     topicurl = urllib.unquote(topicurl)
@@ -497,7 +506,8 @@ def getThemenListe(topicurl,title):
             createListItem(cleanText(title),image,cleanText(desc),cleanText(title),backdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
-    xbmc.executebuiltin("Container.SetViewMode(503)")
+    if forceView:
+       xbmc.executebuiltin("Container.SetViewMode(503)")
 
 def playFile():
     player = xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER)
@@ -534,7 +544,8 @@ def getThemen():
             createListItem(cleanText(title),image,cleanText(desc),cleanText(title),backdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
-    xbmc.executebuiltin("Container.SetViewMode(503)")
+    if forceView:
+        xbmc.executebuiltin("Container.SetViewMode(503)")
 
 def getTabVideos(div):
     backdrop = ""
@@ -553,7 +564,8 @@ def getTabVideos(div):
             createListItem(cleanText(title),image,cleanText(desc),cleanText(title),backdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
-    xbmc.executebuiltin("Container.SetViewMode(503)")
+    if forceView:
+       xbmc.executebuiltin("Container.SetViewMode(503)")
 
 def getCategories():
     html = opener.open(base_url)
@@ -576,7 +588,8 @@ def getCategories():
              createListItem(cleanText(title),defaultbanner,cleanText(description),cleanText(description),defaultbackdrop,u,'false',True)
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
-    xbmc.executebuiltin("Container.SetViewMode(503)")
+    if forceView:
+        xbmc.executebuiltin("Container.SetViewMode(503)")
 
 #Getting Parameters
 params=parameters_string_to_dict(sys.argv[2])
