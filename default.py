@@ -22,6 +22,11 @@ mediapath =  os.path.join(resourcespath,"media")
 base_url="http://tvthek.orf.at"
 schedule_url = "http://tvthek.orf.at/schedule"
 
+if xbmc.getSkinDir() == 'skin.confluence':
+   defaultViewMode = 'Container.SetViewMode(503)'
+else:
+   defaultViewMode = 'Container.SetViewMode(511)'
+
 logopath = os.path.join(mediapath,"logos")
 bannerpath = os.path.join(mediapath,"banners")
 backdroppath = os.path.join(mediapath,"backdrops")
@@ -33,6 +38,7 @@ mp4stream = settings.getSetting("mp4stream") == "true"
 forceView = settings.getSetting("forceView") == "true"
 hdid = "Q6A"
 sdid = "Q4A"
+
 
 
 opener = urllib2.build_opener()
@@ -167,7 +173,7 @@ def getMoreShows(url,logo,backdrop):
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
-       xbmc.executebuiltin("Container.SetViewMode(503)")
+       xbmc.executebuiltin(defaultViewMode)
     xbmcplugin.setPluginFanart(int(sys.argv[1]), backdrop, color2='0xFFFF3300')
 
 def getLinks(url,quality):
@@ -234,7 +240,7 @@ def getLinks(url,quality):
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
-       xbmc.executebuiltin("Container.SetViewMode(503)")
+       xbmc.executebuiltin(defaultViewMode)
     
 
 def getMainMenu():
@@ -249,7 +255,7 @@ def getMainMenu():
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
-       xbmc.executebuiltin("Container.SetViewMode(503)")
+       xbmc.executebuiltin(defaultViewMode)
     xbmcplugin.setPluginFanart(int(sys.argv[1]), defaultbackdrop, color2='0xFFFF3300')
 
 def cleanText(string):
@@ -291,7 +297,7 @@ def getCategoryList(category):
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
-       xbmc.executebuiltin("Container.SetViewMode(503)")
+       xbmc.executebuiltin(defaultViewMode)
 
 
 def getLiveStreams():
@@ -384,7 +390,7 @@ def getLiveStreams():
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
-       xbmc.executebuiltin("Container.SetViewMode(503)")
+       xbmc.executebuiltin(defaultViewMode)
 
 def getRecentlyAdded():
     html = opener.open(base_url)
@@ -407,7 +413,7 @@ def getRecentlyAdded():
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
-       xbmc.executebuiltin("Container.SetViewMode(503)")
+       xbmc.executebuiltin(defaultViewMode)
 
 def getArchiv(url):
     base_schedule = "%s/schedule/last/" % base_url
@@ -429,7 +435,7 @@ def getArchiv(url):
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
-        xbmc.executebuiltin("Container.SetViewMode(503)")
+        xbmc.executebuiltin(defaultViewMode)
 
 	
 def openArchiv(url):
@@ -486,7 +492,7 @@ def openArchiv(url):
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
-        xbmc.executebuiltin("Container.SetViewMode(503)")
+        xbmc.executebuiltin(defaultViewMode)
 
 def getThemenListe(topicurl,title):
     topicurl = urllib.unquote(topicurl)
@@ -507,7 +513,7 @@ def getThemenListe(topicurl,title):
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
-       xbmc.executebuiltin("Container.SetViewMode(503)")
+       xbmc.executebuiltin(defaultViewMode)
 
 def playFile():
     player = xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER)
@@ -545,7 +551,7 @@ def getThemen():
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
-        xbmc.executebuiltin("Container.SetViewMode(503)")
+        xbmc.executebuiltin(defaultViewMode)
 
 def getTabVideos(div):
     backdrop = ""
@@ -565,7 +571,7 @@ def getTabVideos(div):
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
-       xbmc.executebuiltin("Container.SetViewMode(503)")
+       xbmc.executebuiltin(defaultViewMode)
 
 def getCategories():
     html = opener.open(base_url)
@@ -589,7 +595,7 @@ def getCategories():
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
-        xbmc.executebuiltin("Container.SetViewMode(503)")
+        xbmc.executebuiltin(defaultViewMode)
 
 #Getting Parameters
 params=parameters_string_to_dict(sys.argv[2])
