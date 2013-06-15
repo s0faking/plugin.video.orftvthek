@@ -1,7 +1,6 @@
+0.1.1
 - fixed bad view mode on aeon nox
 - added force view option
-
-0.1.1
 - Fixed a few Banner/Backdrop Fetching Issues
 - Fixed Livestream Exception
 - Decreased Loading Time
