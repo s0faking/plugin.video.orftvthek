@@ -9,7 +9,7 @@ import os.path
 from xml.dom import Node;
 from xml.dom import minidom;
 
-version = "0.1.1"
+version = "0.1.2"
 plugin = "ORF-TVthek-" + version
 author = "sofaking"
 
