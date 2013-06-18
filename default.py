@@ -8,11 +8,16 @@ import urlparse
 import os.path
 from xml.dom import Node;
 from xml.dom import minidom;
+try:
+   import StorageServer
+except:
+   import storageserverdummy as StorageServer
+cache = StorageServer.StorageServer("searchhistory", 999999)
 
-version = "0.1.2"
+version = "0.1.3"
 plugin = "ORF-TVthek-" + version
 author = "sofaking"
-
+ 
 
 
 socket.setdefaulttimeout(30)
@@ -222,7 +227,11 @@ def getLinks(url,quality):
     flashVars = flashVarReg.findall(html)
     for flashVar in flashVars:
         xml = xmlVarRef.search(flashVar).group()
-        image = "%s/%s" % (base_url,imgVarRef.search(html).group())
+        try:
+		    image = "%s/%s" % (base_url,imgVarRef.search(html).group())
+        except:
+            image = ""
+            pass
         flashDom = minidom.parseString(urllib.unquote(xml))
         asxurl = ""
         asxUrls = flashDom.getElementsByTagName("AsxUrl")
@@ -275,6 +284,7 @@ def getMainMenu():
     addDirectory("Neu",defaultbanner,defaultbackdrop,"","getNeu")
     addDirectory("Meist gesehen",defaultbanner,defaultbackdrop,"","getMostViewed")
     addDirectory("Sendung verpasst?",defaultbanner,defaultbackdrop,"","getArchiv")
+    addDirectory("Suchen",defaultbanner,defaultbackdrop,"","searchPhrase")
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
@@ -710,7 +720,80 @@ def getCategories():
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
         xbmc.executebuiltin(defaultViewMode)
+	
 
+
+def search():
+    addDirectory("Suchen ...",defaultbanner,defaultbackdrop,"","searchNew")
+    xbmcplugin.setContent(pluginhandle,'episodes')
+    xbmcplugin.endOfDirectory(pluginhandle)
+    if forceView:
+       xbmc.executebuiltin(defaultViewMode)
+    xbmcplugin.setPluginFanart(int(sys.argv[1]), defaultbackdrop, color2='0xFFFF3300')
+	
+def searchTV():
+    keyboard = xbmc.Keyboard('')
+    keyboard.doModal()
+    if (keyboard.isConfirmed()):
+	  
+      searchurl = "%s/search?q=%s"%(base_url,keyboard.getText().replace(" ","+"))
+      getSearchedShows(searchurl)
+    else:
+      addDirectory("Keine Ergebnisse",defaultlogo,defaultbackdrop,"","")
+    xbmcplugin.setContent(pluginhandle,'episodes')
+    xbmcplugin.endOfDirectory(pluginhandle)
+    if forceView:
+        xbmc.executebuiltin(defaultViewMode)
+
+	
+def getSearchedShows(url):
+    progressbar = xbmcgui.DialogProgress()
+    progressbar.create('Ladevorgang' )
+    progressbar.update(0)
+    print(url)
+    url = urllib.unquote(url)
+    html = opener.open(url)
+    html = html.read()
+    suppn = BeautifulSoup(html)
+    ul = suppn.find('ul',{'class':'search'});
+    try:
+       blocks = ul.findAll('li')
+       i = 1
+       feedcount = len(blocks)
+       for block in blocks:
+         if progressbar.iscanceled() :
+                   xbmcplugin.endOfDirectory(pluginhandle)
+                   progressbar.close()
+                   break
+         i = i+1
+         percent = i*100/feedcount
+         progressbar.update(percent)
+         try:
+          img = block.find('img')
+          anchor = block.find('a')
+          title = block.findAll('p')[0].text.encode('UTF-8')
+          image = img['src']
+          desc = block.findAll('p')[1].text.encode('UTF-8')
+		  
+          link = "%s%s" % (base_url,anchor['href'])
+          type = anchor.find('span')
+          if type != None:
+             type = type.text
+          else:
+             type = ""
+			 
+          parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : defaultbackdrop, "mode" : "openSeries"}
+          u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+          createListItem(cleanText(title),image,cleanText(desc),cleanText(title),backdrop,u,'false',True)
+          #addDirectory(title.encode('UTF-8'),image,defaultbackdrop,link,'listEpisode')
+         except Exception as e:
+          print(e)
+          pass
+    except:
+       addDirectory("Keine Ergebnisse",defaultlogo,defaultbackdrop,"","")
+       blocks = 0
+    
+	
 #Getting Parameters
 params=parameters_string_to_dict(sys.argv[2])
 mode=params.get('mode')
@@ -751,5 +834,9 @@ elif mode == 'getArchiv':
     getArchiv(schedule_url)
 elif mode == 'openArchiv':
     openArchiv(link)
+elif mode == 'searchPhrase':
+    search()
+elif mode == 'searchNew':
+    searchTV()
 else:
     getMainMenu()
