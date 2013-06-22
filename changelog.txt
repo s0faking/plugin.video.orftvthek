@@ -1,5 +1,6 @@
 0.1.3
 - added Search function
+- fixed the low resolution preview image problem
 
 0.1.2
 - fixed bad view mode on aeon nox

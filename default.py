@@ -76,6 +76,15 @@ def createListItem(name,banner,summary,runtime,backdrop,videourl,playable,folder
                backdrop = defaultbackdrop
         if banner == '':
                banner = defaultbanner
+        if "/image1/" in banner:
+               if ".jpeg" in banner:
+                  banner = banner.replace("/image1/","/image/")
+                  newbanner = banner.split("/image/")
+                  filename = newbanner[1]
+              
+                  filename = filename.split(".jpeg")
+                  number = int(filename[0])-2
+                  banner = newbanner[0]+"/image/"+str(number)+".jpeg"
         liz=xbmcgui.ListItem(cleanText(name), iconImage=banner, thumbnailImage=banner)
         liz.setInfo( type="Video", infoLabels={ "Title": cleanText(name) } )
         liz.setInfo( type="Video", infoLabels={ "Plot": cleanText(summary) } )
