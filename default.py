@@ -12,7 +12,7 @@ try:
    import StorageServer
 except:
    import storageserverdummy as StorageServer
-cache = StorageServer.StorageServer("searchhistory", 999999)
+cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
 version = "0.1.3"
 plugin = "ORF-TVthek-" + version
@@ -734,6 +734,10 @@ def getCategories():
 
 def search():
     addDirectory("Suchen ...",defaultbanner,defaultbackdrop,"","searchNew")
+    cache.table_name = "searchhistory"
+    some_dict = cache.get("searches").split("|")
+    for str in reversed(some_dict):
+        addDirectory(str,defaultbanner,defaultbackdrop,str.replace(" ","+"),"searchNew")
     xbmcplugin.setContent(pluginhandle,'episodes')
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
@@ -744,8 +748,11 @@ def searchTV():
     keyboard = xbmc.Keyboard('')
     keyboard.doModal()
     if (keyboard.isConfirmed()):
-	  
-      searchurl = "%s/search?q=%s"%(base_url,keyboard.getText().replace(" ","+"))
+      cache.table_name = "searchhistory"
+      keyboard_in = keyboard.getText()
+      some_dict = cache.get("searches") + "|"+keyboard_in
+      cache.set("searches",some_dict);
+      searchurl = "%s/search?q=%s"%(base_url,keyboard_in.replace(" ","+"))
       getSearchedShows(searchurl)
     else:
       addDirectory("Keine Ergebnisse",defaultlogo,defaultbackdrop,"","")
@@ -754,6 +761,23 @@ def searchTV():
     if forceView:
         xbmc.executebuiltin(defaultViewMode)
 
+def searchTVHistory(link):
+    keyboard = xbmc.Keyboard(link)
+    keyboard.doModal()
+    if (keyboard.isConfirmed()):
+      cache.table_name = "searchhistory"
+      keyboard_in = keyboard.getText()
+      if keyboard_in != link:
+           some_dict = cache.get("searches") + "|"+keyboard_in
+           cache.set("searches",some_dict);
+      searchurl = "%s/search?q=%s"%(base_url,keyboard_in.replace(" ","+"))
+      getSearchedShows(searchurl)
+    else:
+      addDirectory("Keine Ergebnisse",defaultlogo,defaultbackdrop,"","")
+    xbmcplugin.setContent(pluginhandle,'episodes')
+    xbmcplugin.endOfDirectory(pluginhandle)
+    if forceView:
+        xbmc.executebuiltin(defaultViewMode)
 	
 def getSearchedShows(url):
     progressbar = xbmcgui.DialogProgress()
@@ -846,6 +870,11 @@ elif mode == 'openArchiv':
 elif mode == 'searchPhrase':
     search()
 elif mode == 'searchNew':
-    searchTV()
+    if not link == None:
+        print "LINK:"+link
+        searchTVHistory(urllib.unquote(link));
+    else:
+        searchTV()
+	
 else:
     getMainMenu()
