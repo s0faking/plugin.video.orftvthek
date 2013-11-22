@@ -18,7 +18,7 @@ Current Features
 * Livestream
 * All Shows
 * Schedule Search
-* HTTP Stream H264 (Experimental)
+* HTTP Stream H264 (Stable)
 * Search Function
 
 
