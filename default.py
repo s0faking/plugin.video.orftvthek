@@ -221,8 +221,6 @@ def getLiveStreams():
         if title != None:
             title = title.text.encode('UTF-8')
             time = item.find('div',{'class':'broadcast_information'}).find('span').text.encode('UTF-8').replace("Uhr","").replace(".",":").strip()
-            #desc = item.find('span',{'class':re.compile(r'\bjs_live_state_indicator_text\b')}).text.encode('UTF-8')
-            print time
             desc = "%s\n\n%s" % (time,title)
             link = liveurls[program]
             title = "[%s] %s (%s)" % (program,title,time)
