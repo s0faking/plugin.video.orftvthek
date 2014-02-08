@@ -220,16 +220,20 @@ def getCategoryList(category,banner):
     html = html.read()
     soup = BeautifulSoup(html)
 	
-	
-    showname = soup.find('h3',{'class':'video_headline'}).text.encode('UTF-8')
+    try:
+        showname = soup.find('h3',{'class':'video_headline'}).text.encode('UTF-8')
+    except:
+        showname = ""
     new = soup.find('header',{'class':'player_header'}).find('div',{'class':'broadcast_information'})
     new_duration = new.find('span',{'class':'meta meta_duration'}).text.encode('UTF-8')
     new_date = new.find('span',{'class':'meta meta_date'}).text.encode('UTF-8')
     new_time = new.find('span',{'class':'meta meta_time'}).text.encode('UTF-8')
     new_link = url
     new_title = "%s - %s" % (showname,new_date)
-    new_desc = (translation(30009)).encode("utf-8")+' %s - %s\n'+(translation(30011)).encode("utf-8")+': %s' % (new_date,new_time,new_duration)
-
+    try:
+        new_desc = (translation(30009)).encode("utf-8")+' %s - %s\n'+(translation(30011)).encode("utf-8")+': %s' % (new_date,new_time,new_duration)
+    except:
+        new_desc = "";
     addDirectory(new_title,banner,new_desc,new_link,"openSeries")
 	
     progressbar.update(15)
@@ -248,7 +252,10 @@ def getCategoryList(category,banner):
         title = "%s - %s" % (showname,date)
         title = "%s - %s" % (showname,date)
         link = item.find('a')['href']
-        desc = (translation(30009)).encode("utf-8")+" %s - %s\n"+(translation(30011)).encode("utf-8")+": %s" % (date,time,duration)
+        try:
+            desc = (translation(30009)).encode("utf-8")+" %s - %s\n"+(translation(30011)).encode("utf-8")+": %s" % (date,time,duration)
+        except:
+            desc = "";
         addDirectory(title,banner,desc,link,"openSeries")
     listCallback()
 
@@ -341,9 +348,10 @@ def getThemenListe(url):
             desc = (translation(30008)).encode("utf-8")
         date = topic.find('time').text.encode('UTF-8')
         time = topic.find('span',{'class':'meta meta_duration'}).text.encode('UTF-8')
-		
-        desc = (translation(30016)).encode("utf-8")+": %s \n"+(translation(30017)).encode("utf-8")+": %s \n\n%s" % (date,time,desc)
-        
+        try:
+            desc = (translation(30016)).encode("utf-8")+": %s \n"+(translation(30017)).encode("utf-8")+": %s \n\n%s" % (date,time,desc)
+        except:
+            desc = ""
         addDirectory(title,image,desc,link,"openSeries")
     listCallback()
 
