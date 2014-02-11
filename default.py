@@ -91,7 +91,7 @@ def getLinks(url,banner):
     data = soup.find('div',{'class':'jsb_ jsb_VideoPlaylist'})
     videoUrls = []
     array = arrayReg.findall(str(data))
-	#get video links
+    #get video links
     for item in array:
         split = item.replace("{","").replace("}","").replace(",","").replace(":","").replace("\/","/").split('"')
         if split[1] == "quality" and split[3] == "Q6A":
@@ -188,7 +188,6 @@ def openArchiv(url):
     html = opener.open(url)
     html = html.read()
     suppn = BeautifulSoup(html)
-    print url
     teaserbox = suppn.findAll('a',{'class':'item_inner clearfix'})
     feedcount = len(teaserbox)
     i = 0
@@ -356,7 +355,7 @@ def getThemenListe(url):
     listCallback()
 
 def playFile():
-    player = xbmc.Player(xbmc.PLAYER_CORE_DVDPLAYER)
+    player = xbmc.Player()
     player.play(playlist)
     if not player.isPlayingVideo():
         d = xbmcgui.Dialog()
