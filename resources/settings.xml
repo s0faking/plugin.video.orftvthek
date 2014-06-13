@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <setting id="forceView" type="bool" label="Force Views" default="true" />
+    <setting id="forceView" type="bool" label="30019" default="true" />
+    <setting id="livestreamInfo" type="bool" label="30020" default="true" />
 </settings>

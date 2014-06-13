@@ -25,6 +25,8 @@ translation = settings.getLocalizedString
 base_url="http://tvthek.orf.at"
 
 forceView = settings.getSetting("forceView") == "true"
+livestreamInfo = settings.getSetting("livestreamInfo") == "true"
+
 if xbmc.getSkinDir() == 'skin.confluence':
    defaultViewMode = 'Container.SetViewMode(503)'
 else:
@@ -267,28 +269,61 @@ def getCategoryList(category,banner):
 
 
 def getLiveStreams():
-    url = "http://tvthek.orf.at/live"
-    liveurls = {}
-    liveurls['ORF1'] = "http://apasfiisl.apa.at/ipad/orf1_q4a/orf.sdp/playlist.m3u8";
-    liveurls['ORF2'] = "http://apasfiisl.apa.at/ipad/orf2_q6a/orf.sdp/playlist.m3u8";
-    liveurls['ORF3'] = "http://apasfiisl.apa.at/ipad/orf2e_q6a/orf.sdp/playlist.m3u8";
-    liveurls['ORFS'] = "http://apasfiisl.apa.at/ipad/orfs_q6a/orf.sdp/playlist.m3u8";
-	
-    html = opener.open(url)
-    html = html.read()
-    soup = BeautifulSoup(html)
-	
-    epg = soup.find('ul',{'class':'base_list epg'})
-    epgbox = epg.findAll('li',{'class':re.compile(r'\bbase_list_item program\b')})
-    for item in epgbox:
-        program = item.get('class', []).split(" ")[2].encode('UTF-8').upper()
-        banner = ''
-        title = item.find('h4').text.encode('UTF-8')
-        time = item.find('div',{'class':'broadcast_information'}).find('span').text.encode('UTF-8').replace("Uhr","").replace(".",":").strip()
-        link = liveurls[program]
+    liveurls = {
+        'ORF1': "http://apasfiisl.apa.at/ipad/orf1_q4a/orf.sdp/playlist.m3u8",
+        'ORF2': "http://apasfiisl.apa.at/ipad/orf2_q6a/orf.sdp/playlist.m3u8",
+        'ORF3': "http://apasfiisl.apa.at/ipad/orf2e_q6a/orf.sdp/playlist.m3u8",
+        'ORFS': "http://apasfiisl.apa.at/ipad/orfs_q6a/orf.sdp/playlist.m3u8"
+    }
+    
+    channel_title = {
+        'ORF1': "ORF eins",
+        'ORF2': "ORF 2",
+        'ORF3': "ORF III",
+        'ORFS': "ORF Sport+"
+    }
+    
+    channel_banner = {
+        'ORF1': "http://tvthek.orf.at/dynamic/get_asset_resized.php?width=278&path=orf_channels%252Flogo_color%252F6779277.png&percent=100&quality=100&x1=0&x2=204&y1=0&y2=43",
+        'ORF2': "http://tvthek.orf.at/dynamic/get_asset_resized.php?width=278&path=orf_channels%252Flogo_color%252F6779281.png&percent=100&quality=100&x1=0&x2=145&y1=0&y2=43",
+        'ORF3': "http://tvthek.orf.at/dynamic/get_asset_resized.php?width=278&path=orf_channels%252Flogo_color%252F6779305.png&percent=100&quality=100&x1=0&x2=153&y1=0&y2=60",
+        'ORFS': "http://tvthek.orf.at/dynamic/get_asset_resized.php?width=278&path=orf_channels%252Flogo_color%252F6779307.png&percent=100&quality=100&x1=0&x2=284&y1=0&y2=43"
+    }
+    
+    if livestreamInfo:
+        url = "http://tvthek.orf.at/live"
         
-        title = "[%s] %s (%s)" % (program,title,time)
-        createListItem(title,banner,'djsjsj',time,'jsdjjs',program,link,'true',False)
+        html = opener.open(url)
+        html = html.read()
+        soup = BeautifulSoup(html)
+        
+        epg = soup.find('ul',{'class':'base_list epg'})
+        epgbox = soup.findAll('li',{'class':re.compile(r'\bbase_list_item program\b')})
+        
+        for item in epgbox:
+            channel = item.get('class', []).split(" ")[2].encode('UTF-8').upper()
+            info = item.find('h4').text.encode('UTF-8')
+            banner = channel_banner.get(channel, "")
+            duration = item.find('div',{'class':'broadcast_information'}).find('span').text.encode('UTF-8').replace("Uhr","").replace(".",":").strip()
+            date = ""
+            videourl = liveurls.get(channel)
+            if not videourl:
+                continue
+            title = "%s - %s (%s)" % (channel_title.get(channel, channel), info, duration)
+            description = "%s (%s)" % (info, duration)
+            createListItem(title, banner, description, duration, date, channel, videourl, 'true', False)
+    else:
+        for channel in liveurls.keys():
+            title = channel_title.get(channel, channel)
+            banner = channel_banner.get(channel, "")
+            description = "%s - Livestream" % title
+            duration = ""
+            date = ""
+            videourl = liveurls.get(channel)
+            if not videourl:
+                continue
+            createListItem(title, banner, description, duration, date, channel, videourl, 'true', False)
+    
     listCallback(False)
 
 def getRecentlyAdded():
