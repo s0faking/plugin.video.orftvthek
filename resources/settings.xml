@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
     <setting id="forceView" type="bool" label="30019" default="true" />
-    <setting id="livestreamInfo" type="bool" label="30020" default="true" />
+    <setting id="videoQuality" type="enum" label="30025" lvalues="30026|30027|30028" default="2" />
+    <setting id="livestreamInfo" type="enum" label="30020" lvalues="30021|30022|30023|30024" default="2" />
 </settings>
