@@ -1,3 +1,8 @@
+0.3.0
+- using parsedom now
+- optimized UI/Views
+- optimzed images/description scraping
+
 0.2.3
 - added sort methods
 - fixed error on "themen" items

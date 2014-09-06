@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon id="plugin.video.orftvthek" name="ORF TVthek" version="0.2.3" provider-name="sofaking">
+<addon id="plugin.video.orftvthek" name="ORF TVthek" version="0.3.0" provider-name="sofaking">
     <requires>
         <import addon="xbmc.python" version="2.1.0"/>
-        <import addon="script.module.beautifulsoup"/>
+        <import addon="script.module.parsedom" version="0.9.1"/>
 		<import addon="script.common.plugin.cache" version="0.9.1"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">
