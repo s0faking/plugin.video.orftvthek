@@ -12,7 +12,7 @@ except:
 socket.setdefaulttimeout(30) 
 cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
-version = "0.3.1"
+version = "0.3.2"
 plugin = "ORF-TVthek-" + version
 author = "sofaking"
 
@@ -459,6 +459,27 @@ def getThemen():
         addDirectory(title,image,description,link,"openTopicPosts")
     listCallback(True)
 
+    
+def getBundeslandHeute(url,image):
+    html = common.fetchPage({'link': url})
+    html_content = html.get("content")
+    
+    content = common.parseDOM(html_content,name='div',attrs={'class':'base_list_wrapper mod_link_list'})
+    items = common.parseDOM(content,name='li',attrs={'class':'base_list_item'})
+    items_href = common.parseDOM(items,name='a',attrs={},ret="href")
+    items_title = common.parseDOM(items,name='h4')
+    
+    i = 0
+    for item in items:
+        link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')        
+        title = items_title[i].encode('UTF-8')
+
+        desc = '  '
+        addDirectory(title,image,desc,link,"openCategoryList")
+        i = i + 1
+    #listCallback(True,thumbViewMode)
+    
+    
 def getCategories():
     html = common.fetchPage({'link': base_url})
     html_content = html.get("content")
@@ -471,12 +492,17 @@ def getCategories():
         link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')
         i = i + 1
         title = programUrlTitle(link).encode('UTF-8')
-        
-        image = common.parseDOM(item,name='img',ret="src")
-        image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
+        print title.lower().strip();
+        if title.lower().strip() == "bundesland heute":
+            image = common.parseDOM(item,name='img',ret="src")
+            image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
+            getBundeslandHeute(link,image)
+        else:
+            image = common.parseDOM(item,name='img',ret="src")
+            image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
 
-        desc = '  '
-        addDirectory(title,image,desc,link,"openCategoryList")
+            desc = '  '
+            addDirectory(title,image,desc,link,"openCategoryList")
     listCallback(True,thumbViewMode)
 
 def programUrlTitle(url):
