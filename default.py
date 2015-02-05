@@ -12,7 +12,7 @@ except:
 socket.setdefaulttimeout(30) 
 cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
-version = "0.3.2"
+version = "0.3.1"
 plugin = "ORF-TVthek-" + version
 author = "sofaking"
 
@@ -25,7 +25,6 @@ translation = settings.getLocalizedString
 
 current_skin = xbmc.getSkinDir();
 
-print current_skin
 if 'confluence' in current_skin:
    defaultViewMode = 'Container.SetViewMode(503)'
 else:
@@ -131,13 +130,16 @@ def getVideoUrl(sources):
 def getLinks(url,banner):
     playlist.clear()
     videoUrls = []
-    url = urllib.unquote(url)
     
+    url = str(urllib.unquote(url))
+
     if banner != None:
         banner = urllib.unquote(banner)
-        
+    
+ 
     html = common.fetchPage({'link': url})
     data = common.parseDOM(html.get("content"),name='div',attrs={'class': "jsb_ jsb_VideoPlaylist"},ret='data-jsb')
+    
     data = data[0]
     data = common.replaceHTMLCodes(data)
     data = json.loads(data)
@@ -306,12 +308,12 @@ def getCategoryList(category,banner):
             time = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_time'})
             title = "%s - %s" % (showname,date)
             title = "%s - %s" % (showname,date)
-            link = common.parseDOM(item,name='a',ret="href")
+            link = common.parseDOM(item,name='a',ret="href");
             try:
                 desc = (translation(30009)).encode("utf-8")+" %s - %s\n"+(translation(30011)).encode("utf-8")+": %s" % (date,time,duration)
             except:
                 desc = "";
-            addDirectory(title,banner,desc,link,"openSeries")
+            addDirectory(title,banner,desc,link[0],"openSeries")
     listCallback(False)
 
 def getLiveStreams():
@@ -473,11 +475,9 @@ def getBundeslandHeute(url,image):
     for item in items:
         link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')        
         title = items_title[i].encode('UTF-8')
-
         desc = '  '
         addDirectory(title,image,desc,link,"openCategoryList")
         i = i + 1
-    #listCallback(True,thumbViewMode)
     
     
 def getCategories():
@@ -492,7 +492,6 @@ def getCategories():
         link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')
         i = i + 1
         title = programUrlTitle(link).encode('UTF-8')
-        print title.lower().strip();
         if title.lower().strip() == "bundesland heute":
             image = common.parseDOM(item,name='img',ret="src")
             image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
