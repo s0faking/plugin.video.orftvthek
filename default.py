@@ -461,7 +461,29 @@ def getThemen():
         addDirectory(title,image,description,link,"openTopicPosts")
     listCallback(True)
 
+def getZIB(baseimage):
+    url = 'http://tvthek.orf.at/programs/genre/ZIB/1';
+    html = common.fetchPage({'link': url})
+    html_content = html.get("content")
     
+    content = common.parseDOM(html_content,name='div',attrs={'class':'base_list_wrapper mod_results_list'})
+    items = common.parseDOM( content ,name='li',attrs={'class':'base_list_item jsb_ jsb_ToggleButton results_item'})
+    
+    for item in items:
+        title = common.parseDOM(item,name='h4')
+        if len(title) > 0:
+            title = title[0].encode('UTF-8')
+            item_href = common.parseDOM(item,name='a',attrs={'class':'base_list_item_inner.*?'},ret="href")
+            image_container = common.parseDOM(item,name='figure',attrs={'class':'episode_image'},ret="href")
+            image = common.parseDOM(item,name='img',attrs={},ret="src")
+            if len(image) > 0:
+                image = common.replaceHTMLCodes(image[0]).encode('UTF-8').replace("height=180","height=265").replace("width=320","width=500")
+            else:
+                image = baseimage
+            link = common.replaceHTMLCodes(item_href[0]).encode('UTF-8')
+            addDirectory(title,image,"",link,"openCategoryList")
+        
+ 
 def getBundeslandHeute(url,image):
     html = common.fetchPage({'link': url})
     html_content = html.get("content")
@@ -496,6 +518,10 @@ def getCategories():
             image = common.parseDOM(item,name='img',ret="src")
             image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
             getBundeslandHeute(link,image)
+        if title.lower().strip() == "zib":
+            image = common.parseDOM(item,name='img',ret="src")
+            image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
+            getZIB(image)
         else:
             image = common.parseDOM(item,name='img',ret="src")
             image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
