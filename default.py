@@ -306,8 +306,8 @@ def getCategoryList(category,banner):
             date = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_date'})
             date = date[0].encode("utf-8")
             time = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_time'})
-            title = "%s - %s" % (showname,date)
-            title = "%s - %s" % (showname,date)
+            title = common.replaceHTMLCodes(common.parseDOM(item, name='a',ret="title")[0]).encode("utf-8").replace('Sendung ', '')
+            title = "%s - %s" % (title,date)
             link = common.parseDOM(item,name='a',ret="href");
             try:
                 desc = (translation(30009)).encode("utf-8")+" %s - %s\n"+(translation(30011)).encode("utf-8")+": %s" % (date,time,duration)
