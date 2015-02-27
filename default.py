@@ -255,7 +255,10 @@ def openArchiv(url):
         title = "["+time+"] "+title
 		
         description = common.parseDOM(teaser,name='div',attrs={'class': "item_description"},ret=False)
-        description = common.replaceHTMLCodes(description[0])
+        if len(description) > 0:
+            description = common.replaceHTMLCodes(description[0])
+        else:
+            description = translation(30008).encode('UTF-8')
 		
         banner = common.parseDOM(teaser,name='img',ret='src')
         banner = common.replaceHTMLCodes(banner[1]).encode("utf-8")
