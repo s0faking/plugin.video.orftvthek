@@ -243,30 +243,44 @@ def listCallback(sort,viewMode=defaultViewMode):
 
 
 def getArchiv(url):
-    html = common.fetchPage({'link': url})
-    articles = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'})
-    articles_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'},ret="href")
-    i = 0
-    
-    for article in articles:
-        link = articles_href[i]
-        i = i+1
+    useServiceAPI = True
+    if useServiceAPI:
+        for x in xrange(9):
+            date  = datetime.datetime.now() - datetime.timedelta(days=x)
+            title = '%s' % (date.strftime('%A, %d.%m.%Y'))
+            parameters = {'mode' : 'openDate', 'link': date.strftime('%Y%m%d')}
+            if x == 8:
+                title = 'älter als %s' % title
+                parameters = {'mode' : 'openDate', 'link': date.strftime('%Y%m%d'), 'from': (date - datetime.timedelta(days=150)).strftime('%Y%m%d')}
+            u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            createListItem(title, '', title, '', date.strftime('%Y-%m-%d'), '', u, 'False', True)
 
-        day = common.parseDOM(article,name='strong',ret=False)
-        if len(day) > 0:
-            day = day[0].encode("utf-8")
-        else:
-            day = ''
+    else:
+        html = common.fetchPage({'link': url})
+        articles = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'})
+        articles_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'},ret="href")
+        i = 0
         
-        date = common.parseDOM(article,name='small',ret=False)
-        if len(date) > 0:
-            date = date[0].encode("utf-8")
-        else:
-            date = ''
-        
-        title = day + " - " + date
-        
-        addDirectory(title,defaultbanner,date,link,"openArchiv")
+        for article in articles:
+            link = articles_href[i]
+            i = i+1
+
+            day = common.parseDOM(article,name='strong',ret=False)
+            if len(day) > 0:
+                day = day[0].encode("utf-8")
+            else:
+                day = ''
+            
+            date = common.parseDOM(article,name='small',ret=False)
+            if len(date) > 0:
+                date = date[0].encode("utf-8")
+            else:
+                date = ''
+            
+            title = day + " - " + date
+            
+            addDirectory(title,defaultbanner,date,link,"openArchiv")
+
     listCallback(False)
 	
 def openArchiv(url):
