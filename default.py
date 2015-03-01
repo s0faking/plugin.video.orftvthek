@@ -546,31 +546,54 @@ def getBundeslandHeute(url,image):
     
     
 def getCategories():
-    html = common.fetchPage({'link': base_url})
-    html_content = html.get("content")
-    
-    content = common.parseDOM(html_content,name='div',attrs={'class':'mod_carousel'})
-    items = common.parseDOM(content,name='a',attrs={'class':'carousel_item_link'})
-    items_href = common.parseDOM(content,name='a',attrs={'class':'carousel_item_link'},ret="href")
-    i = 0
-    for item in items:
-        link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')
-        i = i + 1
-        title = programUrlTitle(link).encode('UTF-8')
-        if title.lower().strip() == "bundesland heute":
-            image = common.parseDOM(item,name='img',ret="src")
-            image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
-            getBundeslandHeute(link,image)
-        if title.lower().strip() == "zib":
-            image = common.parseDOM(item,name='img',ret="src")
-            image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
-            getZIB(image)
-        else:
-            image = common.parseDOM(item,name='img',ret="src")
-            image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
+    try:
+        response = urllib2.urlopen(serviceAPIPrograms % serviceAPItoken)
+        responseCode = response.getcode()
+    except urllib2.HTTPError, error:
+        responseCode = error.getcode()
+        pass
 
-            desc = translation(30008).encode('UTF-8')
-            addDirectory(title,image,desc,link,"openCategoryList")
+    if responseCode == 200:
+        for result in json.loads(response.read())['programShorts']:
+            title       = result.get('name').encode('UTF-8')
+            image       = JSONImage(result.get('images'), 'logo')
+            description = ''
+            link        = result.get('programId')
+
+            if result.get('episodesCount') == 0:
+                continue
+
+            parameters = {'mode' : 'openProgram', 'link': link}
+            u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            createListItem(title, image, description, '', '', '', u, 'false', True)
+
+    else:
+        html = common.fetchPage({'link': base_url})
+        html_content = html.get("content")
+        
+        content = common.parseDOM(html_content,name='div',attrs={'class':'mod_carousel'})
+        items = common.parseDOM(content,name='a',attrs={'class':'carousel_item_link'})
+        items_href = common.parseDOM(content,name='a',attrs={'class':'carousel_item_link'},ret="href")
+        i = 0
+        for item in items:
+            link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')
+            i = i + 1
+            title = programUrlTitle(link).encode('UTF-8')
+            if title.lower().strip() == "bundesland heute":
+                image = common.parseDOM(item,name='img',ret="src")
+                image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
+                getBundeslandHeute(link,image)
+            if title.lower().strip() == "zib":
+                image = common.parseDOM(item,name='img',ret="src")
+                image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
+                getZIB(image)
+            else:
+                image = common.parseDOM(item,name='img',ret="src")
+                image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
+
+                desc = translation(30008).encode('UTF-8')
+                addDirectory(title,image,desc,link,"openCategoryList")
+
     listCallback(True,thumbViewMode)
 
 def programUrlTitle(url):
