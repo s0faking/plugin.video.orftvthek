@@ -604,36 +604,75 @@ def searchTV():
       addDirectory((translation(30014)).encode("utf-8"),defaultbanner,"","","")
     listCallback(False)
 
-def getTableResults(url):
-    url = urllib.unquote(url)
-    html = common.fetchPage({'link': url})
-    items = common.parseDOM(html.get("content"),name='article',attrs={'class': "item.*?"},ret=False)
-    
-    i = 1
-    for item in items:
-        i = i+1
-        title = common.parseDOM(item,name='h4',attrs={'class': "item_title"},ret=False)
-        title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
-        desc = common.parseDOM(item,name='div',attrs={'class': "item_description"},ret=False)
-        time = ""
-        date = ""
-        if desc != None and len(desc) > 0:
-            desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
-            date = common.parseDOM(item,name='time',attrs={'class':'meta.meta_date'},ret=False)
-            date = date[0].encode('UTF-8')
-            time = common.parseDOM(item,name='span',attrs={'class':'meta.meta_time'},ret=False)
-            time = time[0].encode('UTF-8')
-            desc = (translation(30009)).encode("utf-8")+' %s - %s\n%s' % (date,time,desc)
+def getTableResults(url, urlAPI = None):
+    if urlAPI != None:
+        urlAPI = urlAPI % serviceAPItoken
+        try:
+            response = urllib2.urlopen(urlAPI)
+            responseCode = response.getcode()
+        except urllib2.HTTPError, error:
+            responseCode = error.getcode()
+            pass
+    else:
+        responseCode = 404
+
+    if responseCode == 200:
+        global time
+
+        jsonData = json.loads(response.read())
+        if 'teaserItems' in jsonData:
+            results = jsonData['teaserItems']
         else:
-            desc = (translation(30008)).encode("utf-8")
-            
-        image = common.parseDOM(item,name='img',attrs={},ret='src')
-        image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
-        link = common.parseDOM(item,name='a',attrs={},ret='href')
-        link = link[0].encode('UTF-8')
-        if date != "":
-            title = "%s - %s" % (title,date)
-        addDirectory(title,image,desc,link,"openSeries")
+            results = jsonData['episodeShorts']
+
+        for result in results:
+            title       = result.get('title').encode('UTF-8')
+            image       = JSONImage(result.get('images'))
+            if image == '':
+                image = JSONImage(result.get('images'), 'logo')
+            description = JSONDescription(result.get('descriptions'))
+            duration    = result.get('duration')
+            date        = time.strptime(result.get('date'), '%d.%m.%Y %H:%M:%S')
+
+            description = '%s %s\n\n%s' % ((translation(30009)).encode("utf-8"), time.strftime('%A, %d.%m.%Y - %H:%M Uhr', date), description)
+
+            parameters = {'mode' : 'openEpisode', 'link': result.get('episodeId')}
+            u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            # Direcotory should be set to False, that the Duration is shown.
+            # But then there is an error with the Pluginhandle
+            createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True)
+
+    else:
+        url = urllib.unquote(url)
+        html = common.fetchPage({'link': url})
+        items = common.parseDOM(html.get("content"),name='article',attrs={'class': "item.*?"},ret=False)
+
+        i = 1
+        for item in items:
+            i = i+1
+            title = common.parseDOM(item,name='h4',attrs={'class': "item_title"},ret=False)
+            title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+            desc = common.parseDOM(item,name='div',attrs={'class': "item_description"},ret=False)
+            time = ""
+            date = ""
+            if desc != None and len(desc) > 0:
+                desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
+                date = common.parseDOM(item,name='time',attrs={'class':'meta.meta_date'},ret=False)
+                date = date[0].encode('UTF-8')
+                time = common.parseDOM(item,name='span',attrs={'class':'meta.meta_time'},ret=False)
+                time = time[0].encode('UTF-8')
+                desc = (translation(30009)).encode("utf-8")+' %s - %s\n%s' % (date,time,desc)
+            else:
+                desc = (translation(30008)).encode("utf-8")
+
+            image = common.parseDOM(item,name='img',attrs={},ret='src')
+            image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
+            link = common.parseDOM(item,name='a',attrs={},ret='href')
+            link = link[0].encode('UTF-8')
+            if date != "":
+                title = "%s - %s" % (title,date)
+            addDirectory(title,image,desc,link,"openSeries")
+    
     listCallback(False)
 				
 def searchTVHistory(link):
