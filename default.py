@@ -46,6 +46,16 @@ videoProtocol = "http"
 videoDelivery = "progressive"
 video_quality_list = ["q1a", "q4a", "q6a"]
 defaultbanner =  os.path.join(media_path,"default_banner.jpg")
+news_banner =  os.path.join(media_path,"news_banner.jpg")
+recently_added_banner =  os.path.join(media_path,"recently_added_banner.jpg")
+shows_banner =  os.path.join(media_path,"shows_banner.jpg")
+topics_banner =  os.path.join(media_path,"topics_banner.jpg")
+live_banner =  os.path.join(media_path,"live_banner.jpg")
+tips_banner =  os.path.join(media_path,"tips_banner.jpg")
+most_popular_banner =  os.path.join(media_path,"most_popular_banner.jpg")
+archive_banner =  os.path.join(media_path,"archive_banner.jpg")
+search_banner =  os.path.join(media_path,"search_banner.jpg")
+
 defaultbackdrop = os.path.join(media_path,"fanart_top.png")
 
 schedule_url = 'http://tvthek.orf.at/schedule'
@@ -64,6 +74,19 @@ except:
     videoQuality = video_quality_list[2]
 livestreamInfo = settings.getSetting("livestreamInfo")
 
+
+
+def getMainMenu():
+    addDirectory((translation(30000)).encode("utf-8"),news_banner,'',"","getNewShows")
+    addDirectory((translation(30001)).encode("utf-8"),recently_added_banner,'',"","getAktuelles")
+    addDirectory((translation(30002)).encode("utf-8"),shows_banner,'',"","getSendungen")
+    addDirectory((translation(30003)).encode("utf-8"),topics_banner,'',"","getThemen")
+    addDirectory((translation(30004)).encode("utf-8"),live_banner,'',"","getLive")
+    addDirectory((translation(30005)).encode("utf-8"),tips_banner,'',"","getTipps")
+    addDirectory((translation(30006)).encode("utf-8"),most_popular_banner,'',"","getMostViewed")
+    addDirectory((translation(30018)).encode("utf-8"),archive_banner,"","","getArchiv")
+    addDirectory((translation(30007)).encode("utf-8"),search_banner,'',"","searchPhrase")
+    listCallback(False,thumbViewMode)
 
 def parameters_string_to_dict(parameters):
     paramDict = {}
@@ -196,17 +219,6 @@ def listCallback(sort,viewMode=defaultViewMode):
     if forceView:
         xbmc.executebuiltin(viewMode)
 
-def getMainMenu():
-    addDirectory((translation(30000)).encode("utf-8"),defaultbanner,'',"","getNewShows")
-    addDirectory((translation(30001)).encode("utf-8"),defaultbanner,'',"","getAktuelles")
-    addDirectory((translation(30002)).encode("utf-8"),defaultbanner,'',"","getSendungen")
-    addDirectory((translation(30003)).encode("utf-8"),defaultbanner,'',"","getThemen")
-    addDirectory((translation(30004)).encode("utf-8"),defaultbanner,'',"","getLive")
-    addDirectory((translation(30005)).encode("utf-8"),defaultbanner,'',"","getTipps")
-    addDirectory((translation(30006)).encode("utf-8"),defaultbanner,'',"","getMostViewed")
-    addDirectory((translation(30018)).encode("utf-8"),defaultbanner,"","","getArchiv")
-    addDirectory((translation(30007)).encode("utf-8"),defaultbanner,'',"","searchPhrase")
-    listCallback(False,thumbViewMode)
 
 def getArchiv(url):
     html = common.fetchPage({'link': url})
@@ -255,8 +267,11 @@ def openArchiv(url):
         title = "["+time+"] "+title
 		
         description = common.parseDOM(teaser,name='div',attrs={'class': "item_description"},ret=False)
-        description = common.replaceHTMLCodes(description[0])
-		
+        if len(description) > 0 :
+            description = common.replaceHTMLCodes(description[0])
+        else:
+            description = translation(30008).encode('UTF-8')
+            
         banner = common.parseDOM(teaser,name='img',ret='src')
         banner = common.replaceHTMLCodes(banner[1]).encode("utf-8")
         
@@ -282,15 +297,20 @@ def getCategoryList(category,banner):
     
     try:
         current_duration = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta.meta_duration'})
+        
         current_date = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta meta_date'})
-        current_date = current_date[0].encode("utf-8")
+        if len(current_date) > 0:
+            current_date = current_date[0].encode("utf-8")
+        else:
+            current_date = ""
+            
         current_time = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta meta_time'})
         current_link = url
         current_title = "%s - %s" % (showname,current_date)       
         try:
             current_desc = (translation(30009)).encode("utf-8")+' %s - %s\n'+(translation(30011)).encode("utf-8")+': %s' % (current_date,current_time,current_duration)
         except:
-            current_desc = "";
+            current_desc = translation(30008).encode('UTF-8');
         addDirectory(current_title,banner,current_desc,current_link,"openSeries")
     except:
         addDirectory((translation(30014)).encode("utf-8"),defaultbanner,"","","")
@@ -312,7 +332,7 @@ def getCategoryList(category,banner):
             try:
                 desc = (translation(30009)).encode("utf-8")+" %s - %s\n"+(translation(30011)).encode("utf-8")+": %s" % (date,time,duration)
             except:
-                desc = "";
+                desc = translation(30008).encode('UTF-8');
             addDirectory(title,banner,desc,link[0],"openSeries")
     listCallback(False)
 
@@ -329,7 +349,7 @@ def getLiveStreams():
     items_class = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'},ret="class")
     i = 0
     for item in items:
-        program = common.parseDOM(item,ret="class")
+        #program = common.parseDOM(item,ret="class")
         program = items_class[i].split(" ")[2].encode('UTF-8').upper()
 
         i += 1
@@ -415,7 +435,7 @@ def getThemenListe(url):
         if len(desc) > 0:
             desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
         else:
-            desc = ""
+            desc = translation(30008).encode('UTF-8')
 
         date = common.parseDOM(topic,name='time')
         date = common.replaceHTMLCodes(date[0]).encode('UTF-8')
@@ -457,6 +477,8 @@ def getThemen():
         description = ""
         for desc in descs:
             description += "* "+common.replaceHTMLCodes(desc).encode('UTF-8') + "\n"
+        if description == "":
+            description = translation(30008).encode('UTF-8')
 
         addDirectory(title,image,description,link,"openTopicPosts")
     listCallback(True)
@@ -497,7 +519,7 @@ def getBundeslandHeute(url,image):
     for item in items:
         link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')        
         title = items_title[i].encode('UTF-8')
-        desc = '  '
+        desc = translation(30008).encode('UTF-8')
         addDirectory(title,image,desc,link,"openCategoryList")
         i = i + 1
     
@@ -526,7 +548,7 @@ def getCategories():
             image = common.parseDOM(item,name='img',ret="src")
             image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
 
-            desc = '  '
+            desc = translation(30008).encode('UTF-8')
             addDirectory(title,image,desc,link,"openCategoryList")
     listCallback(True,thumbViewMode)
 

@@ -1,3 +1,9 @@
+0.3.3
+- Still waiting for the new icons from my gfx guy ... Sorry
+- FIX: wrong title in getCategoryList(thx @Rechi)
+- fixed error on the archive caused by empty descriptions
+- minor code optimizations
+
 0.3.2
 - fixed "Bundesland Heute" listing
 
