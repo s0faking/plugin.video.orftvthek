@@ -378,38 +378,97 @@ def getLiveStreams():
     liveurls['ORF2'] = "http://apasfiisl.apa.at/ipad/orf2_q6a/orf.sdp/playlist.m3u8";
     liveurls['ORF3'] = "http://apasfiisl.apa.at/ipad/orf2e_q6a/orf.sdp/playlist.m3u8";
     liveurls['ORFS'] = "http://apasfiisl.apa.at/ipad/orfs_q6a/orf.sdp/playlist.m3u8";
-	
-    html = common.fetchPage({'link': live_url})
-    wrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper.*mod_epg'})
-    items = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'})
-    items_class = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'},ret="class")
-    i = 0
-    for item in items:
-        #program = common.parseDOM(item,ret="class")
-        program = items_class[i].split(" ")[2].encode('UTF-8').upper()
 
-        i += 1
-        
-        banner = common.parseDOM(item,name='img',ret="src")
-        banner = common.replaceHTMLCodes(banner[0]).encode('UTF-8')
-        
-        title = common.parseDOM(item,name='h4')
-        title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
-        
-        time = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_time'})
-        time = common.replaceHTMLCodes(time[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
+    url = serviceAPILive % (serviceAPItoken, datetime.datetime.now().strftime('%Y%m%d%H%M'), (datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y%m%d%H%M'), 25)
+    try: 
+        response = urllib2.urlopen(url)
+        responseCode = response.getcode()
+    except urllib2.HTTPError, error:
+        responseCode = error.getcode()
+        pass
 
-        if getBroadcastState(time):
-            state = (translation(30019)).encode("utf-8")
-            state_short = "Online"
-        else:
-            state = (translation(30020)).encode("utf-8")
-            state_short = "Offline"
+    if responseCode == 200:
+        global time
 
-        link = liveurls[program]
-        
-        title = "[%s] - %s (%s)" % (program,title,time)
-        createListItem(title,banner,state,time,program,program,link,'true',False)
+        bannerurls = {}
+        bannerurls['ORF1'] = 'http://tvthek.orf.at/assets/1326810345/orf_channels/logo_color/6779277.png'
+        bannerurls['ORF2'] = 'http://tvthek.orf.at/assets/1326810345/orf_channels/logo_color/6779281.png'
+        bannerurls['ORF3'] = 'http://tvthek.orf.at/assets/1326810345/orf_channels/logo_color/6779305.png'
+        bannerurls['ORFS'] = 'http://tvthek.orf.at/assets/1326810345/orf_channels/logo_color/6779307.png'
+
+        results = json.loads(response.read())['episodeDetails']
+        for result in results:
+
+            description     = JSONDescription(result.get('descriptions'))
+            program         = result.get('channel').get('reel').upper()
+            programName     = result.get('channel').get('name')
+            programName     = programName.strip()
+            livestreamStart = time.strptime(result.get('livestreamStart'), '%d.%m.%Y %H:%M:%S')
+            livestreamEnd   = time.strptime(result.get('livestreamEnd'),   '%d.%m.%Y %H:%M:%S')
+
+            # already playing
+            if livestreamStart < time.localtime():
+                duration = time.mktime(livestreamEnd) - time.mktime(time.localtime())
+                state = (translation(30019)).encode("utf-8")
+                state_short = 'Online'
+
+            else:
+                duration = time.mktime(livestreamEnd) - time.mktime(livestreamStart)
+                state = (translation(30020)).encode("utf-8")
+                state_short = 'Offline'
+                link = sys.argv[0] + '?' + urllib.urlencode({'mode': 'liveStreamNotOnline', 'link': result.get('episodeId')})
+
+            # find the livestreamStreamingURLs
+            livestreamStreamingURLs = []
+            for streamingURL in result.get('livestreamStreamingUrls'):
+                if '.m3u' in streamingURL.get('streamingUrl'):
+                    livestreamStreamingURLs.append(streamingURL.get('streamingUrl'))
+
+            livestreamStreamingURLs.sort()
+            link = livestreamStreamingURLs[len(livestreamStreamingURLs) - 1].replace('q4a', 'q6a')
+
+            title = "[%s] %s (%s)" % (programName, result.get('title'), time.strftime('%H:%M', livestreamStart))
+
+            if program in bannerurls:
+                banner = bannerurls[program]
+            else:
+                banner = ''
+
+            createListItem(title, banner, description, duration, time.strftime('%Y-%m-%d', livestreamStart), program, link, 'True', False)
+
+    else:
+        html = common.fetchPage({'link': live_url})
+        wrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper.*mod_epg'})
+        items = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'})
+        items_class = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'},ret="class")
+        i = 0
+        for item in items:
+            #program = common.parseDOM(item,ret="class")
+            program = items_class[i].split(" ")[2].encode('UTF-8').upper()
+
+            i += 1
+            
+            banner = common.parseDOM(item,name='img',ret="src")
+            banner = common.replaceHTMLCodes(banner[0]).encode('UTF-8')
+            
+            title = common.parseDOM(item,name='h4')
+            title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+            
+            time = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_time'})
+            time = common.replaceHTMLCodes(time[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
+
+            if getBroadcastState(time):
+                state = (translation(30019)).encode("utf-8")
+                state_short = "Online"
+            else:
+                state = (translation(30020)).encode("utf-8")
+                state_short = "Offline"
+
+            link = liveurls[program]
+            
+            title = "[%s] - %s (%s)" % (program,title,time)
+            createListItem(title,banner,state,time,program,program,link,'true',False)
+
     listCallback(False,smallListViewMode)
 
 def getBroadcastState(time):
@@ -952,7 +1011,7 @@ def JSONStreamingURL(jsonVideos):
     for streamingURL in jsonVideos:
         streamingURL = streamingURL.get('streamingUrl')
         if 'http' in streamingURL and 'mp4/playlist.m3u8' in streamingURL:
-            return streamingURL
+            return streamingURL.replace('q4a', 'q6a')
     return ''
 
     	
@@ -1014,5 +1073,35 @@ elif mode == 'openEpisode':
     getEpisode(link)
 elif mode == 'openSegment':
     getSegment(link, params.get('segmentID'))
+elif mode == 'liveStreamNotOnline':
+    url = serviceAPIEpisode % (serviceAPItoken, link)
+    response = urllib2.urlopen(url)
+    result = json.loads(response.read())['episodeDetail']
+
+    title       = result.get('title').encode('UTF-8')
+    image       = JSONImage(result.get('images'))
+    description = JSONDescription(result.get('descriptions'))
+    duration    = result.get('duration')
+    date        = time.strptime(result.get('date'), '%d.%m.%Y %H:%M:%S')
+    subtitles   = None # result.get('subtitlesSrtFileUrl')
+
+    dialog = xbmcgui.Dialog()
+    if dialog.yesno('Livestream noch nicht gestartet', 'Der Livestream startet erst um %s.\nSoll der Livesteam automatisch starten?' % time.strftime('%H:%M', date)):
+        sleepTime = int(time.mktime(date) - time.mktime(time.localtime()))
+        dialog.notification('Sleep till start', 'Spleeptime: %s' % sleepTime)
+        xbmc.sleep(sleepTime * 1000)
+        if dialog.yesno('', 'Den Livestream Starten?'):
+            xbmc.Player().play(urllib.unquote(link))
+
+            # find the livestreamStreamingURL
+            livestreamStreamingURLs = []
+            for streamingURL in result.get('livestreamStreamingUrls'):
+                if '.m3u' in streamingURL.get('streamingUrl'):
+                    livestreamStreamingURLs.append(streamingURL.get('streamingUrl'))
+
+            livestreamStreamingURLs.sort()
+            streamingURL = livestreamStreamingURLs[len(livestreamStreamingURLs) - 1].replace('q4a', 'q6a')
+            listItem = createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False, subtitles)
+            xbmc.Player().play(streamingURL, listItem)
 else:
     getMainMenu()
