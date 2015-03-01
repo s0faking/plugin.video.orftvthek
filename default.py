@@ -576,7 +576,7 @@ def searchTV():
       keyboard_in = keyboard.getText()
       some_dict = cache.get("searches") + "|"+keyboard_in
       cache.set("searches",some_dict);
-      searchurl = "%s/search?q=%s"%(base_url,keyboard_in.replace(" ","+").replace("Ö","").replace("ö","").replace("Ü","").replace("ü","").replace("Ä","").replace("ä",""))
+      searchurl = "%s/search?q=%s"%(base_url,keyboard_in.replace(" ","+").replace("Ö","O").replace("ö","o").replace("Ü","U").replace("ü","u").replace("Ä","A").replace("ä","a"))
       searchurl = searchurl
       getTableResults(searchurl)
     else:
