@@ -105,6 +105,7 @@ def getMainMenu():
     addDirectory((translation(30006)).encode("utf-8"),most_popular_banner,'',"","getMostViewed")
     addDirectory((translation(30018)).encode("utf-8"),archive_banner,"","","getArchiv")
     addDirectory((translation(30007)).encode("utf-8"),search_banner,'',"","searchPhrase")
+    addDirectory('TV-Vorschau', defaultbanner, '', '', 'openTrailers')
     listCallback(False,thumbViewMode)
 
 def parameters_string_to_dict(parameters):
@@ -980,6 +981,8 @@ elif mode == 'getArchiv':
     getArchiv(schedule_url)
 elif mode == 'openArchiv':
     openArchiv(link)
+elif mode == 'openTrailers':
+    getTrailers()
 elif mode == 'searchPhrase':
     search()
 elif mode == 'searchNew':
