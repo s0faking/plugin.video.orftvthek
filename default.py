@@ -477,32 +477,55 @@ def playFile():
         d.ok('VIDEO QUEUE EMPTY', 'The XBMC video queue is empty.','Add more links to video queue.')
 
 def getThemen():
-    url = "http://tvthek.orf.at/topics"
-    html = common.fetchPage({'link': url})
-    html_content = html.get("content")
-    
-    content = common.parseDOM(html_content,name='section',attrs={'class':'mod_container_list'})
-    topics = common.parseDOM(content,name='section',attrs={'class':'item_wrapper'})
+    try: 
+        response = urllib2.urlopen(serviceAPITopics % serviceAPItoken)
+        responseCode = response.getcode()
+    except ValueError, error:
+        responseCode = 404
+        pass
+    except urllib2.HTTPError, error:
+        responseCode = error.getcode()
+        pass
 
-    for topic in topics:
-        title = common.parseDOM(topic,name='h3',attrs={'class':'item_wrapper_headline.subheadline.*?'})
-        title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
-        
-        link = common.parseDOM(topic,name='a',attrs={'class':'more.service_link.service_link_more'},ret="href")
-        link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
-        
-        image = common.parseDOM(topic,name='img',ret="src")
-        image = common.replaceHTMLCodes(image[0]).replace("width=395","width=500").replace("height=209.07070707071","height=265").encode('UTF-8')
-        
-        descs = common.parseDOM(topic,name='h4',attrs={'class':'item_title'})
-        description = ""
-        for desc in descs:
-            description += "* "+common.replaceHTMLCodes(desc).encode('UTF-8') + "\n"
-        if description == "":
-            description = translation(30008).encode('UTF-8')
+    if responseCode == 200:
+        for topic in json.loads(response.read())['topicShorts']:
+            if topic.get('parentId') != None or topic.get('isArchiveTopic'):
+                continue
+            title       = topic.get('name').encode('UTF-8')
+            image       = JSONImage(topic.get('images'))
+            description = topic.get('description')
+            link        = topic.get('topicId')
 
-        addDirectory(title,image,description,link,"openTopicPosts")
-    listCallback(True)
+            addDirectory(title, image, description, link, 'openTopic')
+        listCallback(False, thumbViewMode)
+
+    else:
+        url = "http://tvthek.orf.at/topics"
+        html = common.fetchPage({'link': url})
+        html_content = html.get("content")
+        
+        content = common.parseDOM(html_content,name='section',attrs={'class':'mod_container_list'})
+        topics = common.parseDOM(content,name='section',attrs={'class':'item_wrapper'})
+
+        for topic in topics:
+            title = common.parseDOM(topic,name='h3',attrs={'class':'item_wrapper_headline.subheadline.*?'})
+            title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+            
+            link = common.parseDOM(topic,name='a',attrs={'class':'more.service_link.service_link_more'},ret="href")
+            link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
+            
+            image = common.parseDOM(topic,name='img',ret="src")
+            image = common.replaceHTMLCodes(image[0]).replace("width=395","width=500").replace("height=209.07070707071","height=265").encode('UTF-8')
+            
+            descs = common.parseDOM(topic,name='h4',attrs={'class':'item_title'})
+            description = ""
+            for desc in descs:
+                description += "* "+common.replaceHTMLCodes(desc).encode('UTF-8') + "\n"
+            if description == "":
+                description = translation(30008).encode('UTF-8')
+
+            addDirectory(title,image,description,link,"openTopicPosts")
+        listCallback(True)
 
 def getZIB(baseimage):
     url = 'http://tvthek.orf.at/programs/genre/ZIB/1';
