@@ -65,6 +65,25 @@ mostviewed_url = 'http://tvthek.orf.at/most_viewed'
 tip_url = 'http://tvthek.orf.at/tips'
 search_base_url = 'http://tvthek.orf.at/search'
 
+# serviceAPI Settings
+serviceAPItoken    = 'ef97318c84d4e8'
+
+serviceAPIEpisode  = 'http://tvthek.orf.at/service_api/token/%s/episode/%s/'
+serviceAPIDate     = 'http://tvthek.orf.at/service_api/token/%s/episodes/by_date/%s?page=0&entries_per_page=1000'
+serviceAPIDateFrom = 'http://tvthek.orf.at/service_api/token/%s/episodes/from/%s0000/till/%s0000?page=0&entries_per_page=1000'
+serviceAPIProgram  = 'http://tvthek.orf.at/service_api/token/%s/episodes/by_program/%s'
+serviceAPISearch   = 'http://tvthek.orf.at/service_api/token/%s/search/%s?page=0&entries_per_page=1000'
+servieAPITopic     = 'http://tvthek.orf.at/service_api/token/%s/topic/%s/'
+
+serviceAPIPrograms = 'http://tvthek.orf.at/service_api/token/%s/programs?page=0&entries_per_page=1000'
+serviceAPITopics   = 'http://tvthek.orf.at/service_api/token/%s/topics?page=0&entries_per_page=1000'
+serviceAPITrailers = 'http://tvthek.orf.at/service_api/token/%s/episodes/trailers?page=0&entries_per_page=1000'
+
+serviceAPILive     = 'http://tvthek.orf.at/service_api/token/%s/livestreams/from/%s/till/%s/detail?page=0&entries_per_page=%i'
+serviceAPITip      = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/recommendations'
+serviceAPIRecent   = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/newest'
+serviceAPIViewed   = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/most_viewed'
+
 #settings
 forceView = settings.getSetting("forceView") == "true"
 videoQuality = settings.getSetting("videoQuality")
