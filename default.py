@@ -121,15 +121,13 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
     if not folder:
         try:
             liz.addStreamInfo('video', { 'codec': 'h264','duration':int(duration) ,"aspect": 1.78, "width": 640, "height": 360})
-            liz.addStreamInfo('audio', {"codec": "aac", "language": "de", "channels": 2})
-            if subtitles != None:
-                liz.addStreamInfo('subtitle', {"language": "de"})
         except:
             liz.addStreamInfo('video', { 'codec': 'h264',"aspect": 1.78, "width": 640, "height": 360})
-            liz.addStreamInfo('audio', {"codec": "aac", "language": "de", "channels": 2})
-            if subtitles != None:
-                liz.addStreamInfo('subtitle', {"language": "de"})
-            
+        liz.addStreamInfo('audio', {"codec": "aac", "language": "de", "channels": 2})
+        if subtitles != None:
+            liz.addStreamInfo('subtitle', {"language": "de"})
+            liz.setSubtitles(subtitles)        
+
     xbmcplugin.addDirectoryItem(handle=pluginhandle, url=videourl, listitem=liz, isFolder=folder)
     return liz
 
@@ -176,13 +174,15 @@ def getLinks(url,banner):
         current_duration = data.get("selected_video")["duration"]
         current_preview_img = data.get("selected_video")["preview_image_url"]
         if "subtitles" in data.get("selected_video"):
-            current_subtitles = data.get("selected_video")["subtitles"]
+            current_subtitles = []
+            for sub in data.get("selected_video")["subtitles"]:
+                current_subtitles.append(sub.get(u'src'))
         else:
-            current_subtitles = ''
+            current_subtitles = None
         current_id = data.get("selected_video")["id"]
         current_videourl = getVideoUrl(data.get("selected_video")["sources"]);
     except Exception, e:
-        current_subtitles = ''
+        current_subtitles = None
 
     if len(video_items) > 1:
         parameters = {"mode" : "playList"}
@@ -198,9 +198,11 @@ def getLinks(url,banner):
                 id = video_item["id"]
                 sources = video_item["sources"]
                 if "subtitles" in video_item:
-                    subtitles = video_item["subtitles"]
+                    subtitles = []
+                    for sub in video_item["subtitles"]:
+                        subtitles.append(sub.get(u'src'))
                 else:
-                    subtitles = ''
+                    subtitles = None
                 videourl = getVideoUrl(sources);
                 listItem = createListItem(title,preview_img,desc,duration,'','',videourl,'true',False,subtitles)
                 playlist.add(videourl,listItem)
