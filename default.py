@@ -652,6 +652,152 @@ def searchTVHistory(link):
     listCallback(False)
 
 
+# list all Episodes for the given Date
+def getDate(date, dateFrom = None):
+    if dateFrom == None:
+        url = serviceAPIDate % (serviceAPItoken, date)
+    else:
+        url = serviceAPIDateFrom % (serviceAPItoken, dateFrom, date)
+    response = urllib2.urlopen(url)
+
+    if dateFrom == None:
+        episodes = json.loads(response.read())['episodeShorts']
+    else:
+        episodes = reversed(json.loads(response.read())['episodeShorts'])
+
+    for episode in episodes:
+        JSONEpisode2ListItem(episode)
+
+    listCallback(False)
+
+
+# list all Entries for the given Topic
+def getTopic(topicID):
+    url = servieAPITopic % (serviceAPItoken, topicID)
+    response = urllib2.urlopen(url)
+
+    for entrie in json.loads(response.read())['topicDetail'].get('entries'):
+        title       = entrie.get('title').encode('UTF-8')
+        image       = JSONImage(entrie.get('images'))
+        description = JSONDescription(entrie.get('descriptions'))
+        duration    = entrie.get('duration')
+        date        = time.strptime(entrie.get('date'), '%d.%m.%Y %H:%M:%S')
+
+        if entrie.get('teaserItemType') == 'episode':
+            parameters = {'mode' : 'openEpisode', 'link': entrie.get('episodeId')}
+        elif entrie.get('teaserItemType') == 'segment':
+            parameters = {'mode' : 'openSegment', 'link': entrie.get('episodeId'), 'segmentID': entrie.get('segmentId')}
+        else:
+            continue
+
+        u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+        # Direcotory should be set to False, that the Duration is shown.
+        # But then there is an error with the Pluginhandle
+        createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True)
+
+    listCallback(False)
+
+
+# list all Episodes for the given Broadcast
+def getProgram(programID):
+    url = serviceAPIProgram % (serviceAPItoken, programID)
+    response = urllib2.urlopen(url)
+    responseCode = response.getcode()
+
+    if responseCode == 200:
+        episodes = json.loads(response.read())['episodeShorts']
+        if len(episodes) == 1:
+            for episode in episodes:
+                getEpisode(episode.get('episodeId'))
+                return
+
+        for episode in episodes:
+            JSONEpisode2ListItem(episode, 'teaser')
+
+        listCallback(False)
+
+
+# listst all Segments for the Episode with the given episodeID
+# If the Episode only contains one Segment, that get played instantly.
+def getEpisode(episodeID):
+    playlist.clear()
+
+    url = serviceAPIEpisode % (serviceAPItoken, episodeID)
+    response = urllib2.urlopen(url)
+    result = json.loads(response.read())['episodeDetail']
+
+    title       = result.get('title').encode('UTF-8')
+    image       = JSONImage(result.get('images'))
+    description = JSONDescription(result.get('descriptions'))
+    duration    = result.get('duration')
+    date        = time.strptime(result.get('date'), '%d.%m.%Y %H:%M:%S')
+
+    referenceOtherEpisode = False
+    for link in result.get('links'):
+        if link.get('identifier') == 'program':
+            referenceOtherEpisode = True
+            addDirectory(link.get('name').encode('UTF-8'), '', '', link.get('id'), 'openProgram')
+
+    if referenceOtherEpisode:
+        listCallback(False)
+        return
+
+    if len(result.get('segments')) == 1:
+        for segment in result.get('segments'):
+            image        = JSONImage(segment.get('images'))
+            streamingURL = JSONStreamingURL(segment.get('videos'))
+            if segment.get('subtitlesSrtFileUrl'):
+                subtitles = [segment.get('subtitlesSrtFileUrl')]
+            else:
+                subtitles = None
+
+        listItem = createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False, subtitles)
+        playlist.add(streamingURL, listItem)
+        xbmc.Player().play(playlist)
+
+    else:
+        parameters = {'mode' : 'playList'}
+        u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+        createListItem('[ '+(translation(30015)).encode('UTF-8')+' ]', image, '%s\n%s' % ((translation(30015)).encode('UTF-8'), description), duration, time.strftime('%Y-%m-%d', date), '', u, 'false', False)
+
+        for segment in result.get('segments'):
+            listItem = JSONSegment2ListItem(segment, date)
+            playlist.add(listItem[0], listItem[1])
+
+        listCallback(False)
+
+
+# Plays the given Segment, if it is included in the given Episode
+def getSegment(episodeID, segmentID):
+    playlist.clear()
+
+    url = serviceAPIEpisode % (serviceAPItoken, episodeID)
+    response = urllib2.urlopen(url)
+    responseCode = response.getcode()
+
+    if responseCode == 200:
+        result = json.loads(response.read())['episodeDetail']
+        date = time.strptime(result.get('date'), '%d.%m.%Y %H:%M:%S')
+        for segment in result.get('segments'):
+            if segment.get('segmentId') == int(segmentID):
+
+                listItem = JSONSegment2ListItem(segment, date)
+                playlist.add(listItem[0], listItem[1])
+                xbmc.Player().play(playlist)
+                return
+
+
+# list all Trailers for further airings
+def getTrailers():
+    url = serviceAPITrailers % serviceAPItoken
+    response = urllib2.urlopen(url)
+
+    for episode in json.loads(response.read())['episodeShorts']:
+        JSONEpisode2ListItem(episode)
+
+    listCallback(False)
+
+
 # Useful  Methods for JSON Parsing
 def JSONEpisode2ListItem(JSONEpisode, ignoreEpisodeType = None):
     title        = JSONEpisode.get('title').encode('UTF-8')
@@ -756,5 +902,15 @@ elif mode == 'searchNew':
         searchTVHistory(urllib.unquote(link));
     else:
         searchTV()
+elif mode == 'openDate':
+    getDate(link, params.get('from'))
+elif mode == 'openProgram':
+    getProgram(link)
+elif mode == 'openTopic':
+    getTopic(link)
+elif mode == 'openEpisode':
+    getEpisode(link)
+elif mode == 'openSegment':
+    getSegment(link, params.get('segmentID'))
 else:
     getMainMenu()
