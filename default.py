@@ -917,7 +917,7 @@ elif mode == 'getAktuelles':
 elif mode == 'getLive':
     getLiveStreams()
 elif mode == 'getTipps':
-    getTableResults(tip_url)
+    getTableResults(tip_url, serviceAPITip)
 elif mode == 'getNewShows':
     getTableResults(recent_url)
 elif mode == 'getMostViewed':
