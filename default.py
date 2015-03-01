@@ -650,6 +650,65 @@ def searchTVHistory(link):
     else:
       addDirectory((translation(30014)).encode("utf-8"),defaultbanner,defaultbackdrop,"","")
     listCallback(False)
+
+
+# Useful  Methods for JSON Parsing
+def JSONEpisode2ListItem(JSONEpisode, ignoreEpisodeType = None):
+    title        = JSONEpisode.get('title').encode('UTF-8')
+    image        = JSONImage(JSONEpisode.get('images'))
+    description  = JSONDescription(JSONEpisode.get('descriptions'))
+    duration     = JSONEpisode.get('duration')
+    date         = time.strptime(JSONEpisode.get('date'), '%d.%m.%Y %H:%M:%S')
+    link         = JSONEpisode.get('episodeId')
+
+    if JSONEpisode.get('episodeType') == ignoreEpisodeType:
+        return None
+
+    parameters = {'mode' : 'openEpisode', 'link': link}
+    u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+    # Direcotory should be set to False, that the Duration is shown.
+    # But then there is an error with the Pluginhandle
+    return createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True)
+
+
+def JSONSegment2ListItem(JSONSegment, date):
+    title        = JSONSegment.get('title').encode('UTF-8')
+    image        = JSONImage(JSONSegment.get('images'))
+    description  = JSONDescription(JSONSegment.get('descriptions'))
+    duration     = JSONSegment.get('duration')
+    streamingURL = JSONStreamingURL(JSONSegment.get('videos'))
+    if JSONSegment.get('subtitlesSrtFileUrl'):
+        subtitles = [JSONSegment.get('subtitlesSrtFileUrl')]
+    else:
+        subtitles = None
+    return [streamingURL, createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False, subtitles)]
+
+def JSONDescription(jsonDescription):
+    desc = ''
+    for description in jsonDescription:
+        if description.get('text') != None:
+            if len(description.get('text')) > len(desc):
+                desc = description.get('text')
+            if description.get('fieldName') == 'description':
+                return description.get('text').encode('UTF-8')
+    return desc.encode('UTF-8')
+
+def JSONImage(jsonImages, name = 'image_full'):
+    logo = ''
+    for image in jsonImages:
+        if image.get('name') == name:
+            return image.get('url')
+        elif image.get('name') == 'logo':
+            logo = image.get('url')
+    return logo
+
+def JSONStreamingURL(jsonVideos):
+    for streamingURL in jsonVideos:
+        streamingURL = streamingURL.get('streamingUrl')
+        if 'http' in streamingURL and 'mp4/playlist.m3u8' in streamingURL:
+            return streamingURL
+    return ''
+
     	
 #parameters
 params=parameters_string_to_dict(sys.argv[2])
