@@ -1039,7 +1039,7 @@ elif mode == 'getLive':
 elif mode == 'getTipps':
     getTableResults(tip_url, serviceAPITip)
 elif mode == 'getNewShows':
-    getTableResults(recent_url)
+    getTableResults(recent_url, serviceAPIRecent)
 elif mode == 'getMostViewed':
     getTableResults(mostviewed_url, serviceAPIViewed)
 elif mode == 'getThemen':
