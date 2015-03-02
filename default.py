@@ -1041,7 +1041,7 @@ elif mode == 'getTipps':
 elif mode == 'getNewShows':
     getTableResults(recent_url)
 elif mode == 'getMostViewed':
-    getTableResults(mostviewed_url)
+    getTableResults(mostviewed_url, serviceAPIViewed)
 elif mode == 'getThemen':
     getThemen()
 elif mode == 'openTopicPosts':
