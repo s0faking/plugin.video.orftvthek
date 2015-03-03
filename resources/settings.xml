@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <setting id="forceView" type="bool" label="Force Views" default="true" />
+    <setting id="forceView" type="bool" label="30021" default="true" />
+    <setting id="useServiceAPI" type="bool" label="30026" default="true" />
+    <setting id="videoQuality" type="enum"  label="30022" lvalues="30023|30024|30025" default="30025"/>
 </settings>

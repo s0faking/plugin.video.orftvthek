@@ -21,4 +21,11 @@
 	<string id="30018">Missed a Show?</string>
 	<string id="30019">Streaming</string>
     <string id="30020">Stream Offline</string>
+    <string id="30021">Force Views</string>
+    <string id="30022">Video Resolution</string>
+    <string id="30023">Low</string>
+    <string id="30024">Medium</string>
+    <string id="30025">High</string>
+    <string id="30026">Use ServiceAPI</string>
+    <string id="30027">Trailers</string>
 </strings>
