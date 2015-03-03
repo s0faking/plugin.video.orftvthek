@@ -1011,7 +1011,7 @@ def JSONStreamingURL(jsonVideos):
     for streamingURL in jsonVideos:
         streamingURL = streamingURL.get('streamingUrl')
         if 'http' in streamingURL and 'mp4/playlist.m3u8' in streamingURL:
-            return streamingURL.replace('q4a', 'q6a')
+            return streamingURL.replace('Q4A', 'Q6A')
     return ''
 
     	
