@@ -125,8 +125,11 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
             liz.addStreamInfo('video', { 'codec': 'h264',"aspect": 1.78, "width": 640, "height": 360})
         liz.addStreamInfo('audio', {"codec": "aac", "language": "de", "channels": 2})
         if subtitles != None:
-            liz.addStreamInfo('subtitle', {"language": "de"})
-            liz.setSubtitles(subtitles)        
+            try:
+                liz.setSubtitles(subtitles)
+                liz.addStreamInfo('subtitle', {"language": "de"})
+            except:
+                pass
 
     xbmcplugin.addDirectoryItem(handle=pluginhandle, url=videourl, listitem=liz, isFolder=folder)
     return liz
