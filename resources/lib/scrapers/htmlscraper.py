@@ -15,23 +15,30 @@ class htmlScraper:
     mostviewed_url = 'http://tvthek.orf.at/most_viewed'
     tip_url = 'http://tvthek.orf.at/tips'
     search_base_url = 'http://tvthek.orf.at/search'
+
+    
     translation = ""
     xbmc = ""
+    pluginhandle = ""
     
-    def __init__(self,xbmc,settings):
+    def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery):
         self.translation = settings.getLocalizedString
-        self.xbmc = xbmc;
-        self.xbmc.log(msg='Using HTML Scraper', level=xbmc.LOGDEBUG);
+        self.xbmc = xbmc
+        self.videoQuality = quality
+        self.videoDelivery = delivery
+        self.videoProtocol = protocol
+        self.pluginhandle = pluginhandle
+        self.xbmc.log(msg='Using HTML Scraper', level=xbmc.LOGDEBUG)
         
     def doStuff(self):
         self.xbmc.log(msg='doStuff', level=xbmc.LOGDEBUG);
         
         
-    def getVideoUrl(self,sources,protocol,delivery,quality):
+    def getVideoUrl(self,sources):
         for source in sources:
-            if source["protocol"].lower() == videoProtocol.lower():
-                if source["delivery"].lower() == videoDelivery.lower():
-                    if source["quality"].lower() == videoQuality.lower():
+            if source["protocol"].lower() == self.videoProtocol.lower():
+                if source["delivery"].lower() == self.videoDelivery.lower():
+                    if source["quality"].lower() == self.videoQuality.lower():
                         return source["src"]
         return False
         
@@ -203,12 +210,36 @@ class htmlScraper:
             list.append(dict)
             i = i + 1
         return list
-    
-    def getLinks(self,url,banner):
-        videoUrls = []
         
-        url = str(urllib.unquote(url))
+    def createListItem(self,title,banner,description,duration,date,channel,videourl,playable,folder,subtitles=None): 
+        if description == '':
+            description = (translation(30008)).encode("utf-8")
+        liz=xbmcgui.ListItem(title, iconImage=banner, thumbnailImage=banner)
+        liz.setInfo( type="Video", infoLabels={ "Title": title } )
+        liz.setInfo( type="Video", infoLabels={ "Tvshowtitle": title } )
+        liz.setInfo( type="Video", infoLabels={ "Sorttitle": title } )
+        liz.setInfo( type="Video", infoLabels={ "Plot": description } )
+        liz.setInfo( type="Video", infoLabels={ "Plotoutline": description } )
+        liz.setInfo( type="Video", infoLabels={ "Aired": date } )
+        liz.setInfo( type="Video", infoLabels={ "Studio": channel } )
+        liz.setProperty('IsPlayable', playable)
+        
+        if not folder:
+            try:
+                liz.addStreamInfo('video', { 'codec': 'h264','duration':int(duration) ,"aspect": 1.78, "width": 640, "height": 360})
+            except:
+                liz.addStreamInfo('video', { 'codec': 'h264',"aspect": 1.78, "width": 640, "height": 360})
+            liz.addStreamInfo('audio', {"codec": "aac", "language": "de", "channels": 2})
+            if subtitles != None:
+                liz.addStreamInfo('subtitle', {"language": "de"})
+                liz.setSubtitles(subtitles)        
 
+        xbmcplugin.addDirectoryItem(handle=self.pluginhandle, url=videourl, listitem=liz, isFolder=folder)
+        return liz
+    
+    def getLinks(self,url,banner,playlist):
+        playlist.clear()
+        url = str(urllib.unquote(url))
         if banner != None:
             banner = urllib.unquote(banner)
         
@@ -235,14 +266,15 @@ class htmlScraper:
             else:
                 current_subtitles = None
             current_id = data.get("selected_video")["id"]
-            current_videourl = getVideoUrl(data.get("selected_video")["sources"]);
+            current_videourl = self.getVideoUrl(data.get("selected_video")["sources"]);
         except Exception, e:
             current_subtitles = None
+            print e
 
         if len(video_items) > 1:
             parameters = {"mode" : "playList"}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            createListItem("[ "+(translation(30015)).encode("utf-8")+" ]",banner,(translation(30015)).encode("utf-8"),"","","",u,'false',False)
+            self.createListItem("[ "+(self.translation(30015)).encode("utf-8")+" ]",banner,(self.translation(30015)).encode("utf-8"),"","","",u,'false',False)
             for video_item in video_items:
                 try:
                     title_prefix = video_item["title_prefix"]
@@ -258,12 +290,13 @@ class htmlScraper:
                             subtitles.append(sub.get(u'src'))
                     else:
                         subtitles = None
-                    videourl = getVideoUrl(sources);
-                    listItem = createListItem(title,preview_img,desc,duration,'','',videourl,'true',False,subtitles)
+                    videourl = self.getVideoUrl(sources);
+                    listItem = self.createListItem(title,preview_img,desc,duration,'','',videourl,'true',False,subtitles)
                     playlist.add(videourl,listItem)
                 except Exception, e:
                     continue
         else:
-            listItem = createListItem(current_title,current_preview_img,current_desc,current_duration,'','',current_videourl,'true',False,current_subtitles)
+            listItem = self.createListItem(current_title,current_preview_img,current_desc,current_duration,'','',current_videourl,'true',False,current_subtitles)
             playlist.add(current_videourl,listItem)
-        listCallback(False)
+        return playlist
+        

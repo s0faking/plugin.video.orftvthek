@@ -38,9 +38,9 @@ smallListViewMode = 'Container.SetViewMode(51)'
 playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO) 
  
 #hardcoded
+video_quality_list = ["Q1A", "Q4A", "Q6A"]
 videoProtocol = "http"
 videoDelivery = "progressive"
-video_quality_list = ["Q1A", "Q4A", "Q6A"]
 
 #media resources
 resource_path = os.path.join( basepath, "resources" )
@@ -66,10 +66,12 @@ try:
     videoQuality = video_quality_list[int(videoQuality)]
 except:
     videoQuality = video_quality_list[2]
+    
+
 
 #init scrapers
-jsonScraper = serviceAPI(xbmc,settings);
-htmlScraper = htmlScraper(xbmc,settings);
+jsonScraper = serviceAPI(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery)
+htmlScraper = htmlScraper(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery)
 
 
 def getMainMenu():
@@ -538,7 +540,8 @@ backdrop=params.get('backdrop')
 
 #modes
 if mode == 'openSeries':
-    htmlScraper.getLinks(link,banner)
+    htmlScraper.getLinks(link,banner,playlist)
+    listCallback(False)
 elif mode == 'openShowList':
     getMoreShows(link,banner,backdrop)
 elif mode == 'openCategoryList':
@@ -609,11 +612,14 @@ elif mode == 'searchNew':
 elif mode == 'openDate':
     getDate(link, params.get('from'))
 elif mode == 'openProgram':
-    getProgram(link)
+    jsonScraper.getProgram(link)
+    listCallback(False)
 elif mode == 'openTopic':
-    getTopic(link)
+    jsonScraper.getTopic(link)
+    listCallback(False)
 elif mode == 'openEpisode':
-    getEpisode(link)
+    jsonScraper.getEpisode(link,playlist)
+    listCallback(False)
 elif mode == 'openSegment':
     getSegment(link, params.get('segmentID'))
 elif mode == 'liveStreamNotOnline':

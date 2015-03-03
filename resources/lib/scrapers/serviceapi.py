@@ -24,13 +24,15 @@ class serviceAPI:
     serviceAPIHighlights      = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/highlights'
     serviceAPIRecent   = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/newest'
     serviceAPIViewed   = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/most_viewed'
+
     
-    translation = ""
-    xbmc = ""
-    
-    def __init__(self,xbmc,settings):
+    def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery):
         self.translation = settings.getLocalizedString
-        self.xbmc = xbmc;
+        self.xbmc = xbmc
+        self.videoQuality = quality
+        self.videoDelivery = delivery
+        self.videoProtocol = protocol
+        self.pluginhandle = pluginhandle
         self.xbmc.log(msg='Using ServiceAPI', level=xbmc.LOGDEBUG);
         
     def getTableResults(self, urlAPI):
@@ -133,7 +135,7 @@ class serviceAPI:
         for streamingURL in jsonVideos:
             streamingURL = streamingURL.get('streamingUrl')
             if 'http' in streamingURL and 'mp4/playlist.m3u8' in streamingURL:
-                return streamingURL.replace('Q4A', videoQuality)
+                return streamingURL.replace('Q4A', self.videoQuality)
         return ''
     
     # list all Categories
@@ -187,7 +189,7 @@ class serviceAPI:
 
     # list all Entries for the given Topic
     def getTopic(self,topicID):
-        url = servieAPITopic % (serviceAPItoken, topicID)
+        url = self.servieAPITopic % (self.serviceAPItoken, topicID)
         response = urllib2.urlopen(url)
 
         for entrie in json.loads(response.read())['topicDetail'].get('entries'):
@@ -207,14 +209,14 @@ class serviceAPI:
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
             # Direcotory should be set to False, that the Duration is shown.
             # But then there is an error with the Pluginhandle
-            createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True)
+            self.createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True)
 
-        listCallback(False)
+        
 
 
     # list all Episodes for the given Broadcast
     def getProgram(self,programID):
-        url = serviceAPIProgram % (serviceAPItoken, programID)
+        url = self.serviceAPIProgram % (self.serviceAPItoken, programID)
         response = urllib2.urlopen(url)
         responseCode = response.getcode()
 
@@ -226,23 +228,23 @@ class serviceAPI:
                     return
 
             for episode in episodes:
-                JSONEpisode2ListItem(episode, 'teaser')
+                self.JSONEpisode2ListItem(episode, 'teaser')
 
-            listCallback(False)
+            
 
 
     # listst all Segments for the Episode with the given episodeID
     # If the Episode only contains one Segment, that get played instantly.
-    def getEpisode(self,episodeID):
+    def getEpisode(self,episodeID,playlist):
         playlist.clear()
 
-        url = serviceAPIEpisode % (serviceAPItoken, episodeID)
+        url = self.serviceAPIEpisode % (self.serviceAPItoken, episodeID)
         response = urllib2.urlopen(url)
         result = json.loads(response.read())['episodeDetail']
 
         title       = result.get('title').encode('UTF-8')
-        image       = JSONImage(result.get('images'))
-        description = JSONDescription(result.get('descriptions'))
+        image       = self.JSONImage(result.get('images'))
+        description = self.JSONDescription(result.get('descriptions'))
         duration    = result.get('duration')
         date        = time.strptime(result.get('date'), '%d.%m.%Y %H:%M:%S')
 
@@ -258,16 +260,16 @@ class serviceAPI:
 
         if len(result.get('segments')) == 1:
             for segment in result.get('segments'):
-                image        = JSONImage(segment.get('images'))
-                streamingURL = JSONStreamingURL(segment.get('videos'))
+                image        = self.JSONImage(segment.get('images'))
+                streamingURL = self.JSONStreamingURL(segment.get('videos'))
                 if segment.get('subtitlesSrtFileUrl'):
                     subtitles = [segment.get('subtitlesSrtFileUrl')]
                 else:
                     subtitles = None
 
-            listItem = createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False, subtitles)
+            listItem = self.createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False, subtitles)
             playlist.add(streamingURL, listItem)
-            xbmc.Player().play(playlist)
+            self.xbmc.Player().play(playlist)
 
         else:
             parameters = {'mode' : 'playList'}
@@ -299,7 +301,33 @@ class serviceAPI:
                     xbmc.Player().play(playlist)
                     return
 
+    def createListItem(self,title,banner,description,duration,date,channel,videourl,playable,folder,subtitles=None): 
+        if description == '':
+            description = (translation(30008)).encode("utf-8")
+        liz=xbmcgui.ListItem(title, iconImage=banner, thumbnailImage=banner)
+        liz.setInfo( type="Video", infoLabels={ "Title": title } )
+        liz.setInfo( type="Video", infoLabels={ "Tvshowtitle": title } )
+        liz.setInfo( type="Video", infoLabels={ "Sorttitle": title } )
+        liz.setInfo( type="Video", infoLabels={ "Plot": description } )
+        liz.setInfo( type="Video", infoLabels={ "Plotoutline": description } )
+        liz.setInfo( type="Video", infoLabels={ "Aired": date } )
+        liz.setInfo( type="Video", infoLabels={ "Studio": channel } )
+        liz.setProperty('IsPlayable', playable)
+        
+        if not folder:
+            try:
+                liz.addStreamInfo('video', { 'codec': 'h264','duration':int(duration) ,"aspect": 1.78, "width": 640, "height": 360})
+            except:
+                liz.addStreamInfo('video', { 'codec': 'h264',"aspect": 1.78, "width": 640, "height": 360})
+            liz.addStreamInfo('audio', {"codec": "aac", "language": "de", "channels": 2})
+            if subtitles != None:
+                liz.addStreamInfo('subtitle', {"language": "de"})
+                liz.setSubtitles(subtitles)        
 
+        xbmcplugin.addDirectoryItem(handle=self.pluginhandle, url=videourl, listitem=liz, isFolder=folder)
+        return liz
+                    
+                    
     # list all Trailers for further airings
     def getTrailers(self):
         url = serviceAPITrailers % serviceAPItoken
