@@ -15,6 +15,7 @@ class htmlScraper:
     mostviewed_url = 'http://tvthek.orf.at/most_viewed'
     tip_url = 'http://tvthek.orf.at/tips'
     search_base_url = 'http://tvthek.orf.at/search'
+    topic_url = 'http://tvthek.orf.at/topics'
 
     
     def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery,defaultbanner,defaultbackdrop):
@@ -131,13 +132,76 @@ class htmlScraper:
                 image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
 
                 desc = self.translation(30008).encode('UTF-8')
-                
-                parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "openCategoryList"}
-                url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                liz = self.html2ListItem(title,image,"",desc,"","","",url,None);
-                xbmcplugin.addDirectoryItem(handle=self.pluginhandle, url=url, listitem=liz, isFolder=True)
-
+                if title.lower().strip() != "bundesland heute":
+                    parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getSendungenDetail"}
+                    url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+                    liz = self.html2ListItem(title,image,"",desc,"","","",url,None);
+                    xbmcplugin.addDirectoryItem(handle=self.pluginhandle, url=url, listitem=liz, isFolder=True)
+    
+    # Parses Details for the selected Show
+    def getCategoriesDetail(self,category,banner):
+        url =  urllib.unquote(category)
+        banner =  urllib.unquote(banner)
         
+        html = common.fetchPage({'link': url})
+        
+        try:
+            show = common.parseDOM(html.get("content"),name='h3',attrs={'class': 'video_headline'})
+            showname = common.replaceHTMLCodes(show[0]).encode("utf-8")
+        except:
+            showname = ""
+        playerHeader = common.parseDOM(html.get("content"),name='header',attrs={'class': 'player_header'})
+        bcast_info = common.parseDOM(playerHeader,name='div',attrs={'class': 'broadcast_information'})
+        
+        try:
+            current_duration = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta.meta_duration'})
+            
+            current_date = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta meta_date'})
+            if len(current_date) > 0:
+                current_date = current_date[0].encode("utf-8")
+            else:
+                current_date = ""
+                
+            current_time = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta meta_time'})
+            current_link = url
+            current_title = "%s - %s" % (showname,current_date)       
+            try:
+                current_desc = (self.translation(30009)).encode("utf-8")+' %s - %s\n'+(self.translation(30011)).encode("utf-8")+': %s' % (current_date,current_time,current_duration)
+            except:
+                current_desc = self.translation(30008).encode('UTF-8');
+            parameters = {"link" :  current_link,"title" :current_title,"banner" : banner,"backdrop" : "", "mode" : "openSeries"}
+            url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            liz = self.html2ListItem(current_title,banner,"",current_desc,"","","",url,None);
+            xbmcplugin.addDirectoryItem(handle=self.pluginhandle, url=url, listitem=liz, isFolder=True)
+        except:
+            liz = self.html2ListItem((self.translation(30014)).encode('UTF-8'),self.defaultbanner,"","","","","","",None);
+            xbmcplugin.addDirectoryItem(handle=self.pluginhandle, url=url, listitem=liz, isFolder=True)
+        
+        itemwrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper.mod_latest_episodes'})
+        if len(itemwrapper) > 0:
+            items = common.parseDOM(itemwrapper,name='li',attrs={'class': 'base_list_item'})
+            feedcount = len(items)
+            i = 0
+            for item in items:
+                i = i+1
+                duration = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_duration'})
+                date = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_date'})
+                date = date[0].encode("utf-8")
+                time = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_time'})
+                title = common.replaceHTMLCodes(common.parseDOM(item, name='a',ret="title")[0]).encode("utf-8").replace('Sendung ', '')
+                title = "%s - %s" % (title,date)
+                link = common.parseDOM(item,name='a',ret="href");
+                try:
+                    desc = (self.translation(30009)).encode("utf-8")+" %s - %s\n"+(self.translation(30011)).encode("utf-8")+": %s" % (date,time,duration)
+                except:
+                    desc = self.translation(30008).encode('UTF-8');
+                parameters = {"link" :  link[0],"title" :title,"banner" : banner,"backdrop" : "", "mode" : "openSeries"}
+                url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+                liz = self.html2ListItem(title,banner,"",desc,"","","",url,None);
+                xbmcplugin.addDirectoryItem(handle=self.pluginhandle, url=url, listitem=liz, isFolder=True)
+        
+
+    
     
     # Parses "Sendung verpasst?" Date Listing
     def getArchiv(self,url):
@@ -223,7 +287,7 @@ class htmlScraper:
                     image = baseimage
                 link = common.replaceHTMLCodes(item_href[0]).encode('UTF-8')
                 
-                parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "openCategoryList"}
+                parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getSendungenDetail"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
                 liz = self.html2ListItem(title,image,"",desc,"","","",url,None);
                 xbmcplugin.addDirectoryItem(handle=self.pluginhandle, url=url, listitem=liz, isFolder=True)
@@ -243,14 +307,14 @@ class htmlScraper:
             link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')        
             title = items_title[i].encode('UTF-8')
             desc = self.translation(30008).encode('UTF-8')
-            parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "openCategoryList"}
+            parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getSendungenDetail"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             liz = self.html2ListItem(title,image,"",desc,"","","",url,None);
             xbmcplugin.addDirectoryItem(handle=self.pluginhandle, url=url, listitem=liz, isFolder=True)
             i = i + 1
         
     # Parses a Video Page and extracts the Playlist/Description/...
-    def getLinks(self,url,banner,playlist):
+    def getLinks(self,url,banner,playlist,autoPlay):
         playlist.clear()
         url = str(urllib.unquote(url))
         if banner != None:
@@ -311,11 +375,12 @@ class htmlScraper:
                     xbmcplugin.addDirectoryItem(handle=self.pluginhandle, url=videourl, listitem=liz, isFolder=False)
                 except Exception, e:
                     continue
+            return playlist
         else:           
             liz = self.html2ListItem(current_title,current_preview_img,"",current_desc,current_duration,'','',current_videourl, current_subtitles,'False')
             playlist.add(current_videourl,liz)
             xbmcplugin.addDirectoryItem(handle=self.pluginhandle, url=current_videourl, listitem=liz, isFolder=False)
-        return playlist
+            return playlist
     
 
     # Returns Live Stream Listing
@@ -369,4 +434,76 @@ class htmlScraper:
             return False
         else:
             return True
+    
+    # Parses the Topic Overview Page
+    def getThemen(self):
+        html = common.fetchPage({'link': self.topic_url})
+        html_content = html.get("content")
+            
+        content = common.parseDOM(html_content,name='section',attrs={'class':'mod_container_list'})
+        topics = common.parseDOM(content,name='section',attrs={'class':'item_wrapper'})
+
+        for topic in topics:
+            title = common.parseDOM(topic,name='h3',attrs={'class':'item_wrapper_headline.subheadline.*?'})
+            title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+              
+            link = common.parseDOM(topic,name='a',attrs={'class':'more.service_link.service_link_more'},ret="href")
+            link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
+                
+            image = common.parseDOM(topic,name='img',ret="src")
+            image = common.replaceHTMLCodes(image[0]).replace("width=395","width=500").replace("height=209.07070707071","height=265").encode('UTF-8')
+                
+            descs = common.parseDOM(topic,name='h4',attrs={'class':'item_title'})
+            description = ""
+            for desc in descs:
+                description += "* "+common.replaceHTMLCodes(desc).encode('UTF-8') + "\n"
+            if description == "":
+                description = self.translation(30008).encode('UTF-8')
+
+            parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getThemenDetail"}
+            url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            liz = self.html2ListItem(title,image,"",description,"","","",url,None);
+            xbmcplugin.addDirectoryItem(handle=self.pluginhandle, url=url, listitem=liz, isFolder=True)
+
+    
+
+    def getThemenDetail(self,url):
+        url = urllib.unquote(url)
+        html = common.fetchPage({'link': url})
+        html_content = html.get("content")
         
+        content = common.parseDOM(html_content,name='section',attrs={'class':'mod_container_list'})
+        topics = common.parseDOM(content,name='article',attrs={'class':'item.*?'})
+
+        for topic in topics:
+            title = common.parseDOM(topic,name='h4',attrs={'class': 'item_title'})
+            title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+            
+            link = common.parseDOM(topic,name='a',ret="href")
+            link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
+            
+            image = common.parseDOM(topic,name='img',ret="src")
+            if len(image) > 0:
+                image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
+            else:
+                image = self.defaultbanner
+                
+            desc = common.parseDOM(topic,name='div',attrs={'class':'item_description'})
+            if len(desc) > 0:
+                desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
+            else:
+                desc = self.translation(30008).encode('UTF-8')
+
+            date = common.parseDOM(topic,name='time')
+            date = common.replaceHTMLCodes(date[0]).encode('UTF-8')
+
+            time = common.parseDOM(topic,name='span',attrs={'class':'meta.meta_duration'})
+            time = common.replaceHTMLCodes(time[0]).encode('UTF-8')
+
+            desc = "%s - (%s) \n%s" % (str(date),str(time).strip(),str(desc))
+            
+            parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "openSeries"}
+            url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            liz = self.html2ListItem(title,image,"",desc,"","","",url,None);
+            xbmcplugin.addDirectoryItem(handle=self.pluginhandle, url=url, listitem=liz, isFolder=True)
+          

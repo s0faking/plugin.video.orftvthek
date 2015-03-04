@@ -293,6 +293,32 @@ class serviceAPI:
         if forceView:
             xbmc.executebuiltin(viewMode)
 
+            
+    # Parses the Topic Overview Page
+    def getThemen(self):
+        try: 
+            response = urllib2.urlopen(self.serviceAPITopics % self.serviceAPItoken)
+            responseCode = response.getcode()
+        except ValueError, error:
+            responseCode = 404
+            pass
+        except urllib2.HTTPError, error:
+            responseCode = error.getcode()
+            pass
+
+        if responseCode == 200:
+            for topic in json.loads(response.read())['topicShorts']:
+                if topic.get('parentId') != None or topic.get('isArchiveTopic'):
+                    continue
+                title       = topic.get('name').encode('UTF-8')
+                image       = self.JSONImage(topic.get('images'))
+                description = topic.get('description')
+                link        = topic.get('topicId')
+
+                addDirectory(title, image, description, link, 'openTopic')
+            listCallback(False, thumbViewMode)
+
+            
     # Plays the given Segment, if it is included in the given Episode
     def getSegment(self,episodeID, segmentID):
         playlist.clear()

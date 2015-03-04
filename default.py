@@ -61,6 +61,7 @@ defaultbackdrop = os.path.join(media_path,"fanart_top.png")
 #load settings
 forceView = settings.getSetting("forceView") == "true"
 useServiceAPI = settings.getSetting("useServiceAPI") == "true"
+autoPlay = settings.getSetting("autoPlay") == "true"
 videoQuality = settings.getSetting("videoQuality")
 try:
     videoQuality = video_quality_list[int(videoQuality)]
@@ -187,105 +188,6 @@ def openArchiv(url):
 		
         addDirectory(title,banner,description,link,"openSeries")
     listCallback(True)
-    
-def getCategoryList(category,banner):
-    url =  urllib.unquote(category)
-    banner =  urllib.unquote(banner)
-    
-    html = common.fetchPage({'link': url})
-	
-    try:
-        show = common.parseDOM(html.get("content"),name='h3',attrs={'class': 'video_headline'})
-        showname = common.replaceHTMLCodes(show[0]).encode("utf-8")
-    except:
-        showname = ""
-    playerHeader = common.parseDOM(html.get("content"),name='header',attrs={'class': 'player_header'})
-    bcast_info = common.parseDOM(playerHeader,name='div',attrs={'class': 'broadcast_information'})
-    
-    try:
-        current_duration = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta.meta_duration'})
-        
-        current_date = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta meta_date'})
-        if len(current_date) > 0:
-            current_date = current_date[0].encode("utf-8")
-        else:
-            current_date = ""
-            
-        current_time = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta meta_time'})
-        current_link = url
-        current_title = "%s - %s" % (showname,current_date)       
-        try:
-            current_desc = (translation(30009)).encode("utf-8")+' %s - %s\n'+(translation(30011)).encode("utf-8")+': %s' % (current_date,current_time,current_duration)
-        except:
-            current_desc = translation(30008).encode('UTF-8');
-        addDirectory(current_title,banner,current_desc,current_link,"openSeries")
-    except:
-        addDirectory((translation(30014)).encode("utf-8"),defaultbanner,"","","")
-	
-    itemwrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper.mod_latest_episodes'})
-    if len(itemwrapper) > 0:
-        items = common.parseDOM(itemwrapper,name='li',attrs={'class': 'base_list_item'})
-        feedcount = len(items)
-        i = 0
-        for item in items:
-            i = i+1
-            duration = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_duration'})
-            date = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_date'})
-            date = date[0].encode("utf-8")
-            time = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_time'})
-            title = common.replaceHTMLCodes(common.parseDOM(item, name='a',ret="title")[0]).encode("utf-8").replace('Sendung ', '')
-            title = "%s - %s" % (title,date)
-            link = common.parseDOM(item,name='a',ret="href");
-            try:
-                desc = (translation(30009)).encode("utf-8")+" %s - %s\n"+(translation(30011)).encode("utf-8")+": %s" % (date,time,duration)
-            except:
-                desc = translation(30008).encode('UTF-8');
-            addDirectory(title,banner,desc,link[0],"openSeries")
-    listCallback(False)
-
-
-
-
-    
-
-
-def getThemenListe(url):
-    url = urllib.unquote(url)
-    html = common.fetchPage({'link': url})
-    html_content = html.get("content")
-	
-    content = common.parseDOM(html_content,name='section',attrs={'class':'mod_container_list'})
-    topics = common.parseDOM(content,name='article',attrs={'class':'item.*?'})
-
-    for topic in topics:
-        title = common.parseDOM(topic,name='h4',attrs={'class': 'item_title'})
-        title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
-        
-        link = common.parseDOM(topic,name='a',ret="href")
-        link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
-        
-        image = common.parseDOM(topic,name='img',ret="src")
-        if len(image) > 0:
-            image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
-        else:
-            image = defaultbanner
-            
-        desc = common.parseDOM(topic,name='div',attrs={'class':'item_description'})
-        if len(desc) > 0:
-            desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
-        else:
-            desc = translation(30008).encode('UTF-8')
-
-        date = common.parseDOM(topic,name='time')
-        date = common.replaceHTMLCodes(date[0]).encode('UTF-8')
-
-        time = common.parseDOM(topic,name='span',attrs={'class':'meta.meta_duration'})
-        time = common.replaceHTMLCodes(time[0]).encode('UTF-8')
-
-        desc = "%s - (%s) \n%s" % (str(date),str(time).strip(),str(desc))
-        
-        addDirectory(title,image,desc,link,"openSeries")
-    listCallback(False)
 
 def playFile():
     player = xbmc.Player()
@@ -293,57 +195,6 @@ def playFile():
     if not player.isPlayingVideo():
         d = xbmcgui.Dialog()
         d.ok('VIDEO QUEUE EMPTY', 'The XBMC video queue is empty.','Add more links to video queue.')
-
-def getThemen():
-    try: 
-        response = urllib2.urlopen(serviceAPITopics % serviceAPItoken)
-        responseCode = response.getcode()
-    except ValueError, error:
-        responseCode = 404
-        pass
-    except urllib2.HTTPError, error:
-        responseCode = error.getcode()
-        pass
-
-    if responseCode == 200:
-        for topic in json.loads(response.read())['topicShorts']:
-            if topic.get('parentId') != None or topic.get('isArchiveTopic'):
-                continue
-            title       = topic.get('name').encode('UTF-8')
-            image       = JSONImage(topic.get('images'))
-            description = topic.get('description')
-            link        = topic.get('topicId')
-
-            addDirectory(title, image, description, link, 'openTopic')
-        listCallback(False, thumbViewMode)
-
-    else:
-        url = "http://tvthek.orf.at/topics"
-        html = common.fetchPage({'link': url})
-        html_content = html.get("content")
-        
-        content = common.parseDOM(html_content,name='section',attrs={'class':'mod_container_list'})
-        topics = common.parseDOM(content,name='section',attrs={'class':'item_wrapper'})
-
-        for topic in topics:
-            title = common.parseDOM(topic,name='h3',attrs={'class':'item_wrapper_headline.subheadline.*?'})
-            title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
-            
-            link = common.parseDOM(topic,name='a',attrs={'class':'more.service_link.service_link_more'},ret="href")
-            link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
-            
-            image = common.parseDOM(topic,name='img',ret="src")
-            image = common.replaceHTMLCodes(image[0]).replace("width=395","width=500").replace("height=209.07070707071","height=265").encode('UTF-8')
-            
-            descs = common.parseDOM(topic,name='h4',attrs={'class':'item_title'})
-            description = ""
-            for desc in descs:
-                description += "* "+common.replaceHTMLCodes(desc).encode('UTF-8') + "\n"
-            if description == "":
-                description = translation(30008).encode('UTF-8')
-
-            addDirectory(title,image,description,link,"openTopicPosts")
-        listCallback(True)
 		
 def search():
     addDirectory((translation(30007)).encode("utf-8")+" ...",defaultbanner,' ',"","searchNew")
@@ -394,23 +245,19 @@ backdrop=params.get('backdrop')
 
 #modes
 if mode == 'openSeries':
-    htmlScraper.getLinks(link,banner,playlist)
+    playlist = htmlScraper.getLinks(link,banner,playlist,autoPlay)
+    if autoPlay and playlist != None:
+        xbmc.Player().play(playlist)
     listCallback(False)
-elif mode == 'openShowList':
-    getMoreShows(link,banner,backdrop)
-elif mode == 'openCategoryList':
-    getCategoryList(link,banner)
 elif mode == 'getSendungen':
     if useServiceAPI:
-        list = jsonScraper.getCategories()
-        addItemDirectories(list);
+        jsonScraper.getCategories()
     else:
         htmlScraper.getCategories()
     listCallback(True,thumbViewMode)
 elif mode == 'getAktuelles':
     if useServiceAPI:
-        list = jsonScraper.getTableResults(jsonScraper.serviceAPIHighlights)
-        addItemDirectories(list);
+        jsonScraper.getTableResults(jsonScraper.serviceAPIHighlights)
     else:
         htmlScraper.getRecentlyAdded(htmlScraper.base_url)
     listCallback(False)
@@ -422,29 +269,34 @@ elif mode == 'getLive':
     listCallback(False,smallListViewMode)
 elif mode == 'getTipps':
     if useServiceAPI:
-        list = jsonScraper.getTableResults(jsonScraper.serviceAPITip)
-        addItemDirectories(list);
+        jsonScraper.getTableResults(jsonScraper.serviceAPITip)
     else:
         htmlScraper.getTableResults(htmlScraper.tip_url)
     listCallback(False)
 elif mode == 'getNewShows':
     if useServiceAPI:
-        list = jsonScraper.getTableResults(jsonScraper.serviceAPIRecent)
-        addItemDirectories(list);
+        jsonScraper.getTableResults(jsonScraper.serviceAPIRecent)
     else:
         htmlScraper.getTableResults(htmlScraper.recent_url)
     listCallback(False)
 elif mode == 'getMostViewed':
     if useServiceAPI:
-        list = jsonScraper.getTableResults(jsonScraper.serviceAPIViewed)
-        addItemDirectories(list);
+        jsonScraper.getTableResults(jsonScraper.serviceAPIViewed)
     else:
         htmlScraper.getTableResults(htmlScraper.mostviewed_url)
     listCallback(False)
 elif mode == 'getThemen':
-    getThemen()
-elif mode == 'openTopicPosts':
-    getThemenListe(link)
+    if useServiceAPI:
+        jsonScraper.getThemen()
+    else:
+        htmlScraper.getThemen()
+    listCallback(True)
+elif mode == 'getSendungenDetail':
+    htmlScraper.getCategoriesDetail(link,banner)
+    listCallback(False)
+elif mode == 'getThemenDetail':
+    htmlScraper.getThemenDetail(link)
+    listCallback(False)
 elif mode == 'playVideo':
     playFile()
 elif mode == 'playList':
@@ -452,7 +304,6 @@ elif mode == 'playList':
 elif mode == 'getArchiv':
     if useServiceAPI:
         jsonScraper.getArchiv()
-        #addItemDirectories(list);
     else:
         htmlScraper.getArchiv(htmlScraper.schedule_url)
     listCallback(False)
