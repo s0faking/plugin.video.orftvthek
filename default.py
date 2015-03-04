@@ -70,8 +70,8 @@ except:
 
 
 #init scrapers
-jsonScraper = serviceAPI(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery)
-htmlScraper = htmlScraper(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery)
+jsonScraper = serviceAPI(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery,defaultbanner,defaultbackdrop)
+htmlScraper = htmlScraper(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery,defaultbanner,defaultbackdrop)
 
 
 def getMainMenu():
@@ -86,20 +86,6 @@ def getMainMenu():
     addDirectory((translation(30007)).encode("utf-8"),search_banner,"","","searchPhrase")
     addDirectory((translation(30027)).encode("utf-8"),trailer_banner,"","","openTrailers")
     listCallback(False,thumbViewMode)
-
-def parameters_string_to_dict(parameters):
-    paramDict = {}
-    if parameters:
-        paramPairs = parameters[1:].split("&")
-        for paramsPair in paramPairs:
-            paramSplits = paramsPair.split('=')
-            if (len(paramSplits)) == 2:
-                paramDict[paramSplits[0]] = paramSplits[1]
-    return paramDict
-
-def cleanText(string):
-    string = string.replace('\\n', '').replace("&#160;"," ").replace("&quot;","'").replace('&amp;', '&').replace('&#039;', '´')
-    return string	
 
 def createListItem(title,banner,description,duration,date,channel,videourl,playable,folder,subtitles=None): 
     if banner == '':
@@ -129,11 +115,25 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
 
     xbmcplugin.addDirectoryItem(handle=pluginhandle, url=videourl, listitem=liz, isFolder=folder)
     return liz
+    
+def parameters_string_to_dict(parameters):
+    paramDict = {}
+    if parameters:
+        paramPairs = parameters[1:].split("&")
+        for paramsPair in paramPairs:
+            paramSplits = paramsPair.split('=')
+            if (len(paramSplits)) == 2:
+                paramDict[paramSplits[0]] = paramSplits[1]
+    return paramDict
 
+def cleanText(string):
+    string = string.replace('\\n', '').replace("&#160;"," ").replace("&quot;","'").replace('&amp;', '&').replace('&#039;', '´')
+    return string
     
 def addItemDirectories(list):
     for item in list:
         addDirectory(item['title'],item['image'],item['desc'],item['link'],item['mode'])
+     
 
 def addFile(name,videourl,banner,summary,runtime,backdrop):
     createListItem(name,banner,summary,runtime,'','',videourl,'true',False,'')
@@ -152,46 +152,7 @@ def listCallback(sort,viewMode=defaultViewMode):
         xbmc.executebuiltin(viewMode)
 
 
-def getArchiv(url):
-    useServiceAPI = True
-    if useServiceAPI:
-        for x in xrange(9):
-            date  = datetime.datetime.now() - datetime.timedelta(days=x)
-            title = '%s' % (date.strftime('%A, %d.%m.%Y'))
-            parameters = {'mode' : 'openDate', 'link': date.strftime('%Y%m%d')}
-            if x == 8:
-                title = 'älter als %s' % title
-                parameters = {'mode' : 'openDate', 'link': date.strftime('%Y%m%d'), 'from': (date - datetime.timedelta(days=150)).strftime('%Y%m%d')}
-            u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            createListItem(title, '', title, '', date.strftime('%Y-%m-%d'), '', u, 'False', True)
 
-    else:
-        html = common.fetchPage({'link': url})
-        articles = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'})
-        articles_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'},ret="href")
-        i = 0
-        
-        for article in articles:
-            link = articles_href[i]
-            i = i+1
-
-            day = common.parseDOM(article,name='strong',ret=False)
-            if len(day) > 0:
-                day = day[0].encode("utf-8")
-            else:
-                day = ''
-            
-            date = common.parseDOM(article,name='small',ret=False)
-            if len(date) > 0:
-                date = date[0].encode("utf-8")
-            else:
-                date = ''
-            
-            title = day + " - " + date
-            
-            addDirectory(title,defaultbanner,date,link,"openArchiv")
-
-    listCallback(False)
 	
 def openArchiv(url):
     url =  urllib.unquote(url)
@@ -282,116 +243,9 @@ def getCategoryList(category,banner):
             addDirectory(title,banner,desc,link[0],"openSeries")
     listCallback(False)
 
-def getLiveStreams():
-    liveurls = {}
-    liveurls['ORF1'] = "http://apasfiisl.apa.at/ipad/orf1_"+videoQuality.lower()+"/orf.sdp/playlist.m3u8";
-    liveurls['ORF2'] = "http://apasfiisl.apa.at/ipad/orf2_"+videoQuality.lower()+"/orf.sdp/playlist.m3u8";
-    liveurls['ORF3'] = "http://apasfiisl.apa.at/ipad/orf2e_"+videoQuality.lower()+"/orf.sdp/playlist.m3u8";
-    liveurls['ORFS'] = "http://apasfiisl.apa.at/ipad/orfs_"+videoQuality.lower()+"/orf.sdp/playlist.m3u8";
 
-    url = serviceAPILive % (serviceAPItoken, datetime.datetime.now().strftime('%Y%m%d%H%M'), (datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y%m%d%H%M'), 25)
-    try: 
-        response = urllib2.urlopen(url)
-        responseCode = response.getcode()
-    except urllib2.HTTPError, error:
-        responseCode = error.getcode()
-        pass
 
-    if responseCode == 200:
-        global time
 
-        bannerurls = {}
-        bannerurls['ORF1'] = 'http://tvthek.orf.at/assets/1326810345/orf_channels/logo_color/6779277.png'
-        bannerurls['ORF2'] = 'http://tvthek.orf.at/assets/1326810345/orf_channels/logo_color/6779281.png'
-        bannerurls['ORF3'] = 'http://tvthek.orf.at/assets/1326810345/orf_channels/logo_color/6779305.png'
-        bannerurls['ORFS'] = 'http://tvthek.orf.at/assets/1326810345/orf_channels/logo_color/6779307.png'
-
-        results = json.loads(response.read())['episodeDetails']
-        for result in results:
-
-            description     = JSONDescription(result.get('descriptions'))
-            program         = result.get('channel').get('reel').upper()
-            programName     = result.get('channel').get('name')
-            programName     = programName.strip()
-            livestreamStart = time.strptime(result.get('livestreamStart'), '%d.%m.%Y %H:%M:%S')
-            livestreamEnd   = time.strptime(result.get('livestreamEnd'),   '%d.%m.%Y %H:%M:%S')
-
-            # already playing
-            if livestreamStart < time.localtime():
-                duration = time.mktime(livestreamEnd) - time.mktime(time.localtime())
-                state = (translation(30019)).encode("utf-8")
-                state_short = 'Online'
-
-            else:
-                duration = time.mktime(livestreamEnd) - time.mktime(livestreamStart)
-                state = (translation(30020)).encode("utf-8")
-                state_short = 'Offline'
-                link = sys.argv[0] + '?' + urllib.urlencode({'mode': 'liveStreamNotOnline', 'link': result.get('episodeId')})
-
-            # find the livestreamStreamingURLs
-            livestreamStreamingURLs = []
-            for streamingURL in result.get('livestreamStreamingUrls'):
-                if '.m3u' in streamingURL.get('streamingUrl'):
-                    livestreamStreamingURLs.append(streamingURL.get('streamingUrl'))
-
-            livestreamStreamingURLs.sort()
-            link = livestreamStreamingURLs[len(livestreamStreamingURLs) - 1].replace('q4a', videoQuality.lower())
-
-            title = "[%s] %s (%s)" % (programName, result.get('title'), time.strftime('%H:%M', livestreamStart))
-
-            if program in bannerurls:
-                banner = bannerurls[program]
-            else:
-                banner = ''
-
-            createListItem(title, banner, description, duration, time.strftime('%Y-%m-%d', livestreamStart), program, link, 'True', False)
-
-    else:
-        html = common.fetchPage({'link': live_url})
-        wrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper.*mod_epg'})
-        items = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'})
-        items_class = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'},ret="class")
-        i = 0
-        for item in items:
-            #program = common.parseDOM(item,ret="class")
-            program = items_class[i].split(" ")[2].encode('UTF-8').upper()
-
-            i += 1
-            
-            banner = common.parseDOM(item,name='img',ret="src")
-            banner = common.replaceHTMLCodes(banner[0]).encode('UTF-8')
-            
-            title = common.parseDOM(item,name='h4')
-            title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
-            
-            time = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_time'})
-            time = common.replaceHTMLCodes(time[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
-
-            if getBroadcastState(time):
-                state = (translation(30019)).encode("utf-8")
-                state_short = "Online"
-            else:
-                state = (translation(30020)).encode("utf-8")
-                state_short = "Offline"
-
-            link = liveurls[program]
-            
-            title = "[%s] - %s (%s)" % (program,title,time)
-            createListItem(title,banner,state,time,program,program,link,'true',False)
-
-    listCallback(False,smallListViewMode)
-
-def getBroadcastState(time):
-    time_probe = time.split(":")
-        
-    current_hour = datetime.datetime.now().strftime('%H')
-    current_min = datetime.datetime.now().strftime('%M')
-    if time_probe[0] == current_hour and time_probe[1] >= current_min:
-        return False
-    elif time_probe[0] > current_hour:
-        return False
-    else:
-        return True
     
 
 
@@ -551,42 +405,41 @@ elif mode == 'getSendungen':
         list = jsonScraper.getCategories()
         addItemDirectories(list);
     else:
-        list = htmlScraper.getCategories()
-        addItemDirectories(list);
+        htmlScraper.getCategories()
     listCallback(True,thumbViewMode)
 elif mode == 'getAktuelles':
     if useServiceAPI:
         list = jsonScraper.getTableResults(jsonScraper.serviceAPIHighlights)
         addItemDirectories(list);
     else:
-        list = htmlScraper.getRecentlyAdded(htmlScraper.base_url)
-        addItemDirectories(list);
+        htmlScraper.getRecentlyAdded(htmlScraper.base_url)
     listCallback(False)
 elif mode == 'getLive':
-    getLiveStreams()
+    if useServiceAPI:
+        jsonScraper.getLiveStreams()
+    else:
+        htmlScraper.getLiveStreams()
+    listCallback(False,smallListViewMode)
 elif mode == 'getTipps':
     if useServiceAPI:
         list = jsonScraper.getTableResults(jsonScraper.serviceAPITip)
         addItemDirectories(list);
     else:
-        list = htmlScraper.getTableResults(htmlScraper.tip_url)
-        addItemDirectories(list);
+        htmlScraper.getTableResults(htmlScraper.tip_url)
     listCallback(False)
 elif mode == 'getNewShows':
     if useServiceAPI:
         list = jsonScraper.getTableResults(jsonScraper.serviceAPIRecent)
         addItemDirectories(list);
     else:
-        list = htmlScraper.getTableResults(htmlScraper.recent_url)
-        addItemDirectories(list);
+        htmlScraper.getTableResults(htmlScraper.recent_url)
     listCallback(False)
 elif mode == 'getMostViewed':
     if useServiceAPI:
         list = jsonScraper.getTableResults(jsonScraper.serviceAPIViewed)
         addItemDirectories(list);
     else:
-        list = htmlScraper.getTableResults(htmlScraper.mostviewed_url)
-        addItemDirectories(list);
+        htmlScraper.getTableResults(htmlScraper.mostviewed_url)
     listCallback(False)
 elif mode == 'getThemen':
     getThemen()
@@ -597,7 +450,12 @@ elif mode == 'playVideo':
 elif mode == 'playList':
     playFile()
 elif mode == 'getArchiv':
-    getArchiv(schedule_url)
+    if useServiceAPI:
+        jsonScraper.getArchiv()
+        #addItemDirectories(list);
+    else:
+        htmlScraper.getArchiv(htmlScraper.schedule_url)
+    listCallback(False)
 elif mode == 'openArchiv':
     openArchiv(link)
 elif mode == 'openTrailers':
@@ -612,7 +470,7 @@ elif mode == 'searchNew':
 elif mode == 'openDate':
     getDate(link, params.get('from'))
 elif mode == 'openProgram':
-    jsonScraper.getProgram(link)
+    jsonScraper.getProgram(link,playlist)
     listCallback(False)
 elif mode == 'openTopic':
     jsonScraper.getTopic(link)

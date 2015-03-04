@@ -26,13 +26,15 @@ class serviceAPI:
     serviceAPIViewed   = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/most_viewed'
 
     
-    def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery):
+    def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery,defaultbanner,defaultbackdrop):
         self.translation = settings.getLocalizedString
         self.xbmc = xbmc
         self.videoQuality = quality
         self.videoDelivery = delivery
         self.videoProtocol = protocol
         self.pluginhandle = pluginhandle
+        self.defaultbanner = defaultbanner
+        self.defaultbackdrop = defaultbackdrop
         self.xbmc.log(msg='Using ServiceAPI', level=xbmc.LOGDEBUG);
         
     def getTableResults(self, urlAPI):
@@ -215,7 +217,7 @@ class serviceAPI:
 
 
     # list all Episodes for the given Broadcast
-    def getProgram(self,programID):
+    def getProgram(self,programID,playlist):
         url = self.serviceAPIProgram % (self.serviceAPItoken, programID)
         response = urllib2.urlopen(url)
         responseCode = response.getcode()
@@ -224,7 +226,7 @@ class serviceAPI:
             episodes = json.loads(response.read())['episodeShorts']
             if len(episodes) == 1:
                 for episode in episodes:
-                    getEpisode(episode.get('episodeId'))
+                    self.getEpisode(episode.get('episodeId'),playlist)
                     return
 
             for episode in episodes:
@@ -274,14 +276,22 @@ class serviceAPI:
         else:
             parameters = {'mode' : 'playList'}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            createListItem('[ '+(translation(30015)).encode('UTF-8')+' ]', image, '%s\n%s' % ((translation(30015)).encode('UTF-8'), description), duration, time.strftime('%Y-%m-%d', date), '', u, 'false', False)
+            self.createListItem('[ '+(self.translation(30015)).encode('UTF-8')+' ]', image, '%s\n%s' % ((self.translation(30015)).encode('UTF-8'), description), duration, time.strftime('%Y-%m-%d', date), '', u, 'false', False)
 
             for segment in result.get('segments'):
-                listItem = JSONSegment2ListItem(segment, date)
+                listItem = self.JSONSegment2ListItem(segment, date)
                 playlist.add(listItem[0], listItem[1])
 
-            listCallback(False)
+            self.listCallback(False)
 
+    def listCallback(self,sort):
+        viewMode = 'Container.SetViewMode(503)'
+        xbmcplugin.setContent(self.pluginhandle,'episodes')
+        if sort:
+            xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
+        xbmcplugin.endOfDirectory(self.pluginhandle)
+        if forceView:
+            xbmc.executebuiltin(viewMode)
 
     # Plays the given Segment, if it is included in the given Episode
     def getSegment(self,episodeID, segmentID):
@@ -337,3 +347,15 @@ class serviceAPI:
             self.JSONEpisode2ListItem(episode)
 
         listCallback(False)
+    
+    # lists archiv overview (date listing)
+    def getArchiv(self):
+        for x in xrange(9):
+            date  = datetime.datetime.now() - datetime.timedelta(days=x)
+            title = '%s' % (date.strftime('%A, %d.%m.%Y'))
+            parameters = {'mode' : 'openDate', 'link': date.strftime('%Y%m%d')}
+            if x == 8:
+                title = 'älter als %s' % title
+                parameters = {'mode' : 'openDate', 'link': date.strftime('%Y%m%d'), 'from': (date - datetime.timedelta(days=150)).strftime('%Y%m%d')}
+            u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            self.createListItem(title, '', title, '', date.strftime('%Y-%m-%d'), '', u, 'False', True)
