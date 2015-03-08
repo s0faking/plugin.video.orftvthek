@@ -29,4 +29,11 @@
     <string id="30026">Use ServiceAPI</string>
     <string id="30027">Trailers</string>
     <string id="30028">Autoplay</string>
+    <string id="30029">Use Subtitles</string>
+    <string id="30030">The broadcast hasn't started yet</string>
+    <string id="30031">The broadcast starts at</string>
+    <string id="30032">Do you want the stream to start automatically?</string>
+    <string id="30033">Waiting for the broadcast to start</string>
+    <string id="30034">Time till broadcast:</string>
+    <string id="30035">Start the stream?</string>
 </strings>

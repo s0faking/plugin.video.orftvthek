@@ -4,8 +4,10 @@
 import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time,os,os.path,urlparse,json
 import CommonFunctions as common
 
-from resources.lib.scrapers.serviceapi import *
-from resources.lib.scrapers.htmlscraper import *
+from resources.lib.base import *
+from resources.lib.helpers import *
+from resources.lib.serviceapi import *
+from resources.lib.htmlscraper import *
 
 try:
    import StorageServer
@@ -62,7 +64,9 @@ defaultbackdrop = os.path.join(media_path,"fanart_top.png")
 forceView = settings.getSetting("forceView") == "true"
 useServiceAPI = settings.getSetting("useServiceAPI") == "true"
 autoPlay = settings.getSetting("autoPlay") == "true"
+useSubtitles = settings.getSetting("useSubtitles") == "true"
 videoQuality = settings.getSetting("videoQuality")
+
 try:
     videoQuality = video_quality_list[int(videoQuality)]
 except:
@@ -71,8 +75,8 @@ except:
 
 
 #init scrapers
-jsonScraper = serviceAPI(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery,defaultbanner,defaultbackdrop)
-htmlScraper = htmlScraper(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery,defaultbanner,defaultbackdrop)
+jsonScraper = serviceAPI(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode)
+htmlScraper = htmlScraper(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode)
 
 
 def getMainMenu():
@@ -86,65 +90,10 @@ def getMainMenu():
     addDirectory((translation(30018)).encode("utf-8"),archive_banner,"","","getArchiv")
     addDirectory((translation(30007)).encode("utf-8"),search_banner,"","","searchPhrase")
     addDirectory((translation(30027)).encode("utf-8"),trailer_banner,"","","openTrailers")
-    listCallback(False,thumbViewMode)
-
-def createListItem(title,banner,description,duration,date,channel,videourl,playable,folder,subtitles=None): 
-    if banner == '':
-        banner = defaultbanner
-    if description == '':
-        description = (translation(30008)).encode("utf-8")
-    liz=xbmcgui.ListItem(title, iconImage=banner, thumbnailImage=banner)
-    liz.setInfo( type="Video", infoLabels={ "Title": title } )
-    liz.setInfo( type="Video", infoLabels={ "Tvshowtitle": title } )
-    liz.setInfo( type="Video", infoLabels={ "Sorttitle": title } )
-    liz.setInfo( type="Video", infoLabels={ "Plot": description } )
-    liz.setInfo( type="Video", infoLabels={ "Plotoutline": description } )
-    liz.setInfo( type="Video", infoLabels={ "Aired": date } )
-    liz.setInfo( type="Video", infoLabels={ "Studio": channel } )
-    liz.setProperty('fanart_image',defaultbackdrop)
-    liz.setProperty('IsPlayable', playable)
+    listCallback(False,thumbViewMode,pluginhandle)
     
-    if not folder:
-        try:
-            liz.addStreamInfo('video', { 'codec': 'h264','duration':int(duration) ,"aspect": 1.78, "width": 640, "height": 360})
-        except:
-            liz.addStreamInfo('video', { 'codec': 'h264',"aspect": 1.78, "width": 640, "height": 360})
-        liz.addStreamInfo('audio', {"codec": "aac", "language": "de", "channels": 2})
-        if subtitles != None:
-            liz.addStreamInfo('subtitle', {"language": "de"})
-            liz.setSubtitles(subtitles)        
-
-    xbmcplugin.addDirectoryItem(handle=pluginhandle, url=videourl, listitem=liz, isFolder=folder)
-    return liz
     
-def parameters_string_to_dict(parameters):
-    paramDict = {}
-    if parameters:
-        paramPairs = parameters[1:].split("&")
-        for paramsPair in paramPairs:
-            paramSplits = paramsPair.split('=')
-            if (len(paramSplits)) == 2:
-                paramDict[paramSplits[0]] = paramSplits[1]
-    return paramDict
-
-def cleanText(string):
-    string = string.replace('\\n', '').replace("&#160;"," ").replace("&quot;","'").replace('&amp;', '&').replace('&#039;', '´')
-    return string
-    
-def addItemDirectories(list):
-    for item in list:
-        addDirectory(item['title'],item['image'],item['desc'],item['link'],item['mode'])
-     
-
-def addFile(name,videourl,banner,summary,runtime,backdrop):
-    createListItem(name,banner,summary,runtime,'','',videourl,'true',False,'')
-
-def addDirectory(title,banner,description,link,mode):
-    parameters = {"link" : link,"title" : cleanText(title),"banner" : banner,"backdrop" : defaultbackdrop, "mode" : mode}
-    u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-    createListItem(title,banner,description,'','','',u,'false',True)
-	
-def listCallback(sort,viewMode=defaultViewMode):
+def listCallback(sort,viewMode,pluginhandle):
     xbmcplugin.setContent(pluginhandle,'episodes')
     if sort:
         xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
@@ -152,8 +101,10 @@ def listCallback(sort,viewMode=defaultViewMode):
     if forceView:
         xbmc.executebuiltin(viewMode)
 
-
-
+def addDirectory(title,banner,description,link,mode):
+    parameters = {"link" : link,"title" : cleanText(title),"banner" : banner,"backdrop" : defaultbackdrop, "mode" : mode}
+    u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+    createListItem(title,banner,description,'','','',u,'false',True,translation,defaultbackdrop,pluginhandle,None)
 	
 def openArchiv(url):
     url =  urllib.unquote(url)
@@ -187,14 +138,7 @@ def openArchiv(url):
         banner = common.replaceHTMLCodes(banner[1]).encode("utf-8")
 		
         addDirectory(title,banner,description,link,"openSeries")
-    listCallback(True)
-
-def playFile():
-    player = xbmc.Player()
-    player.play(playlist)
-    if not player.isPlayingVideo():
-        d = xbmcgui.Dialog()
-        d.ok('VIDEO QUEUE EMPTY', 'The XBMC video queue is empty.','Add more links to video queue.')
+    listCallback(True,defaultViewMode,pluginhandle)
 		
 def search():
     addDirectory((translation(30007)).encode("utf-8")+" ...",defaultbanner,' ',"","searchNew")
@@ -203,7 +147,7 @@ def search():
     for str in reversed(some_dict):
         if str.strip() != '':
             addDirectory(str.encode('UTF-8'),defaultbanner," ",str.replace(" ","+"),"searchNew")
-    listCallback(False)
+    listCallback(False,defaultViewMode,pluginhandle)
 	
 def searchTV():
     keyboard = xbmc.Keyboard('')
@@ -218,7 +162,7 @@ def searchTV():
       getTableResults(searchurl)
     else:
       addDirectory((translation(30014)).encode("utf-8"),defaultbanner,"","","")
-    listCallback(False)
+    listCallback(False,defaultViewMode,pluginhandle)
 				
 def searchTVHistory(link):
     keyboard = xbmc.Keyboard(link)
@@ -233,7 +177,7 @@ def searchTVHistory(link):
         getTableResults(searchurl)
     else:
         addDirectory((translation(30014)).encode("utf-8"),defaultbanner,defaultbackdrop,"","")
-    listCallback(False)
+    listCallback(False,defaultViewMode,pluginhandle)
     	
 #parameters
 params=parameters_string_to_dict(sys.argv[2])
@@ -248,19 +192,19 @@ if mode == 'openSeries':
     playlist = htmlScraper.getLinks(link,banner,playlist,autoPlay)
     if autoPlay and playlist != None:
         xbmc.Player().play(playlist)
-    listCallback(False)
+    listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getSendungen':
     if useServiceAPI:
         jsonScraper.getCategories()
     else:
         htmlScraper.getCategories()
-    listCallback(True,thumbViewMode)
+    listCallback(True,thumbViewMode,pluginhandle)
 elif mode == 'getAktuelles':
     if useServiceAPI:
         jsonScraper.getTableResults(jsonScraper.serviceAPIHighlights)
     else:
         htmlScraper.getRecentlyAdded(htmlScraper.base_url)
-    listCallback(False)
+    listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getLive':
     if useServiceAPI:
         jsonScraper.getLiveStreams()
@@ -272,33 +216,31 @@ elif mode == 'getTipps':
         jsonScraper.getTableResults(jsonScraper.serviceAPITip)
     else:
         htmlScraper.getTableResults(htmlScraper.tip_url)
-    listCallback(False)
+    listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getNewShows':
     if useServiceAPI:
         jsonScraper.getTableResults(jsonScraper.serviceAPIRecent)
     else:
         htmlScraper.getTableResults(htmlScraper.recent_url)
-    listCallback(False)
+    listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getMostViewed':
     if useServiceAPI:
         jsonScraper.getTableResults(jsonScraper.serviceAPIViewed)
     else:
         htmlScraper.getTableResults(htmlScraper.mostviewed_url)
-    listCallback(False)
+    listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getThemen':
     if useServiceAPI:
         jsonScraper.getThemen()
     else:
         htmlScraper.getThemen()
-    listCallback(True)
+    listCallback(True,defaultViewMode,pluginhandle)
 elif mode == 'getSendungenDetail':
     htmlScraper.getCategoriesDetail(link,banner)
-    listCallback(False)
+    listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getThemenDetail':
     htmlScraper.getThemenDetail(link)
-    listCallback(False)
-elif mode == 'playVideo':
-    playFile()
+    listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'playList':
     playFile()
 elif mode == 'getArchiv':
@@ -306,8 +248,8 @@ elif mode == 'getArchiv':
         jsonScraper.getArchiv()
     else:
         htmlScraper.getArchiv(htmlScraper.schedule_url)
-    listCallback(False)
-elif mode == 'openArchiv':
+    listCallback(False,defaultViewMode,pluginhandle)
+elif mode == 'getArchivDetail':
     openArchiv(link)
 elif mode == 'openTrailers':
     getTrailers()
@@ -320,46 +262,21 @@ elif mode == 'searchNew':
         searchTV()
 elif mode == 'openDate':
     getDate(link, params.get('from'))
+    listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'openProgram':
     jsonScraper.getProgram(link,playlist)
-    listCallback(False)
+    listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'openTopic':
     jsonScraper.getTopic(link)
-    listCallback(False)
+    listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'openEpisode':
     jsonScraper.getEpisode(link,playlist)
-    listCallback(False)
+    listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'openSegment':
-    getSegment(link, params.get('segmentID'))
+    jsonScraper.getSegment(link, params.get('segmentID'))
+    listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'liveStreamNotOnline':
-    url = serviceAPIEpisode % (serviceAPItoken, link)
-    response = urllib2.urlopen(url)
-    result = json.loads(response.read())['episodeDetail']
-
-    title       = result.get('title').encode('UTF-8')
-    image       = JSONImage(result.get('images'))
-    description = JSONDescription(result.get('descriptions'))
-    duration    = result.get('duration')
-    date        = time.strptime(result.get('date'), '%d.%m.%Y %H:%M:%S')
-    subtitles   = None # result.get('subtitlesSrtFileUrl')
-
-    dialog = xbmcgui.Dialog()
-    if dialog.yesno('Livestream noch nicht gestartet', 'Der Livestream startet erst um %s.\nSoll der Livesteam automatisch starten?' % time.strftime('%H:%M', date)):
-        sleepTime = int(time.mktime(date) - time.mktime(time.localtime()))
-        dialog.notification('Sleep till start', 'Spleeptime: %s' % sleepTime)
-        xbmc.sleep(sleepTime * 1000)
-        if dialog.yesno('', 'Den Livestream Starten?'):
-            xbmc.Player().play(urllib.unquote(link))
-
-            # find the livestreamStreamingURL
-            livestreamStreamingURLs = []
-            for streamingURL in result.get('livestreamStreamingUrls'):
-                if '.m3u' in streamingURL.get('streamingUrl'):
-                    livestreamStreamingURLs.append(streamingURL.get('streamingUrl'))
-
-            livestreamStreamingURLs.sort()
-            streamingURL = livestreamStreamingURLs[len(livestreamStreamingURLs) - 1].replace('q4a', videoQuality)
-            listItem = createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False, subtitles)
-            xbmc.Player().play(streamingURL, listItem)
+    jsonScraper.getLiveNotOnline(link)
+    listCallback(False,defaultViewMode,pluginhandle)
 else:
     getMainMenu()
