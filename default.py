@@ -17,9 +17,9 @@ except:
 socket.setdefaulttimeout(30) 
 cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
-version = "0.3.3"
+version = "0.4.0"
 plugin = "ORF-TVthek-" + version
-author = "sofaking"
+author = "sofaking,Rechi"
 
 #initial
 common.plugin = plugin
@@ -80,16 +80,16 @@ htmlScraper = htmlScraper(xbmc,settings,pluginhandle,videoQuality,videoProtocol,
 
 
 def getMainMenu():
-    addDirectory((translation(30000)).encode("utf-8"),recently_added_banner,"","","getNewShows")
-    addDirectory((translation(30001)).encode("utf-8"),news_banner,"","","getAktuelles")
-    addDirectory((translation(30002)).encode("utf-8"),shows_banner,"","","getSendungen")
-    addDirectory((translation(30003)).encode("utf-8"),topics_banner,"","","getThemen")
-    addDirectory((translation(30004)).encode("utf-8"),live_banner,"","","getLive")
-    addDirectory((translation(30005)).encode("utf-8"),tips_banner,"","","getTipps")
-    addDirectory((translation(30006)).encode("utf-8"),most_popular_banner,"","","getMostViewed")
-    addDirectory((translation(30018)).encode("utf-8"),archive_banner,"","","getArchiv")
-    addDirectory((translation(30007)).encode("utf-8"),search_banner,"","","searchPhrase")
-    addDirectory((translation(30027)).encode("utf-8"),trailer_banner,"","","openTrailers")
+    addDirectory((translation(30000)).encode("utf-8"),recently_added_banner,defaultbackdrop,translation,"","","getNewShows",pluginhandle)
+    addDirectory((translation(30001)).encode("utf-8"),news_banner,defaultbackdrop,translation,"","","getAktuelles",pluginhandle)
+    addDirectory((translation(30002)).encode("utf-8"),shows_banner,defaultbackdrop,translation,"","","getSendungen",pluginhandle)
+    addDirectory((translation(30003)).encode("utf-8"),topics_banner,defaultbackdrop,translation,"","","getThemen",pluginhandle)
+    addDirectory((translation(30004)).encode("utf-8"),live_banner,defaultbackdrop,translation,"","","getLive",pluginhandle)
+    addDirectory((translation(30005)).encode("utf-8"),tips_banner,defaultbackdrop,translation,"","","getTipps",pluginhandle)
+    addDirectory((translation(30006)).encode("utf-8"),most_popular_banner,defaultbackdrop,translation,"","","getMostViewed",pluginhandle)
+    addDirectory((translation(30018)).encode("utf-8"),archive_banner,defaultbackdrop,translation,"","","getArchiv",pluginhandle)
+    addDirectory((translation(30007)).encode("utf-8"),search_banner,defaultbackdrop,translation,"","","getSearchHistory",pluginhandle)
+    addDirectory((translation(30027)).encode("utf-8"),trailer_banner,defaultbackdrop,translation,"","","openTrailers",pluginhandle)
     listCallback(False,thumbViewMode,pluginhandle)
     
     
@@ -100,53 +100,15 @@ def listCallback(sort,viewMode,pluginhandle):
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceView:
         xbmc.executebuiltin(viewMode)
-
-def addDirectory(title,banner,description,link,mode):
-    parameters = {"link" : link,"title" : cleanText(title),"banner" : banner,"backdrop" : defaultbackdrop, "mode" : mode}
-    u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-    createListItem(title,banner,description,'','','',u,'false',True,translation,defaultbackdrop,pluginhandle,None)
-	
-def openArchiv(url):
-    url =  urllib.unquote(url)
-    html = common.fetchPage({'link': url})
-    teasers = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'})
-    teasers_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'},ret="href")
-
-    i = 0
-    for teaser in teasers:
-        link = teasers_href[i]
-        i = i+1
-        
-        title = common.parseDOM(teaser,name='h4',attrs={'class': "item_title"},ret=False)
-        title = common.replaceHTMLCodes(title[0]).encode("utf-8")
-        
-        time = common.parseDOM(teaser,name='span',attrs={'class': "meta.meta_time"},ret=False)
-        time = common.replaceHTMLCodes(time[0]).encode("utf-8")
-		
-        title = "["+time+"] "+title
-		
-        description = common.parseDOM(teaser,name='div',attrs={'class': "item_description"},ret=False)
-        if len(description) > 0 :
-            description = common.replaceHTMLCodes(description[0])
-        else:
-            description = translation(30008).encode('UTF-8')
-            
-        banner = common.parseDOM(teaser,name='img',ret='src')
-        banner = common.replaceHTMLCodes(banner[1]).encode("utf-8")
-        
-        banner = common.parseDOM(teaser,name='img',ret='src')
-        banner = common.replaceHTMLCodes(banner[1]).encode("utf-8")
-		
-        addDirectory(title,banner,description,link,"openSeries")
-    listCallback(True,defaultViewMode,pluginhandle)
+    
 		
 def search():
-    addDirectory((translation(30007)).encode("utf-8")+" ...",defaultbanner,' ',"","searchNew")
+    addDirectory((translation(30007)).encode("utf-8")+" ...",defaultbanner,defaultbackdrop,translation,' ',"","searchNew",pluginhandle)
     cache.table_name = "searchhistory"
     some_dict = cache.get("searches").split("|")
     for str in reversed(some_dict):
         if str.strip() != '':
-            addDirectory(str.encode('UTF-8'),defaultbanner," ",str.replace(" ","+"),"searchNew")
+            addDirectory(str.encode('UTF-8'),defaultbanner,defaultbackdrop,translation," ",str.replace(" ","+"),"searchNew",pluginhandle)
     listCallback(False,defaultViewMode,pluginhandle)
 	
 def searchTV():
@@ -161,35 +123,27 @@ def searchTV():
       searchurl = searchurl
       getTableResults(searchurl)
     else:
-      addDirectory((translation(30014)).encode("utf-8"),defaultbanner,"","","")
+      addDirectory((translation(30014)).encode("utf-8"),defaultbanner,defaultbackdrop,translation,"","","",pluginhandle)
     listCallback(False,defaultViewMode,pluginhandle)
-				
-def searchTVHistory(link):
-    keyboard = xbmc.Keyboard(link)
-    keyboard.doModal()
-    if (keyboard.isConfirmed()):
-        cache.table_name = "searchhistory"
-        keyboard_in = keyboard.getText()
-        if keyboard_in != link:
-            some_dict = cache.get("searches") + "|"+keyboard_in
-            cache.set("searches",some_dict);
-        searchurl = "%s?q=%s"%(search_base_url,keyboard_in.replace(" ","+"))
-        getTableResults(searchurl)
+
+    
+def startPlaylist():
+    if playlist != None:
+        xbmc.Player().play(playlist)
     else:
-        addDirectory((translation(30014)).encode("utf-8"),defaultbanner,defaultbackdrop,"","")
-    listCallback(False,defaultViewMode,pluginhandle)
+        d = xbmcgui.Dialog()
+        d.ok('VIDEO QUEUE EMPTY', 'The XBMC video queue is empty.','Add more links to video queue.')
     	
 #parameters
 params=parameters_string_to_dict(sys.argv[2])
 mode=params.get('mode')
-title=params.get('title')
 link=params.get('link')
 banner=params.get('banner')
-backdrop=params.get('backdrop')
+
 
 #modes
 if mode == 'openSeries':
-    playlist = htmlScraper.getLinks(link,banner,playlist,autoPlay)
+    playlist = htmlScraper.getLinks(link,banner,playlist)
     if autoPlay and playlist != None:
         xbmc.Player().play(playlist)
     listCallback(False,defaultViewMode,pluginhandle)
@@ -210,7 +164,7 @@ elif mode == 'getLive':
         jsonScraper.getLiveStreams()
     else:
         htmlScraper.getLiveStreams()
-    listCallback(False,smallListViewMode)
+    listCallback(False,smallListViewMode,pluginhandle)
 elif mode == 'getTipps':
     if useServiceAPI:
         jsonScraper.getTableResults(jsonScraper.serviceAPITip)
@@ -241,8 +195,6 @@ elif mode == 'getSendungenDetail':
 elif mode == 'getThemenDetail':
     htmlScraper.getThemenDetail(link)
     listCallback(False,defaultViewMode,pluginhandle)
-elif mode == 'playList':
-    playFile()
 elif mode == 'getArchiv':
     if useServiceAPI:
         jsonScraper.getArchiv()
@@ -250,18 +202,22 @@ elif mode == 'getArchiv':
         htmlScraper.getArchiv(htmlScraper.schedule_url)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getArchivDetail':
-    openArchiv(link)
+    htmlScraper.openArchiv(link)
+    listCallback(True,defaultViewMode,pluginhandle)
 elif mode == 'openTrailers':
-    getTrailers()
-elif mode == 'searchPhrase':
-    search()
-elif mode == 'searchNew':
+    jsonScraper.getTrailers()
+    listCallback(False,defaultViewMode,pluginhandle)
+elif mode == 'getSearchHistory':
+    htmlScraper.getSearchHistory(cache);
+    listCallback(False,defaultViewMode,pluginhandle)
+elif mode == 'getSearchResults':
     if not link == None:
-        searchTVHistory(urllib.unquote(link));
+        htmlScraper.getSearchResults(urllib.unquote(link),cache)
     else:
-        searchTV()
+        htmlScraper.getSearchResults("",cache)
+    listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'openDate':
-    getDate(link, params.get('from'))
+    jsonScraper.getDate(link, params.get('from'))
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'openProgram':
     jsonScraper.getProgram(link,playlist)
@@ -271,12 +227,16 @@ elif mode == 'openTopic':
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'openEpisode':
     jsonScraper.getEpisode(link,playlist)
+    if autoPlay and playlist != None:
+        xbmc.Player().play(playlist)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'openSegment':
-    jsonScraper.getSegment(link, params.get('segmentID'))
+    jsonScraper.getSegment(link, params.get('segmentID'),playlist)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'liveStreamNotOnline':
     jsonScraper.getLiveNotOnline(link)
     listCallback(False,defaultViewMode,pluginhandle)
+elif mode == 'playlist':
+    startPlaylist()
 else:
     getMainMenu()

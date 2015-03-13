@@ -1,10 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import xbmcplugin,xbmcgui
+import xbmcplugin,xbmcgui,sys,urllib
 
-def createListItem(title,banner,description,duration,date,channel,videourl,playable,folder,translation,backdrop,pluginhandle,subtitles=None): 
-    if banner == '':
-        banner = defaultbanner
+def addDirectory(title,banner,backdrop,translation,description,link,mode,pluginhandle):
+    parameters = {"link" : link,"title" : title,"banner" : banner,"backdrop" : backdrop, "mode" : mode}
+    u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+    createListItem(title,banner,description,'','','',u,'false',True,translation,backdrop,pluginhandle,None)
+
+def createListItem(title,banner,description,duration,date,channel,videourl,playable,folder,translation,backdrop,pluginhandle,subtitles=None):
     if description == '':
         description = (translation(30008)).encode("utf-8")
     liz=xbmcgui.ListItem(title, iconImage=banner, thumbnailImage=banner)

@@ -82,8 +82,8 @@ class serviceAPI:
     # Useful  Methods for JSON Parsing
     def JSONEpisode2ListItem(self,JSONEpisode, ignoreEpisodeType = None):
         title        = JSONEpisode.get('title').encode('UTF-8')
-        image        = JSONImage(JSONEpisode.get('images'))
-        description  = JSONDescription(JSONEpisode.get('descriptions'))
+        image        = self.JSONImage(JSONEpisode.get('images'))
+        description  = self.JSONDescription(JSONEpisode.get('descriptions'))
         duration     = JSONEpisode.get('duration')
         date         = time.strptime(JSONEpisode.get('date'), '%d.%m.%Y %H:%M:%S')
         link         = JSONEpisode.get('episodeId')
@@ -95,15 +95,15 @@ class serviceAPI:
         u = sys.argv[0] + '?' + urllib.urlencode(parameters)
         # Direcotory should be set to False, that the Duration is shown.
         # But then there is an error with the Pluginhandle
-        return createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+        createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
 
 
     def JSONSegment2ListItem(self,JSONSegment, date):
         title        = JSONSegment.get('title').encode('UTF-8')
-        image        = JSONImage(JSONSegment.get('images'))
-        description  = JSONDescription(JSONSegment.get('descriptions'))
+        image        = self.JSONImage(JSONSegment.get('images'))
+        description  = self.JSONDescription(JSONSegment.get('descriptions'))
         duration     = JSONSegment.get('duration')
-        streamingURL = JSONStreamingURL(JSONSegment.get('videos'))
+        streamingURL = self.JSONStreamingURL(JSONSegment.get('videos'))
         if JSONSegment.get('subtitlesSrtFileUrl'):
             subtitles = [JSONSegment.get('subtitlesSrtFileUrl')]
         else:
@@ -162,16 +162,18 @@ class serviceAPI:
                 dict['desc'] = description
                 dict['link'] = link
                 dict['mode'] = 'openProgram'
-                list.append(dict)
-        return list
+                
+                parameters = {'mode' : 'openProgram', 'link': link}
+                u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+                createListItem(title, image, description, "", "", '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
         
     
     # list all Episodes for the given Date
     def getDate(self, date, dateFrom = None):
         if dateFrom == None:
-            url = serviceAPIDate % (serviceAPItoken, date)
+            url = self.serviceAPIDate % (self.serviceAPItoken, date)
         else:
-            url = serviceAPIDateFrom % (serviceAPItoken, dateFrom, date)
+            url = self.serviceAPIDateFrom % (self.serviceAPItoken, dateFrom, date)
         response = urllib2.urlopen(url)
 
         if dateFrom == None:
@@ -180,7 +182,7 @@ class serviceAPI:
             episodes = reversed(json.loads(response.read())['episodeShorts'])
 
         for episode in episodes:
-            JSONEpisode2ListItem(episode)
+            self.JSONEpisode2ListItem(episode)
 
 
     # list all Entries for the given Topic
@@ -190,8 +192,8 @@ class serviceAPI:
 
         for entrie in json.loads(response.read())['topicDetail'].get('entries'):
             title       = entrie.get('title').encode('UTF-8')
-            image       = JSONImage(entrie.get('images'))
-            description = JSONDescription(entrie.get('descriptions'))
+            image       = self.JSONImage(entrie.get('images'))
+            description = self.JSONDescription(entrie.get('descriptions'))
             duration    = entrie.get('duration')
             date        = time.strptime(entrie.get('date'), '%d.%m.%Y %H:%M:%S')
 
@@ -248,10 +250,9 @@ class serviceAPI:
         for link in result.get('links'):
             if link.get('identifier') == 'program':
                 referenceOtherEpisode = True
-                addDirectory(link.get('name').encode('UTF-8'), '', '', link.get('id'), 'openProgram')
+                addDirectory(link.get('name').encode('UTF-8'), '',  self.defaultbackdrop,self.translation,'', link.get('id'), 'openProgram',self.pluginhandle)
 
         if referenceOtherEpisode:
-            listCallback(False,self.defaultViewMode)
             return
 
         if len(result.get('segments')) == 1:
@@ -268,9 +269,9 @@ class serviceAPI:
             self.xbmc.Player().play(playlist)
 
         else:
-            parameters = {'mode' : 'playList'}
+            parameters = {'mode' : 'playlist'}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            self.createListItem('[ '+(self.translation(30015)).encode('UTF-8')+' ]', image, '%s\n%s' % ((self.translation(30015)).encode('UTF-8'), description), duration, time.strftime('%Y-%m-%d', date), '', u, 'false', False,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+            createListItem('[ '+(self.translation(30015)).encode('UTF-8')+' ]', image, '%s\n%s' % ((self.translation(30015)).encode('UTF-8'), description), duration, time.strftime('%Y-%m-%d', date), '', u, 'false', False,self.translation,self.defaultbackdrop,self.pluginhandle,None)
 
             for segment in result.get('segments'):
                 listItem = self.JSONSegment2ListItem(segment, date)
@@ -297,11 +298,11 @@ class serviceAPI:
                 description = topic.get('description')
                 link        = topic.get('topicId')
 
-                addDirectory(title, image, description, link, 'openTopic')
+                addDirectory(title, image, self.defaultbackdrop,self.translation, description, link, 'openTopic',self.pluginhandle)
 
             
     # Plays the given Segment, if it is included in the given Episode
-    def getSegment(self,episodeID, segmentID):
+    def getSegment(self,episodeID, segmentID,playlist):
         playlist.clear()
 
         url = self.serviceAPIEpisode % (self.serviceAPItoken, episodeID)
@@ -315,12 +316,12 @@ class serviceAPI:
                 if segment.get('segmentId') == int(segmentID):
                     listItem = self.JSONSegment2ListItem(segment, date)
                     playlist.add(listItem[0], listItem[1])
-                    xbmc.Player().play(playlist)
+                    self.xbmc.Player().play(playlist)
                     return                  
                     
     # list all Trailers for further airings
     def getTrailers(self):
-        url = serviceAPITrailers % serviceAPItoken
+        url = self.serviceAPITrailers % self.serviceAPItoken
         response = urllib2.urlopen(url)
 
         for episode in json.loads(response.read())['episodeShorts']:
@@ -404,8 +405,8 @@ class serviceAPI:
         result = json.loads(response.read())['episodeDetail']
 
         title       = result.get('title').encode('UTF-8')
-        image       = JSONImage(result.get('images'))
-        description = JSONDescription(result.get('descriptions'))
+        image       = self.JSONImage(result.get('images'))
+        description = self.JSONDescription(result.get('descriptions'))
         duration    = result.get('duration')
         date        = time.strptime(result.get('date'), '%d.%m.%Y %H:%M:%S')
         subtitles   = None # result.get('subtitlesSrtFileUrl')
@@ -414,9 +415,9 @@ class serviceAPI:
         if dialog.yesno((self.translation(30030)).encode("utf-8"), (self.translation(30031)).encode("utf-8")+" %s.\n "+(self.translation(30032)).encode("utf-8") % time.strftime('%H:%M', date)):
             sleepTime = int(time.mktime(date) - time.mktime(time.localtime()))
             dialog.notification((self.translation(30033)).encode("utf-8"), '%s %s' % ((self.translation(30034)).encode("utf-8"),sleepTime))
-            xbmc.sleep(sleepTime * 1000)
+            self.xbmc.sleep(sleepTime * 1000)
             if dialog.yesno('', (self.translation(30035)).encode("utf-8")):
-                xbmc.Player().play(urllib.unquote(link))
+                self.xbmc.Player().play(urllib.unquote(link))
 
                 # find the livestreamStreamingURL
                 livestreamStreamingURLs = []
@@ -426,5 +427,5 @@ class serviceAPI:
 
                 livestreamStreamingURLs.sort()
                 streamingURL = livestreamStreamingURLs[len(livestreamStreamingURLs) - 1].replace('q4a', self.videoQuality)
-                listItem = self.createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False,self.translation,self.defaultbackdrop,self.pluginhandle,subtitles)
+                listItem = createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False,self.translation,self.defaultbackdrop,self.pluginhandle,subtitles)
                 self.xbmc.Player().play(streamingURL, listItem)

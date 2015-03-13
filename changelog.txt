@@ -1,3 +1,10 @@
+0.4.0
+- new Structure
+- add JSON Scraper(ServiceAPI)(thx @Rechi)
+- added Subtitles (thx @Rechi)
+- added Trailers (thx @Rechi)
+
+
 0.3.3
 - Still waiting for the new icons from my gfx guy ... Sorry
 - FIX: wrong title in getCategoryList(thx @Rechi)

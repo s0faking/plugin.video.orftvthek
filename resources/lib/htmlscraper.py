@@ -81,6 +81,43 @@ class htmlScraper:
             
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True,'false');
+            
+    	
+    def openArchiv(self,url):
+        url =  urllib.unquote(url)
+        html = common.fetchPage({'link': url})
+        teasers = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'})
+        teasers_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'},ret="href")
+
+        i = 0
+        for teaser in teasers:
+            link = teasers_href[i]
+            i = i+1
+            
+            title = common.parseDOM(teaser,name='h4',attrs={'class': "item_title"},ret=False)
+            title = common.replaceHTMLCodes(title[0]).encode("utf-8")
+            
+            time = common.parseDOM(teaser,name='span',attrs={'class': "meta.meta_time"},ret=False)
+            time = common.replaceHTMLCodes(time[0]).encode("utf-8")
+            
+            title = "["+time+"] "+title
+            
+            description = common.parseDOM(teaser,name='div',attrs={'class': "item_description"},ret=False)
+            if len(description) > 0 :
+                description = common.replaceHTMLCodes(description[0])
+            else:
+                description = self.translation(30008).encode('UTF-8')
+                
+            banner = common.parseDOM(teaser,name='img',ret='src')
+            banner = common.replaceHTMLCodes(banner[1]).encode("utf-8")
+            
+            banner = common.parseDOM(teaser,name='img',ret='src')
+            banner = common.replaceHTMLCodes(banner[1]).encode("utf-8")
+            
+            parameters = {"link" : link,"title" : title,"banner" : banner,"backdrop" : self.defaultbackdrop, "mode" : "openSeries"}
+            url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            liz = self.html2ListItem(title,banner,"",description,"","","",url,None,True,'false');
+        
     
     # Parses the Frontpage Carousel
     def getRecentlyAdded(self,url):
@@ -287,7 +324,7 @@ class htmlScraper:
             i = i + 1
         
     # Parses a Video Page and extracts the Playlist/Description/...
-    def getLinks(self,url,banner,playlist,autoPlay):
+    def getLinks(self,url,banner,playlist):
         playlist.clear()
         url = str(urllib.unquote(url))
         if banner != None:
@@ -321,9 +358,9 @@ class htmlScraper:
             print e
 
         if len(video_items) > 1:
-            parameters = {"mode" : "playList"}
+            parameters = {"mode" : "playlist"}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem("[ "+(self.translation(30015)).encode("utf-8")+" ]",banner,"",(self.translation(30015)).encode("utf-8"),'','','',u, None,False,'true');
+            liz = self.html2ListItem("[ "+(self.translation(30015)).encode("utf-8")+" ]",banner,"",(self.translation(30015)).encode("utf-8"),'','','',u, None,True,'true');
             for video_item in video_items:
                 try:
                     title_prefix = video_item["title_prefix"]
@@ -472,4 +509,36 @@ class htmlScraper:
             parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "openSeries"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True,'false');
-          
+    
+    def getSearchHistory(self,cache):
+        parameters = {'mode' : 'getSearchResults'}
+        u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+        createListItem((self.translation(30007)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+
+        cache.table_name = "searchhistory"
+        some_dict = cache.get("searches").split("|")
+        for str in reversed(some_dict):
+            if str.strip() != '':
+                parameters = {'mode' : 'getSearchResults','link' : str.replace(" ","+")}
+                u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+                createListItem(str.encode('UTF-8'), self.defaultbanner, "", "", "", '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+
+    def removeUmlauts(self,str):
+        return str.replace("Ö","O").replace("ö","o").replace("Ü","U").replace("ü","u").replace("Ä","A").replace("ä","a")
+                
+    def getSearchResults(self,link,cache):
+        keyboard = self.xbmc.Keyboard(link)
+        keyboard.doModal()
+        if (keyboard.isConfirmed()):
+            cache.table_name = "searchhistory"
+            keyboard_in = self.removeUmlauts(keyboard.getText())
+            if keyboard_in != link:
+                print cache.get("searches")
+                some_dict = cache.get("searches") + "|"+keyboard_in
+                cache.set("searches",some_dict);
+            searchurl = "%s?q=%s"%(self.search_base_url,keyboard_in.replace(" ","+"))
+            self.getTableResults(searchurl)
+        else:
+            parameters = {'mode' : 'getSearchHistory'}
+            u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            createListItem((self.translation(30014)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
