@@ -38,6 +38,7 @@ class serviceAPI:
         self.defaultbanner = defaultbanner
         self.defaultbackdrop = defaultbackdrop
         self.useSubtitles = useSubtitles
+        self.disableGeoblock = settings.getSetting("disableGeoblock")
         self.xbmc.log(msg='ServiceAPI  - Init done', level=xbmc.LOGDEBUG);
         
     def getTableResults(self, urlAPI):
@@ -399,8 +400,10 @@ class serviceAPI:
 
                 livestreamStreamingURLs.sort()
 				
-                link = livestreamStreamingURLs[len(livestreamStreamingURLs) - 1].replace('q4a', 'q6a').replace('/playlist.m3u8','?wowzasessionid=1')
-
+                link = livestreamStreamingURLs[len(livestreamStreamingURLs) - 1].replace('q4a', 'q6a')
+                
+                if self.disableGeoblock:
+                    link = link.replace('/playlist.m3u8','?wowzasessionid=1')
 				
                 title = "[%s] %s (%s)" % (programName, result.get('title'), time.strftime('%H:%M', livestreamStart))
 
