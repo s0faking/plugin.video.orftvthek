@@ -1,3 +1,6 @@
+0.5.0
+- added ability to blacklist items (use the context menu for that)
+
 0.4.5
 - changed live stream urls
 - new icons
