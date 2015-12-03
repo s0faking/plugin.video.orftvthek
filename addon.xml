@@ -11,7 +11,7 @@
     </extension>
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
-        <language>de,en</language>
+        <language>de en</language>
         <summary lang="de">ORF TVthek</summary>
         <summary lang="en">ORF TVthek</summary>
         <description lang="de">ORF TVthek - Ermöglicht Ihnen den Zugriff auf die ORF TVthek Video Platform</description>
