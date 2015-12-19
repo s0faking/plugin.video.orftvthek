@@ -4,8 +4,9 @@ import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime
 import CommonFunctions as common
 from resources.lib.helpers import *
 from base import *
+from Scraper import *
 
-class htmlScraper:
+class htmlScraper(Scraper):
 
     UrlMostViewed = 'http://tvthek.orf.at/most_viewed'
     UrlNewest     = 'http://tvthek.orf.at/newest'
