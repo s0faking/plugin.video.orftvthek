@@ -4,8 +4,9 @@ import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime
 import CommonFunctions as common
 
 from base import *
+from Scraper import *
 
-class serviceAPI:
+class serviceAPI(Scraper):
 
     UrlMostViewed = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/most_viewed'
     UrlNewest     = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/newest'
