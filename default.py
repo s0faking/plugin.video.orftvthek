@@ -8,6 +8,7 @@ from resources.lib.base import *
 from resources.lib.helpers import *
 from resources.lib.serviceapi import *
 from resources.lib.htmlscraper import *
+from resources.lib.Scraper import *
 
 try:
    import StorageServer
@@ -145,6 +146,8 @@ mode=params.get('mode')
 link=params.get('link')
 banner=params.get('banner')
 
+scraper = jsonScraper if useServiceAPI else htmlScraper
+
 #modes
 if mode == 'openSeries':
     playlist = htmlScraper.getLinks(link,banner,playlist)
@@ -166,10 +169,7 @@ if mode == 'openBlacklist':
     printBlacklist(defaultbanner,defaultbackdrop,translation,pluginhandle)
     xbmcplugin.endOfDirectory(pluginhandle)
 elif mode == 'getSendungen':
-    if useServiceAPI:
-        jsonScraper.getCategories()
-    else:
-        htmlScraper.getCategories()
+    scraper.getCategories()
     listCallback(True,thumbViewMode,pluginhandle)
 elif mode == 'getAktuelles':
     if useServiceAPI:
@@ -178,34 +178,19 @@ elif mode == 'getAktuelles':
         htmlScraper.getRecentlyAdded(htmlScraper.base_url)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getLive':
-    if useServiceAPI:
-        jsonScraper.getLiveStreams()
-    else:
-        htmlScraper.getLiveStreams()
+    scraper.getLiveStreams()
     listCallback(False,smallListViewMode,pluginhandle)
 elif mode == 'getTipps':
-    if useServiceAPI:
-        jsonScraper.getTableResults(jsonScraper.UrlTip)
-    else:
-        htmlScraper.getTableResults(htmlScraper.UrlTip)
+    scraper.getTableResults(scraper.UrlTip)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getNewShows':
-    if useServiceAPI:
-        jsonScraper.getTableResults(jsonScraper.UrlNewest)
-    else:
-        htmlScraper.getTableResults(htmlScraper.UrlNewest)
+    scraper.getTableResults(scraper.UrlNewest)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getMostViewed':
-    if useServiceAPI:
-        jsonScraper.getTableResults(jsonScraper.UrlMostViewed)
-    else:
-        htmlScraper.getTableResults(htmlScraper.UrlMostViewed)
+    scraper.getTableResults(scraper.UrlMostViewed)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getThemen':
-    if useServiceAPI:
-        jsonScraper.getThemen()
-    else:
-        htmlScraper.getThemen()
+    scraper.getThemen()
     listCallback(True,defaultViewMode,pluginhandle)
 elif mode == 'getSendungenDetail':
     htmlScraper.getCategoriesDetail(link,banner)
