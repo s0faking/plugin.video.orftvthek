@@ -6,13 +6,15 @@ from resources.lib.helpers import *
 from base import *
 
 class htmlScraper:
+
+    UrlMostViewed = 'http://tvthek.orf.at/most_viewed'
+    UrlNewest     = 'http://tvthek.orf.at/newest'
+    UrlTip        = 'http://tvthek.orf.at/tips'
+
     base_url        = 'http://tvthek.orf.at'
     
     schedule_url    = 'http://tvthek.orf.at/schedule'
-    recent_url      = 'http://tvthek.orf.at/newest'
     live_url        = "http://tvthek.orf.at/live"
-    mostviewed_url  = 'http://tvthek.orf.at/most_viewed'
-    tip_url         = 'http://tvthek.orf.at/tips'
     search_base_url = 'http://tvthek.orf.at/search'
     topic_url       = 'http://tvthek.orf.at/topics'
 

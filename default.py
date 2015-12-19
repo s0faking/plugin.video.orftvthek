@@ -185,21 +185,21 @@ elif mode == 'getLive':
     listCallback(False,smallListViewMode,pluginhandle)
 elif mode == 'getTipps':
     if useServiceAPI:
-        jsonScraper.getTableResults(jsonScraper.serviceAPITip)
+        jsonScraper.getTableResults(jsonScraper.UrlTip)
     else:
-        htmlScraper.getTableResults(htmlScraper.tip_url)
+        htmlScraper.getTableResults(htmlScraper.UrlTip)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getNewShows':
     if useServiceAPI:
-        jsonScraper.getTableResults(jsonScraper.serviceAPIRecent)
+        jsonScraper.getTableResults(jsonScraper.UrlNewest)
     else:
-        htmlScraper.getTableResults(htmlScraper.recent_url)
+        htmlScraper.getTableResults(htmlScraper.UrlNewest)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getMostViewed':
     if useServiceAPI:
-        jsonScraper.getTableResults(jsonScraper.serviceAPIViewed)
+        jsonScraper.getTableResults(jsonScraper.UrlMostViewed)
     else:
-        htmlScraper.getTableResults(htmlScraper.mostviewed_url)
+        htmlScraper.getTableResults(htmlScraper.UrlMostViewed)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getThemen':
     if useServiceAPI:
