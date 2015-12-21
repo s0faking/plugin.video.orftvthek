@@ -4,15 +4,18 @@ import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime
 import CommonFunctions as common
 from resources.lib.helpers import *
 from base import *
+from Scraper import *
 
-class htmlScraper:
+class htmlScraper(Scraper):
+
+    UrlMostViewed = 'http://tvthek.orf.at/most_viewed'
+    UrlNewest     = 'http://tvthek.orf.at/newest'
+    UrlTip        = 'http://tvthek.orf.at/tips'
+
     base_url        = 'http://tvthek.orf.at'
     
     schedule_url    = 'http://tvthek.orf.at/schedule'
-    recent_url      = 'http://tvthek.orf.at/newest'
     live_url        = "http://tvthek.orf.at/live"
-    mostviewed_url  = 'http://tvthek.orf.at/most_viewed'
-    tip_url         = 'http://tvthek.orf.at/tips'
     search_base_url = 'http://tvthek.orf.at/search'
     topic_url       = 'http://tvthek.orf.at/topics'
 
