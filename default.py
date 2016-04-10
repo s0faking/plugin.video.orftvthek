@@ -8,7 +8,6 @@ from resources.lib.base import *
 from resources.lib.helpers import *
 from resources.lib.serviceapi import *
 from resources.lib.htmlscraper import *
-from resources.lib.Scraper import *
 
 try:
    import StorageServer
@@ -18,7 +17,7 @@ except:
 socket.setdefaulttimeout(30) 
 cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
-version = "0.5.2"
+version = "0.5.3"
 plugin = "ORF-TVthek-" + version
 author = "sofaking,Rechi"
 
@@ -41,7 +40,7 @@ smallListViewMode = 'Container.SetViewMode(51)'
 playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO) 
  
 #hardcoded
-video_quality_list = ["Q1A", "Q4A", "Q6A"]
+video_quality_list = ["Q1A", "Q4A", "Q6A", "Q8C"]
 videoProtocol = "http"
 videoDelivery = "progressive"
 
@@ -146,8 +145,6 @@ mode=params.get('mode')
 link=params.get('link')
 banner=params.get('banner')
 
-scraper = jsonScraper if useServiceAPI else htmlScraper
-
 #modes
 if mode == 'openSeries':
     playlist = htmlScraper.getLinks(link,banner,playlist)
@@ -169,7 +166,10 @@ if mode == 'openBlacklist':
     printBlacklist(defaultbanner,defaultbackdrop,translation,pluginhandle)
     xbmcplugin.endOfDirectory(pluginhandle)
 elif mode == 'getSendungen':
-    scraper.getCategories()
+    if useServiceAPI:
+        jsonScraper.getCategories()
+    else:
+        htmlScraper.getCategories()
     listCallback(True,thumbViewMode,pluginhandle)
 elif mode == 'getAktuelles':
     if useServiceAPI:
@@ -178,19 +178,34 @@ elif mode == 'getAktuelles':
         htmlScraper.getRecentlyAdded(htmlScraper.base_url)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getLive':
-    scraper.getLiveStreams()
+    if useServiceAPI:
+        jsonScraper.getLiveStreams()
+    else:
+        htmlScraper.getLiveStreams()
     listCallback(False,smallListViewMode,pluginhandle)
 elif mode == 'getTipps':
-    scraper.getTableResults(scraper.UrlTip)
+    if useServiceAPI:
+        jsonScraper.getTableResults(jsonScraper.serviceAPITip)
+    else:
+        htmlScraper.getTableResults(htmlScraper.tip_url)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getNewShows':
-    scraper.getTableResults(scraper.UrlNewest)
+    if useServiceAPI:
+        jsonScraper.getTableResults(jsonScraper.serviceAPIRecent)
+    else:
+        htmlScraper.getTableResults(htmlScraper.recent_url)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getMostViewed':
-    scraper.getTableResults(scraper.UrlMostViewed)
+    if useServiceAPI:
+        jsonScraper.getTableResults(jsonScraper.serviceAPIViewed)
+    else:
+        htmlScraper.getTableResults(htmlScraper.mostviewed_url)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getThemen':
-    scraper.getThemen()
+    if useServiceAPI:
+        jsonScraper.getThemen()
+    else:
+        htmlScraper.getThemen()
     listCallback(True,defaultViewMode,pluginhandle)
 elif mode == 'getSendungenDetail':
     htmlScraper.getCategoriesDetail(link,banner)

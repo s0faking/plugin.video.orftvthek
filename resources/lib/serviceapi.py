@@ -4,14 +4,8 @@ import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime
 import CommonFunctions as common
 
 from base import *
-from Scraper import *
-
-class serviceAPI(Scraper):
-
-    UrlMostViewed = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/most_viewed'
-    UrlNewest     = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/newest'
-    UrlTip        = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/recommendations'
-
+    
+class serviceAPI:
     # serviceAPI Settings
     serviceAPItoken         = 'ef97318c84d4e8'
 
@@ -27,7 +21,10 @@ class serviceAPI(Scraper):
     serviceAPITrailers      = 'http://tvthek.orf.at/service_api/token/%s/episodes/trailers?page=0&entries_per_page=1000'
 
     serviceAPILive          = 'http://tvthek.orf.at/service_api/token/%s/livestreams/from/%s/till/%s/detail?page=0&entries_per_page=%i'
+    serviceAPITip           = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/recommendations'
     serviceAPIHighlights    = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/highlights'
+    serviceAPIRecent        = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/newest'
+    serviceAPIViewed        = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/most_viewed'
 
     
     def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode):
@@ -401,7 +398,7 @@ class serviceAPI(Scraper):
 
                 livestreamStreamingURLs.sort()
 				
-                link = livestreamStreamingURLs[len(livestreamStreamingURLs) - 1].replace('q4a', 'q6a')
+                link = livestreamStreamingURLs[len(livestreamStreamingURLs) - 1].replace('q4a', self.videoQuality)
                 
                 if self.disableGeoblock:
                     link = link.replace('/playlist.m3u8','?wowzasessionid=1')
