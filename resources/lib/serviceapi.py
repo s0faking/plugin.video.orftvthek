@@ -374,6 +374,10 @@ class serviceAPI(Scraper):
             results = json.loads(response.read())['episodeDetails']
             for result in results:
 
+                # ignore canceled live streams
+                if time.mktime(time.strptime(result.get('killdate'), '%d.%m.%Y %H:%M:%S')) - time.mktime(time.localtime()) < 0:
+                    continue
+
                 description     = self.JSONDescription(result.get('descriptions'))
                 program         = result.get('channel').get('reel').upper()
                 programName     = result.get('channel').get('name')
