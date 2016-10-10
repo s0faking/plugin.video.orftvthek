@@ -258,16 +258,8 @@ class serviceAPI(Scraper):
             return
 
         if len(result.get('segments')) == 1:
-            for segment in result.get('segments'):
-                image        = self.JSONImage(segment.get('images'))
-                streamingURL = self.JSONStreamingURL(segment.get('videos'))
-                if segment.get('subtitlesSrtFileUrl') and self.useSubtitles:
-                    subtitles = [segment.get('subtitlesSrtFileUrl')]
-                else:
-                    subtitles = None
-
-            listItem = createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False,self.translation,self.defaultbackdrop,self.pluginhandle,subtitles)
-            playlist.add(streamingURL, listItem)
+            listItem = self.JSONSegment2ListItem(result.get('segments')[0], date)
+            playlist.add(listItem[0], listItem[1])
             self.xbmc.Player().play(playlist)
 
         else:
@@ -373,6 +365,10 @@ class serviceAPI(Scraper):
 
             results = json.loads(response.read())['episodeDetails']
             for result in results:
+
+                # ignore canceled live streams
+                if time.mktime(time.strptime(result.get('killdate'), '%d.%m.%Y %H:%M:%S')) - time.mktime(time.localtime()) < 0:
+                    continue
 
                 description     = self.JSONDescription(result.get('descriptions'))
                 program         = result.get('channel').get('reel').upper()
