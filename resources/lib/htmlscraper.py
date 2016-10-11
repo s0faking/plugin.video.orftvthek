@@ -450,11 +450,11 @@ class htmlScraper(Scraper):
             else:
                 state = (self.translation(30020)).encode("utf-8")
                 state_short = "Offline"
-
-            link = liveurls[program]
+            if program in liveurls:
+                link = liveurls[program]
                 
-            title = "[%s] - %s (%s)" % (program,title,time)
-            liz = self.html2ListItem(title,banner,"",state,time,program,program,link,None,False,'true')
+                title = "[%s] - %s (%s)" % (program,title,time)
+                liz = self.html2ListItem(title,banner,"",state,time,program,program,link,None,False,'true')
     
     # Helper for Livestream Listing - Returns if Stream is currently running
     def getBroadcastState(self,time):

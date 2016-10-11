@@ -18,7 +18,7 @@ except:
 socket.setdefaulttimeout(30) 
 cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
-version = "0.5.3"
+version = "0.5.4"
 plugin = "ORF-TVthek-" + version
 author = "sofaking,Rechi"
 
@@ -78,8 +78,10 @@ except:
 
 
 #init scrapers
-jsonScraper = serviceAPI(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode)
-htmlScraper = htmlScraper(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode)
+if useServiceAPI:
+    jsonScraper = serviceAPI(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode)
+else:
+    htmlScraper = htmlScraper(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode)
 
 
 def getMainMenu():
@@ -92,7 +94,8 @@ def getMainMenu():
     addDirectory((translation(30006)).encode("utf-8"),most_popular_banner,defaultbackdrop,translation,"","","getMostViewed",pluginhandle)
     addDirectory((translation(30018)).encode("utf-8"),archive_banner,defaultbackdrop,translation,"","","getArchiv",pluginhandle)
     addDirectory((translation(30007)).encode("utf-8"),search_banner,defaultbackdrop,translation,"","","getSearchHistory",pluginhandle)
-    addDirectory((translation(30027)).encode("utf-8"),trailer_banner,defaultbackdrop,translation,"","","openTrailers",pluginhandle)
+    if useServiceAPI:
+        addDirectory((translation(30027)).encode("utf-8"),trailer_banner,defaultbackdrop,translation,"","","openTrailers",pluginhandle)
     #blacklist
     if enableBlacklist:
         addDirectory((translation(30037)).encode("utf-8"),blacklist_banner,defaultbackdrop,translation,"","","openBlacklist",pluginhandle)
