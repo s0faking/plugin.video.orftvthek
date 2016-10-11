@@ -91,7 +91,7 @@ class htmlScraper(Scraper):
             
     	
     def openArchiv(self,url):
-        url =  urllib.unquote(url)
+        url = self.base_url + urllib.unquote(url)
         html = common.fetchPage({'link': url})
         teasers = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'})
         teasers_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'},ret="href")
@@ -114,11 +114,8 @@ class htmlScraper(Scraper):
                 description = common.replaceHTMLCodes(description[0])
             else:
                 description = self.translation(30008).encode('UTF-8')
-                
-            banner = common.parseDOM(teaser,name='img',ret='src')
-            banner = common.replaceHTMLCodes(banner[1]).encode("utf-8")
-            
-            banner = common.parseDOM(teaser,name='img',ret='src')
+
+            banner = common.parseDOM(teaser.replace('>"', '"'), name='img', ret='src')
             banner = common.replaceHTMLCodes(banner[1]).encode("utf-8")
             
             parameters = {"link" : link,"title" : title,"banner" : banner,"backdrop" : self.defaultbackdrop, "mode" : "openSeries"}
