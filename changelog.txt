@@ -1,3 +1,6 @@
+0.5.6
+- Changed "Shows" scraper
+
 0.5.5
 - Fixed error caused by playlist change on the TVThek Website
 

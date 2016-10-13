@@ -13,6 +13,7 @@ class htmlScraper(Scraper):
     UrlTip        = 'http://tvthek.orf.at/tips'
 
     base_url        = 'http://tvthek.orf.at'
+    shows_url       = 'http://tvthek.orf.at/profiles/a-z'
     
     schedule_url    = 'http://tvthek.orf.at/schedule'
     live_url        = "http://tvthek.orf.at/live"
@@ -148,35 +149,26 @@ class htmlScraper(Scraper):
     
     # Parses the Frontpage Show Overview Carousel
     def getCategories(self):
-        html = common.fetchPage({'link': self.base_url})
+        html = common.fetchPage({'link': self.shows_url})
         html_content = html.get("content")
         
-        content = common.parseDOM(html_content,name='div',attrs={'class':'mod_carousel'})
-        items = common.parseDOM(content,name='a',attrs={'class':'carousel_item_link'})
-        items_href = common.parseDOM(content,name='a',attrs={'class':'carousel_item_link'},ret="href")
+        content = common.parseDOM(html_content,name='div',attrs={'class':'region_main'})
+        items = common.parseDOM(content,name='article',attrs={'class':'item'})
         
-        i = 0
-        for item in items:
-            link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')
-            i = i + 1
-            title = self.programUrlTitle(link).encode('UTF-8')
-            if title.lower().strip() == "bundesland heute":
-                image = common.parseDOM(item,name='img',ret="src")
-                image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
-                self.getBundeslandHeute(link,image)
-            if title.lower().strip() == "zib":
-                image = common.parseDOM(item,name='img',ret="src")
-                image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
-                self.getZIB(image)
-            else:
-                image = common.parseDOM(item,name='img',ret="src")
-                image = common.replaceHTMLCodes(image[0]).replace("height=56","height=280").replace("width=100","width=500").encode('UTF-8')
 
-                desc = self.translation(30008).encode('UTF-8')
-                if title.lower().strip() != "bundesland heute":
-                    parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getSendungenDetail"}
-                    url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                    liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True,'false');
+        for item in items:
+            link = common.parseDOM(item,name='a',attrs={'class':'item_inner clearfix'},ret="href")
+            link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
+            title = common.parseDOM(item,name='h4',attrs={'class':'item_title'})
+            title = common.replaceHTMLCodes(title[0]).encode('UTF-8').replace("[","").replace("]","")
+            
+            image = common.parseDOM(item,name='img',ret="src")
+            image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
+
+            desc = self.translation(30008).encode('UTF-8')
+            parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getSendungenDetail"}
+            url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True,'false');      
     
     # Parses Details for the selected Show
     def getCategoriesDetail(self,category,banner):

@@ -18,7 +18,7 @@ except:
 socket.setdefaulttimeout(30) 
 cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
-version = "0.5.5"
+version = "0.5.6"
 plugin = "ORF-TVthek-" + version
 author = "sofaking,Rechi"
 
