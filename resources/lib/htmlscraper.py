@@ -32,7 +32,7 @@ class htmlScraper(Scraper):
         self.defaultbackdrop = defaultbackdrop
         self.useSubtitles = useSubtitles
         self.enableBlacklist = settings.getSetting("enableBlacklist") == "true"
-        self.xbmc.log(msg='HTML Scraper - Init done', level=xbmc.LOGDEBUG)
+        debugLog('HTML Scraper - Init done','Info')
         
     # Extracts VideoURL from JSON String    
     def getVideoUrl(self,sources):
@@ -79,9 +79,7 @@ class htmlScraper(Scraper):
             link = link[0].encode('UTF-8')
             if date != "":
                 title = "%s - %s" % (title,date)
-                
-            
-            
+
             parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "openSeries"}
             
 
@@ -174,7 +172,6 @@ class htmlScraper(Scraper):
     def getCategoriesDetail(self,category,banner):
         url =  urllib.unquote(category)
         banner =  urllib.unquote(banner)
-        
         html = common.fetchPage({'link': url})
         
         try:
@@ -274,12 +271,17 @@ class htmlScraper(Scraper):
             subtitles = None;
         params = parameters_string_to_dict(videourl)
         mode = params.get('mode')
+        if not mode:
+            mode = "player"
+        
         blacklist = False
         if self.enableBlacklist:
             if mode == 'openSeries' or mode == 'getSendungenDetail':
                 blacklist = True
+        debugLog("Adding List Item","Info")
+        debugLog("Videourl: %s" % videourl,"Info")
         
-        liz = createListItem(title,banner,description,duration,date,channel,videourl,playable,folder,self.translation,backdrop,self.pluginhandle,subtitles,blacklist)    
+        liz = createListItem(title,banner,description,duration,date,channel,videourl,playable,folder,self.translation,backdrop,self.pluginhandle,subtitles,blacklist)
         return liz
     
     # Parses all "ZIB" Shows
@@ -334,6 +336,7 @@ class htmlScraper(Scraper):
     def getLinks(self,url,banner,playlist):
         playlist.clear()
         url = str(urllib.unquote(url))
+        debugLog("Loading Videos from %s" % url,'Info')
         if banner != None:
             banner = urllib.unquote(banner)
         
@@ -367,10 +370,11 @@ class htmlScraper(Scraper):
             current_id = data.get("selected_video")["id"]
             current_videourl = self.getVideoUrl(data.get("selected_video")["sources"]);
         except Exception, e:
-            print e
+            debugLog(e,'Exception')
             current_subtitles = None
 
         if len(video_items) > 1:
+            debugLog("Found Video Playlist with %d Items" % len(video_items),'Info')
             parameters = {"mode" : "playlist"}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
             liz = self.html2ListItem("[ "+(self.translation(30015)).encode("utf-8")+" ]",banner,"",(self.translation(30015)).encode("utf-8"),'','','',u, None,True,'true');
@@ -378,13 +382,20 @@ class htmlScraper(Scraper):
                 try:
                     title_prefix = video_item["title_prefix"]
                     title = video_item["title"].encode('UTF-8')
-                    desc = video_item["description"].encode('UTF-8')
+                    if video_item["description"]:
+                        desc = video_item["description"].encode('UTF-8')
+                    else:
+                        debugLog("No Video Description for %s" % title,'Info')
+                        desc = ""
                     duration = video_item["duration"]
+                   
+                    
                     preview_img = video_item["preview_image_url"]
                     id = video_item["id"]
                     sources = video_item["sources"]
                     if self.useSubtitles:
                         if "subtitles" in video_item:
+                            debugLog("Found Subtitles for %s" % title,'Info')
                             subtitles = []
                             for sub in video_item["subtitles"]:
                                 subtitles.append(sub.get(u'src'))
@@ -397,9 +408,11 @@ class htmlScraper(Scraper):
                     liz = self.html2ListItem(title,preview_img,"",desc,duration,'','',videourl, subtitles,False,'true')
                     playlist.add(videourl,liz)
                 except Exception, e:
+                    debugLog(e,'Error')
                     continue
             return playlist
-        else:           
+        else:      
+            debugLog("No Playlist Items found for %s. Setting up single video view." % current_title.encode('UTF-8'),'Info')
             liz = self.html2ListItem(current_title,current_preview_img,"",current_desc,current_duration,'','',current_videourl, current_subtitles,False,'true')
             playlist.add(current_videourl,liz)
             return playlist
