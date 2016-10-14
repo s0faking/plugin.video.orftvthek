@@ -66,7 +66,7 @@ defaultbackdrop = os.path.join(media_path,"fanart.jpg")
 
 #load settings
 forceView = settings.getSetting("forceView") == "true"
-useServiceAPI = "false"
+useServiceAPI = False
 useSubtitles = settings.getSetting("useSubtitles") == "true"
 videoQuality = settings.getSetting("videoQuality")
 enableBlacklist = settings.getSetting("enableBlacklist") == "true"
