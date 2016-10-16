@@ -8,17 +8,15 @@ from Scraper import *
 
 class htmlScraper(Scraper):
 
-    UrlMostViewed = 'http://tvthek.orf.at/most_viewed'
-    UrlNewest     = 'http://tvthek.orf.at/newest'
-    UrlTip        = 'http://tvthek.orf.at/tips'
-
-    base_url        = 'http://tvthek.orf.at'
-    shows_url       = 'http://tvthek.orf.at/profiles/a-z'
-    
-    schedule_url    = 'http://tvthek.orf.at/schedule'
-    live_url        = "http://tvthek.orf.at/live"
-    search_base_url = 'http://tvthek.orf.at/search'
-    topic_url       = 'http://tvthek.orf.at/topics'
+    __urlBase       = 'http://tvthek.orf.at'
+    __urlLive       = __urlBase + 'live'
+    __urlMostViewed = __urlBase + '/most_viewed'
+    __urlNewest     = __urlBase + '/newest'
+    __urlSchedule   = __urlBase + '/schedule'
+    __urlSearch     = __urlBase + '/search'
+    __urlShows      = __urlBase + '/profiles/a-z'
+    __urlTips       = __urlBase + '/tips'
+    __urlTopics     = __urlBase + '/topics'
 
     
     def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode):
@@ -36,15 +34,15 @@ class htmlScraper(Scraper):
 
 
     def getMostViewed(self):
-        self.getTableResults(self.UrlMostViewed)
+        self.getTableResults(self.__urlMostViewed)
 
 
     def getNewest(self):
-        self.getTableResults(self.UrlNewest)
+        self.getTableResults(self.__urlNewest)
 
 
     def getTips(self):
-        self.getTableResults(self.UrlTip)
+        self.getTableResults(self.__urlTips)
 
         
     # Extracts VideoURL from JSON String    
@@ -58,7 +56,7 @@ class htmlScraper(Scraper):
     
     # Converts Page URL to Title 
     def programUrlTitle(self,url):
-        title = url.replace(self.base_url,"").split("/")
+        title = url.replace(self.__urlBase,"").split("/")
         if title[1] == 'index.php':
             return title[3].replace("-"," ")
         else:
@@ -102,7 +100,7 @@ class htmlScraper(Scraper):
             
     	
     def openArchiv(self,url):
-        url = self.base_url + urllib.unquote(url)
+        url = self.__urlBase + urllib.unquote(url)
         html = common.fetchPage({'link': url})
         teasers = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'})
         teasers_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'},ret="href")
@@ -136,7 +134,7 @@ class htmlScraper(Scraper):
     
     # Parses the Frontpage Carousel
     def getHighlights(self):
-        html = common.fetchPage({'link': self.base_url})
+        html = common.fetchPage({'link': self.__urlBase})
         html_content = html.get("content")
         teaserbox = common.parseDOM(html_content,name='a',attrs={'class': 'item_inner'})
         teaserbox_href = common.parseDOM(html_content,name='a',attrs={'class': 'item_inner'},ret="href")
@@ -160,7 +158,7 @@ class htmlScraper(Scraper):
     
     # Parses the Frontpage Show Overview Carousel
     def getCategories(self):
-        html = common.fetchPage({'link': self.shows_url})
+        html = common.fetchPage({'link': self.__urlShows})
         html_content = html.get("content")
         
         content = common.parseDOM(html_content,name='div',attrs={'class':'region_main'})
@@ -244,7 +242,7 @@ class htmlScraper(Scraper):
         
     # Parses "Sendung verpasst?" Date Listing
     def getArchiv(self):
-        html = common.fetchPage({'link': self.schedule_url})
+        html = common.fetchPage({'link': self.__urlSchedule})
         articles = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'})
         articles_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'},ret="href")
         i = 0
@@ -440,7 +438,7 @@ class htmlScraper(Scraper):
         liveurls['ORF3'] = "http://apasfiisl.apa.at/ipad/orf3_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
         liveurls['ORFS'] = "http://apasfiisl.apa.at/ipad/orfs_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
             
-        html = common.fetchPage({'link': self.live_url})
+        html = common.fetchPage({'link': self.__urlLive})
         wrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper.*mod_epg'})
         items = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'})
         items_class = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'},ret="class")
@@ -485,7 +483,7 @@ class htmlScraper(Scraper):
     
     # Parses the Topic Overview Page
     def getThemen(self):
-        html = common.fetchPage({'link': self.topic_url})
+        html = common.fetchPage({'link': self.__urlTopics})
         html_content = html.get("content")
             
         content = common.parseDOM(html_content,name='section',attrs={'class':'mod_container_list'})
@@ -578,7 +576,7 @@ class htmlScraper(Scraper):
             if keyboard_in != link:
                 some_dict = cache.get("searches") + "|"+keyboard_in
                 cache.set("searches",some_dict);
-            searchurl = "%s?q=%s"%(self.search_base_url,keyboard_in.replace(" ","+"))
+            searchurl = "%s?q=%s"%(self.__urlSearch,keyboard_in.replace(" ","+"))
             self.getTableResults(searchurl)
         else:
             parameters = {'mode' : 'getSearchHistory'}
