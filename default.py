@@ -18,7 +18,7 @@ except:
 socket.setdefaulttimeout(30) 
 cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
-version = "0.5.7"
+version = "0.5.8"
 plugin = "ORF-TVthek-" + version
 author = "sofaking,Rechi"
 
@@ -235,7 +235,7 @@ elif mode == 'liveStreamNotOnline':
     jsonScraper.getLiveNotOnline(link)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'playlist':
-    startPlaylist(playlist)
+    startPlaylist(tvthekplayer,playlist)
 elif sys.argv[2] == '':
     getMainMenu()
 else:
