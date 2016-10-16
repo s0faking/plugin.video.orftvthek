@@ -33,6 +33,19 @@ class htmlScraper(Scraper):
         self.useSubtitles = useSubtitles
         self.enableBlacklist = settings.getSetting("enableBlacklist") == "true"
         debugLog('HTML Scraper - Init done','Info')
+
+
+    def getMostViewed(self):
+        self.getTableResults(self.UrlMostViewed)
+
+
+    def getNewest(self):
+        self.getTableResults(self.UrlNewest)
+
+
+    def getTips(self):
+        self.getTableResults(self.UrlTip)
+
         
     # Extracts VideoURL from JSON String    
     def getVideoUrl(self,sources):
@@ -122,8 +135,8 @@ class htmlScraper(Scraper):
         
     
     # Parses the Frontpage Carousel
-    def getRecentlyAdded(self,url):
-        html = common.fetchPage({'link': url})
+    def getHighlights(self):
+        html = common.fetchPage({'link': self.base_url})
         html_content = html.get("content")
         teaserbox = common.parseDOM(html_content,name='a',attrs={'class': 'item_inner'})
         teaserbox_href = common.parseDOM(html_content,name='a',attrs={'class': 'item_inner'},ret="href")
@@ -230,8 +243,8 @@ class htmlScraper(Scraper):
                 liz = self.html2ListItem(title,banner,"",desc,"","","",url,None,True,'false');
         
     # Parses "Sendung verpasst?" Date Listing
-    def getArchiv(self,url):
-        html = common.fetchPage({'link': url})
+    def getArchiv(self):
+        html = common.fetchPage({'link': self.schedule_url})
         articles = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'})
         articles_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'},ret="href")
         i = 0

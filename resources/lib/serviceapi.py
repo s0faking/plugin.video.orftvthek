@@ -42,7 +42,24 @@ class serviceAPI(Scraper):
         self.defaultbackdrop = defaultbackdrop
         self.useSubtitles = useSubtitles
         self.xbmc.log(msg='ServiceAPI  - Init done', level=xbmc.LOGDEBUG);
-        
+
+
+    def getHighlights(self):
+        self.getTableResults(self.serviceAPIHighlights)
+
+
+    def getMostViewed(self):
+        self.getTableResults(self.UrlMostViewed)
+
+
+    def getNewest(self):
+        self.getTableResults(self.UrlNewest)
+
+
+    def getTips(self):
+        self.getTableResults(self.UrlTip)
+
+
     def getTableResults(self, urlAPI):
         urlAPI = urlAPI % self.serviceAPItoken
         try:

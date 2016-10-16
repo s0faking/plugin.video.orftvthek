@@ -173,22 +173,19 @@ elif mode == 'getSendungen':
     scraper.getCategories()
     listCallback(True,thumbViewMode,pluginhandle)
 elif mode == 'getAktuelles':
-    if useServiceAPI:
-        jsonScraper.getTableResults(jsonScraper.serviceAPIHighlights)
-    else:
-        htmlScraper.getRecentlyAdded(htmlScraper.base_url)
+    scraper.getHighlights()
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getLive':
     scraper.getLiveStreams()
     listCallback(False,smallListViewMode,pluginhandle)
 elif mode == 'getTipps':
-    scraper.getTableResults(scraper.UrlTip)
+    scraper.getTips()
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getNewShows':
-    scraper.getTableResults(scraper.UrlNewest)
+    scraper.getNewest()
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getMostViewed':
-    scraper.getTableResults(scraper.UrlMostViewed)
+    scraper.getMostViewed()
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getThemen':
     scraper.getThemen()
@@ -200,10 +197,7 @@ elif mode == 'getThemenDetail':
     htmlScraper.getThemenDetail(link)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getArchiv':
-    if useServiceAPI:
-        jsonScraper.getArchiv()
-    else:
-        htmlScraper.getArchiv(htmlScraper.schedule_url)
+    scraper.getArchiv()
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'getArchivDetail':
     htmlScraper.openArchiv(link)
