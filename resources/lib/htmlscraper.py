@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time,os,os.path,urlparse,json
 import CommonFunctions as common
+
+import Settings
 from resources.lib.helpers import *
 from base import *
 from Scraper import *
@@ -292,7 +294,7 @@ class htmlScraper(Scraper):
         debugLog("Adding List Item","Info")
         debugLog("Videourl: %s" % videourl,"Info")
         
-        liz = createListItem(title,banner,description,duration,date,channel,videourl,playable,folder,self.translation,backdrop,self.pluginhandle,subtitles,blacklist)
+        liz = createListItem(title,banner,description,duration,date,channel,videourl,playable,folder, backdrop,self.pluginhandle,subtitles,blacklist)
         return liz
     
     # Parses all "ZIB" Shows
@@ -554,7 +556,7 @@ class htmlScraper(Scraper):
     def getSearchHistory(self,cache):
         parameters = {'mode' : 'getSearchResults'}
         u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-        createListItem((self.translation(30007)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+        createListItem((self.translation(30007)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)
 
         cache.table_name = "searchhistory"
         some_dict = cache.get("searches").split("|")
@@ -562,7 +564,7 @@ class htmlScraper(Scraper):
             if str.strip() != '':
                 parameters = {'mode' : 'getSearchResults','link' : str.replace(" ","+")}
                 u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                createListItem(str.encode('UTF-8'), self.defaultbanner, "", "", "", '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+                createListItem(str.encode('UTF-8'), self.defaultbanner, "", "", "", '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)
 
     def removeUmlauts(self,str):
         return str.replace("Ö","O").replace("ö","o").replace("Ü","U").replace("ü","u").replace("Ä","A").replace("ä","a")
@@ -581,4 +583,4 @@ class htmlScraper(Scraper):
         else:
             parameters = {'mode' : 'getSearchHistory'}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            createListItem((self.translation(30014)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+            createListItem((self.translation(30014)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)

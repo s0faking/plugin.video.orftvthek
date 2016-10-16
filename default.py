@@ -111,19 +111,19 @@ if title:
 
 def getMainMenu():
     debugLog("Building Main Menu","Info")
-    addDirectory((translation(30001)).encode("utf-8"),news_banner,defaultbackdrop,translation,"","","getAktuelles",pluginhandle)
-    addDirectory((translation(30000)).encode("utf-8"),recently_added_banner,defaultbackdrop,translation,"","","getNewShows",pluginhandle)
-    addDirectory((translation(30002)).encode("utf-8"),shows_banner,defaultbackdrop,translation,"","","getSendungen",pluginhandle)
-    addDirectory((translation(30003)).encode("utf-8"),topics_banner,defaultbackdrop,translation,"","","getThemen",pluginhandle)
-    addDirectory((translation(30004)).encode("utf-8"),live_banner,defaultbackdrop,translation,"","","getLive",pluginhandle)
-    addDirectory((translation(30005)).encode("utf-8"),tips_banner,defaultbackdrop,translation,"","","getTipps",pluginhandle)
-    addDirectory((translation(30006)).encode("utf-8"),most_popular_banner,defaultbackdrop,translation,"","","getMostViewed",pluginhandle)
-    addDirectory((translation(30018)).encode("utf-8"),archive_banner,defaultbackdrop,translation,"","","getArchiv",pluginhandle)
-    addDirectory((translation(30007)).encode("utf-8"),search_banner,defaultbackdrop,translation,"","","getSearchHistory",pluginhandle)
+    addDirectory((translation(30001)).encode("utf-8"),news_banner,defaultbackdrop, "","","getAktuelles",pluginhandle)
+    addDirectory((translation(30000)).encode("utf-8"),recently_added_banner,defaultbackdrop, "","","getNewShows",pluginhandle)
+    addDirectory((translation(30002)).encode("utf-8"),shows_banner,defaultbackdrop, "","","getSendungen",pluginhandle)
+    addDirectory((translation(30003)).encode("utf-8"),topics_banner,defaultbackdrop, "","","getThemen",pluginhandle)
+    addDirectory((translation(30004)).encode("utf-8"),live_banner,defaultbackdrop, "","","getLive",pluginhandle)
+    addDirectory((translation(30005)).encode("utf-8"),tips_banner,defaultbackdrop, "","","getTipps",pluginhandle)
+    addDirectory((translation(30006)).encode("utf-8"),most_popular_banner,defaultbackdrop, "","","getMostViewed",pluginhandle)
+    addDirectory((translation(30018)).encode("utf-8"),archive_banner,defaultbackdrop, "","","getArchiv",pluginhandle)
+    addDirectory((translation(30007)).encode("utf-8"),search_banner,defaultbackdrop, "","","getSearchHistory",pluginhandle)
     if useServiceAPI:
-        addDirectory((translation(30027)).encode("utf-8"),trailer_banner,defaultbackdrop,translation,"","","openTrailers",pluginhandle)
+        addDirectory((translation(30027)).encode("utf-8"),trailer_banner,defaultbackdrop, "","","openTrailers",pluginhandle)
     if enableBlacklist:
-        addDirectory((translation(30037)).encode("utf-8"),blacklist_banner,defaultbackdrop,translation,"","","openBlacklist",pluginhandle)
+        addDirectory((translation(30037)).encode("utf-8"),blacklist_banner,defaultbackdrop, "","","openBlacklist",pluginhandle)
     listCallback(False,thumbViewMode,pluginhandle)
     
     
@@ -158,7 +158,7 @@ if mode == 'openSeries':
 elif mode == 'unblacklistShow':
     title=params.get('title')
     unblacklistItem(title)
-    addDirectory(">> %s <<" % (translation(30039)).encode("utf-8"),defaultbanner,defaultbackdrop,translation,"","","",pluginhandle)
+    addDirectory(">> %s <<" % (translation(30039)).encode("utf-8"),defaultbanner,defaultbackdrop, "","","",pluginhandle)
     printBlacklist(defaultbanner,defaultbackdrop,translation,pluginhandle)
     xbmcplugin.endOfDirectory(pluginhandle)
 elif mode == 'blacklistShow':
@@ -166,7 +166,7 @@ elif mode == 'blacklistShow':
     blacklistItem(title)
     xbmc.executebuiltin('Container.Refresh')
 if mode == 'openBlacklist':
-    addDirectory(">> %s <<" % (translation(30039)).encode("utf-8"),defaultbanner,defaultbackdrop,translation,"","","",pluginhandle)
+    addDirectory(">> %s <<" % (translation(30039)).encode("utf-8"),defaultbanner,defaultbackdrop, "","","",pluginhandle)
     printBlacklist(defaultbanner,defaultbackdrop,translation,pluginhandle)
     xbmcplugin.endOfDirectory(pluginhandle)
 elif mode == 'getSendungen':
