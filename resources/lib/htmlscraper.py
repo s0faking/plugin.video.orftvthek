@@ -2,23 +2,23 @@
 # -*- coding: utf-8 -*-
 import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time,os,os.path,urlparse,json
 import CommonFunctions as common
+
+import Settings
 from resources.lib.helpers import *
 from base import *
 from Scraper import *
 
 class htmlScraper(Scraper):
 
-    UrlMostViewed = 'http://tvthek.orf.at/most_viewed'
-    UrlNewest     = 'http://tvthek.orf.at/newest'
-    UrlTip        = 'http://tvthek.orf.at/tips'
-
-    base_url        = 'http://tvthek.orf.at'
-    shows_url       = 'http://tvthek.orf.at/profiles/a-z'
-    
-    schedule_url    = 'http://tvthek.orf.at/schedule'
-    live_url        = "http://tvthek.orf.at/live"
-    search_base_url = 'http://tvthek.orf.at/search'
-    topic_url       = 'http://tvthek.orf.at/topics'
+    __urlBase       = 'http://tvthek.orf.at'
+    __urlLive       = __urlBase + 'live'
+    __urlMostViewed = __urlBase + '/most_viewed'
+    __urlNewest     = __urlBase + '/newest'
+    __urlSchedule   = __urlBase + '/schedule'
+    __urlSearch     = __urlBase + '/search'
+    __urlShows      = __urlBase + '/profiles/a-z'
+    __urlTips       = __urlBase + '/tips'
+    __urlTopics     = __urlBase + '/topics'
 
     
     def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode):
@@ -33,6 +33,19 @@ class htmlScraper(Scraper):
         self.useSubtitles = useSubtitles
         self.enableBlacklist = settings.getSetting("enableBlacklist") == "true"
         debugLog('HTML Scraper - Init done','Info')
+
+
+    def getMostViewed(self):
+        self.getTableResults(self.__urlMostViewed)
+
+
+    def getNewest(self):
+        self.getTableResults(self.__urlNewest)
+
+
+    def getTips(self):
+        self.getTableResults(self.__urlTips)
+
         
     # Extracts VideoURL from JSON String    
     def getVideoUrl(self,sources):
@@ -45,7 +58,7 @@ class htmlScraper(Scraper):
     
     # Converts Page URL to Title 
     def programUrlTitle(self,url):
-        title = url.replace(self.base_url,"").split("/")
+        title = url.replace(self.__urlBase,"").split("/")
         if title[1] == 'index.php':
             return title[3].replace("-"," ")
         else:
@@ -89,7 +102,7 @@ class htmlScraper(Scraper):
             
     	
     def openArchiv(self,url):
-        url = self.base_url + urllib.unquote(url)
+        url = self.__urlBase + urllib.unquote(url)
         html = common.fetchPage({'link': url})
         teasers = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'})
         teasers_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'},ret="href")
@@ -122,8 +135,8 @@ class htmlScraper(Scraper):
         
     
     # Parses the Frontpage Carousel
-    def getRecentlyAdded(self,url):
-        html = common.fetchPage({'link': url})
+    def getHighlights(self):
+        html = common.fetchPage({'link': self.__urlBase})
         html_content = html.get("content")
         teaserbox = common.parseDOM(html_content,name='a',attrs={'class': 'item_inner'})
         teaserbox_href = common.parseDOM(html_content,name='a',attrs={'class': 'item_inner'},ret="href")
@@ -147,7 +160,7 @@ class htmlScraper(Scraper):
     
     # Parses the Frontpage Show Overview Carousel
     def getCategories(self):
-        html = common.fetchPage({'link': self.shows_url})
+        html = common.fetchPage({'link': self.__urlShows})
         html_content = html.get("content")
         
         content = common.parseDOM(html_content,name='div',attrs={'class':'region_main'})
@@ -230,8 +243,8 @@ class htmlScraper(Scraper):
                 liz = self.html2ListItem(title,banner,"",desc,"","","",url,None,True,'false');
         
     # Parses "Sendung verpasst?" Date Listing
-    def getArchiv(self,url):
-        html = common.fetchPage({'link': url})
+    def getArchiv(self):
+        html = common.fetchPage({'link': self.__urlSchedule})
         articles = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'})
         articles_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'},ret="href")
         i = 0
@@ -281,7 +294,7 @@ class htmlScraper(Scraper):
         debugLog("Adding List Item","Info")
         debugLog("Videourl: %s" % videourl,"Info")
         
-        liz = createListItem(title,banner,description,duration,date,channel,videourl,playable,folder,self.translation,backdrop,self.pluginhandle,subtitles,blacklist)
+        liz = createListItem(title,banner,description,duration,date,channel,videourl,playable,folder, backdrop,self.pluginhandle,subtitles,blacklist)
         return liz
     
     # Parses all "ZIB" Shows
@@ -427,7 +440,7 @@ class htmlScraper(Scraper):
         liveurls['ORF3'] = "http://apasfiisl.apa.at/ipad/orf3_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
         liveurls['ORFS'] = "http://apasfiisl.apa.at/ipad/orfs_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
             
-        html = common.fetchPage({'link': self.live_url})
+        html = common.fetchPage({'link': self.__urlLive})
         wrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper.*mod_epg'})
         items = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'})
         items_class = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'},ret="class")
@@ -472,7 +485,7 @@ class htmlScraper(Scraper):
     
     # Parses the Topic Overview Page
     def getThemen(self):
-        html = common.fetchPage({'link': self.topic_url})
+        html = common.fetchPage({'link': self.__urlTopics})
         html_content = html.get("content")
             
         content = common.parseDOM(html_content,name='section',attrs={'class':'mod_container_list'})
@@ -543,7 +556,7 @@ class htmlScraper(Scraper):
     def getSearchHistory(self,cache):
         parameters = {'mode' : 'getSearchResults'}
         u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-        createListItem((self.translation(30007)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+        createListItem((self.translation(30007)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)
 
         cache.table_name = "searchhistory"
         some_dict = cache.get("searches").split("|")
@@ -551,7 +564,7 @@ class htmlScraper(Scraper):
             if str.strip() != '':
                 parameters = {'mode' : 'getSearchResults','link' : str.replace(" ","+")}
                 u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                createListItem(str.encode('UTF-8'), self.defaultbanner, "", "", "", '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+                createListItem(str.encode('UTF-8'), self.defaultbanner, "", "", "", '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)
 
     def removeUmlauts(self,str):
         return str.replace("Ö","O").replace("ö","o").replace("Ü","U").replace("ü","u").replace("Ä","A").replace("ä","a")
@@ -565,9 +578,9 @@ class htmlScraper(Scraper):
             if keyboard_in != link:
                 some_dict = cache.get("searches") + "|"+keyboard_in
                 cache.set("searches",some_dict);
-            searchurl = "%s?q=%s"%(self.search_base_url,keyboard_in.replace(" ","+"))
+            searchurl = "%s?q=%s"%(self.__urlSearch,keyboard_in.replace(" ","+"))
             self.getTableResults(searchurl)
         else:
             parameters = {'mode' : 'getSearchHistory'}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            createListItem((self.translation(30014)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+            createListItem((self.translation(30014)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)

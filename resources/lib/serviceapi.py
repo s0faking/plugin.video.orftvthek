@@ -3,31 +3,30 @@
 import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time,os,os.path,urlparse,json
 import CommonFunctions as common
 
+import Settings
 from base import *
 from Scraper import *
 
 class serviceAPI(Scraper):
 
-    UrlMostViewed = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/most_viewed'
-    UrlNewest     = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/newest'
-    UrlTip        = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/recommendations'
+    __apiToken = 'ef97318c84d4e8'
 
-    # serviceAPI Settings
-    serviceAPItoken         = 'ef97318c84d4e8'
+    __urlBase       = 'http://tvthek.orf.at/service_api/token/%s/' % __apiToken
+    __urlLive       = __urlBase + 'livestreams/from/%s/till/%s/detail?page=0&entries_per_page=%i'
+    __urlMostViewed = __urlBase + 'teaser_content/most_viewed'
+    __urlNewest     = __urlBase + 'teaser_content/newest'
+    __urlSearch     = __urlBase + 'search/%s?page=0&entries_per_page=1000'
+    __urlShows      = __urlBase + 'programs?page=0&entries_per_page=1000'
+    __urlTips       = __urlBase + 'teaser_content/recommendations'
+    __urlTopics     = __urlBase + 'topics?page=0&entries_per_page=1000'
 
-    serviceAPIEpisode       = 'http://tvthek.orf.at/service_api/token/%s/episode/%s/'
-    serviceAPIDate          = 'http://tvthek.orf.at/service_api/token/%s/episodes/by_date/%s?page=0&entries_per_page=1000'
-    serviceAPIDateFrom      = 'http://tvthek.orf.at/service_api/token/%s/episodes/from/%s0000/till/%s0000?page=0&entries_per_page=1000'
-    serviceAPIProgram       = 'http://tvthek.orf.at/service_api/token/%s/episodes/by_program/%s'
-    serviceAPISearch        = 'http://tvthek.orf.at/service_api/token/%s/search/%s?page=0&entries_per_page=1000'
-    servieAPITopic          = 'http://tvthek.orf.at/service_api/token/%s/topic/%s/'
-
-    serviceAPIPrograms      = 'http://tvthek.orf.at/service_api/token/%s/programs?page=0&entries_per_page=1000'
-    serviceAPITopics        = 'http://tvthek.orf.at/service_api/token/%s/topics?page=0&entries_per_page=1000'
-    serviceAPITrailers      = 'http://tvthek.orf.at/service_api/token/%s/episodes/trailers?page=0&entries_per_page=1000'
-
-    serviceAPILive          = 'http://tvthek.orf.at/service_api/token/%s/livestreams/from/%s/till/%s/detail?page=0&entries_per_page=%i'
-    serviceAPIHighlights    = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/highlights'
+    serviceAPIEpisode    = __urlBase + 'episode/%s'
+    serviceAPIDate       = __urlBase + 'episodes/by_date/%s?page=0&entries_per_page=1000'
+    serviceAPIDateFrom   = __urlBase + 'episodes/from/%s0000/till/%s0000?page=0&entries_per_page=1000'
+    serviceAPIProgram    = __urlBase + 'episodes/by_program/%s'
+    servieAPITopic       = __urlBase + 'topic/%s'
+    serviceAPITrailers   = __urlBase + 'episodes/trailers?page=0&entries_per_page=1000'
+    serviceAPIHighlights = __urlBase + 'teaser_content/highlights'
 
     
     def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode):
@@ -42,9 +41,25 @@ class serviceAPI(Scraper):
         self.defaultbackdrop = defaultbackdrop
         self.useSubtitles = useSubtitles
         self.xbmc.log(msg='ServiceAPI  - Init done', level=xbmc.LOGDEBUG);
-        
+
+
+    def getHighlights(self):
+        self.getTableResults(self.serviceAPIHighlights)
+
+
+    def getMostViewed(self):
+        self.getTableResults(self.__urlMostViewed)
+
+
+    def getNewest(self):
+        self.getTableResults(self.__urlNewest)
+
+
+    def getTips(self):
+        self.getTableResults(self.__urlTips)
+
+
     def getTableResults(self, urlAPI):
-        urlAPI = urlAPI % self.serviceAPItoken
         try:
             response = urllib2.urlopen(urlAPI)
             responseCode = response.getcode()
@@ -75,7 +90,7 @@ class serviceAPI(Scraper):
                 u = sys.argv[0] + '?' + urllib.urlencode(parameters)
                 # Direcotory should be set to False, that the Duration is shown.
                 # But then there is an error with the Pluginhandle
-                createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+                createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)
         else:
             self.xbmc.log(msg='ServiceAPI no available ... switch back to HTML Parsing in the Addon Settings', level=xbmc.LOGDEBUG);
             xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
@@ -97,7 +112,7 @@ class serviceAPI(Scraper):
         u = sys.argv[0] + '?' + urllib.urlencode(parameters)
         # Direcotory should be set to False, that the Duration is shown.
         # But then there is an error with the Pluginhandle
-        createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+        createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)
 
 
     def JSONSegment2ListItem(self,JSONSegment, date):
@@ -110,7 +125,7 @@ class serviceAPI(Scraper):
             subtitles = [JSONSegment.get('subtitlesSrtFileUrl')]
         else:
             subtitles = None
-        return [streamingURL, createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False,self.translation,self.defaultbackdrop,self.pluginhandle,subtitles)]
+        return [streamingURL, createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False, self.defaultbackdrop,self.pluginhandle,subtitles)]
 
     def JSONDescription(self,jsonDescription):
         desc = ''
@@ -142,7 +157,7 @@ class serviceAPI(Scraper):
     def getCategories(self):
         list = []
         try:
-            response = urllib2.urlopen(self.serviceAPIPrograms % self.serviceAPItoken)
+            response = urllib2.urlopen(self.__urlShows)
             responseCode = response.getcode()
         except urllib2.HTTPError, error:
             responseCode = error.getcode()
@@ -167,7 +182,7 @@ class serviceAPI(Scraper):
                 
                 parameters = {'mode' : 'openProgram', 'link': link}
                 u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                createListItem(title, image, description, "", "", '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+                createListItem(title, image, description, "", "", '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)
         else:
             xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
 
@@ -175,9 +190,9 @@ class serviceAPI(Scraper):
     # list all Episodes for the given Date
     def getDate(self, date, dateFrom = None):
         if dateFrom == None:
-            url = self.serviceAPIDate % (self.serviceAPItoken, date)
+            url = self.serviceAPIDate % date
         else:
-            url = self.serviceAPIDateFrom % (self.serviceAPItoken, dateFrom, date)
+            url = self.serviceAPIDateFrom % (dateFrom, date)
         response = urllib2.urlopen(url)
 
         if dateFrom == None:
@@ -191,7 +206,7 @@ class serviceAPI(Scraper):
 
     # list all Entries for the given Topic
     def getTopic(self,topicID):
-        url = self.servieAPITopic % (self.serviceAPItoken, topicID)
+        url = self.servieAPITopic % topicID
         response = urllib2.urlopen(url)
 
         for entrie in json.loads(response.read())['topicDetail'].get('entries'):
@@ -211,14 +226,14 @@ class serviceAPI(Scraper):
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
             # Direcotory should be set to False, that the Duration is shown.
             # But then there is an error with the Pluginhandle
-            createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+            createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)
 
         
 
 
     # list all Episodes for the given Broadcast
     def getProgram(self,programID,playlist):
-        url = self.serviceAPIProgram % (self.serviceAPItoken, programID)
+        url = self.serviceAPIProgram % programID
         response = urllib2.urlopen(url)
         responseCode = response.getcode()
 
@@ -241,7 +256,7 @@ class serviceAPI(Scraper):
     def getEpisode(self,episodeID,playlist):
         playlist.clear()
 
-        url = self.serviceAPIEpisode % (self.serviceAPItoken, episodeID)
+        url = self.serviceAPIEpisode % episodeID
         response = urllib2.urlopen(url)
         result = json.loads(response.read())['episodeDetail']
 
@@ -255,7 +270,7 @@ class serviceAPI(Scraper):
         for link in result.get('links'):
             if link.get('identifier') == 'program':
                 referenceOtherEpisode = True
-                addDirectory(link.get('name').encode('UTF-8'), '',  self.defaultbackdrop,self.translation,'', link.get('id'), 'openProgram',self.pluginhandle)
+                addDirectory(link.get('name').encode('UTF-8'), '', self.defaultbackdrop, '', link.get('id'), 'openProgram',self.pluginhandle)
 
         if referenceOtherEpisode:
             return
@@ -268,7 +283,7 @@ class serviceAPI(Scraper):
         else:
             parameters = {'mode' : 'playlist'}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            createListItem('[ '+(self.translation(30015)).encode('UTF-8')+' ]', image, '%s\n%s' % ((self.translation(30015)).encode('UTF-8'), description), duration, time.strftime('%Y-%m-%d', date), '', u, 'false', False,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+            createListItem('[ '+(self.translation(30015)).encode('UTF-8')+' ]', image, '%s\n%s' % ((self.translation(30015)).encode('UTF-8'), description), duration, time.strftime('%Y-%m-%d', date), '', u, 'false', False, self.defaultbackdrop,self.pluginhandle,None)
 
             for segment in result.get('segments'):
                 listItem = self.JSONSegment2ListItem(segment, date)
@@ -277,7 +292,7 @@ class serviceAPI(Scraper):
     # Parses the Topic Overview Page
     def getThemen(self):
         try: 
-            response = urllib2.urlopen(self.serviceAPITopics % self.serviceAPItoken)
+            response = urllib2.urlopen(self.__urlTopics)
             responseCode = response.getcode()
         except ValueError, error:
             responseCode = 404
@@ -295,7 +310,7 @@ class serviceAPI(Scraper):
                 description = topic.get('description')
                 link        = topic.get('topicId')
 
-                addDirectory(title, image, self.defaultbackdrop,self.translation, description, link, 'openTopic',self.pluginhandle)
+                addDirectory(title, image, self.defaultbackdrop, description, link, 'openTopic',self.pluginhandle)
         else:
             xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
             
@@ -303,7 +318,7 @@ class serviceAPI(Scraper):
     def getSegment(self,episodeID, segmentID,playlist):
         playlist.clear()
 
-        url = self.serviceAPIEpisode % (self.serviceAPItoken, episodeID)
+        url = self.serviceAPIEpisode % episodeID
         response = urllib2.urlopen(url)
         responseCode = response.getcode()
 
@@ -322,9 +337,8 @@ class serviceAPI(Scraper):
                     
     # list all Trailers for further airings
     def getTrailers(self):
-        url = self.serviceAPITrailers % self.serviceAPItoken
         try: 
-            response = urllib2.urlopen(url)
+            response = urllib2.urlopen(self.serviceAPITrailers)
             responseCode = response.getcode()
         except ValueError, error:
             responseCode = 404
@@ -350,11 +364,11 @@ class serviceAPI(Scraper):
                 title = 'älter als %s' % title
                 parameters = {'mode' : 'openDate', 'link': date.strftime('%Y%m%d'), 'from': (date - datetime.timedelta(days=150)).strftime('%Y%m%d')}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            createListItem(title, '', title, '', date.strftime('%Y-%m-%d'), '', u, 'False', True,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+            createListItem(title, '', title, '', date.strftime('%Y-%m-%d'), '', u, 'False', True, self.defaultbackdrop,self.pluginhandle,None)
     
     # Returns Live Stream Listing
     def getLiveStreams(self):
-        url = self.serviceAPILive % (self.serviceAPItoken, datetime.datetime.now().strftime('%Y%m%d%H%M'), (datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y%m%d%H%M'), 25)
+        url = self.__urlLive % (datetime.datetime.now().strftime('%Y%m%d%H%M'), (datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y%m%d%H%M'), 25)
         try: 
             response = urllib2.urlopen(url)
             responseCode = response.getcode()
@@ -425,12 +439,12 @@ class serviceAPI(Scraper):
                 else:
                     banner = ''
 
-                createListItem(title, banner, description, duration, time.strftime('%Y-%m-%d', livestreamStart), program, link, 'True', False,self.translation,self.defaultbackdrop,self.pluginhandle,None)
+                createListItem(title, banner, description, duration, time.strftime('%Y-%m-%d', livestreamStart), program, link, 'True', False, self.defaultbackdrop,self.pluginhandle,None)
         else:
             xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
 
     def getLiveNotOnline(self,link):
-        url = self.serviceAPIEpisode % (self.serviceAPItoken, link)
+        url = self.serviceAPIEpisode % link
         response = urllib2.urlopen(url)
         result = json.loads(response.read())['episodeDetail']
 
@@ -457,5 +471,5 @@ class serviceAPI(Scraper):
 
                 livestreamStreamingURLs.sort()
                 streamingURL = livestreamStreamingURLs[len(livestreamStreamingURLs) - 1].replace('q4a', self.videoQuality)
-                listItem = createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False,self.translation,self.defaultbackdrop,self.pluginhandle,subtitles)
+                listItem = createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False, self.defaultbackdrop,self.pluginhandle,subtitles)
                 self.xbmc.Player().play(streamingURL, listItem)
