@@ -8,26 +8,24 @@ from Scraper import *
 
 class serviceAPI(Scraper):
 
-    UrlMostViewed = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/most_viewed'
-    UrlNewest     = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/newest'
-    UrlTip        = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/recommendations'
+    __apiToken = 'ef97318c84d4e8'
 
-    # serviceAPI Settings
-    serviceAPItoken         = 'ef97318c84d4e8'
+    __urlBase       = 'http://tvthek.orf.at/service_api/token/%s/' % __apiToken
+    __urlLive       = __urlBase + 'livestreams/from/%s/till/%s/detail?page=0&entries_per_page=%i'
+    __urlMostViewed = __urlBase + 'teaser_content/most_viewed'
+    __urlNewest     = __urlBase + 'teaser_content/newest'
+    __urlSearch     = __urlBase + 'search/%s?page=0&entries_per_page=1000'
+    __urlShows      = __urlBase + 'programs?page=0&entries_per_page=1000'
+    __urlTips       = __urlBase + 'teaser_content/recommendations'
+    __urlTopics     = __urlBase + 'topics?page=0&entries_per_page=1000'
 
-    serviceAPIEpisode       = 'http://tvthek.orf.at/service_api/token/%s/episode/%s/'
-    serviceAPIDate          = 'http://tvthek.orf.at/service_api/token/%s/episodes/by_date/%s?page=0&entries_per_page=1000'
-    serviceAPIDateFrom      = 'http://tvthek.orf.at/service_api/token/%s/episodes/from/%s0000/till/%s0000?page=0&entries_per_page=1000'
-    serviceAPIProgram       = 'http://tvthek.orf.at/service_api/token/%s/episodes/by_program/%s'
-    serviceAPISearch        = 'http://tvthek.orf.at/service_api/token/%s/search/%s?page=0&entries_per_page=1000'
-    servieAPITopic          = 'http://tvthek.orf.at/service_api/token/%s/topic/%s/'
-
-    serviceAPIPrograms      = 'http://tvthek.orf.at/service_api/token/%s/programs?page=0&entries_per_page=1000'
-    serviceAPITopics        = 'http://tvthek.orf.at/service_api/token/%s/topics?page=0&entries_per_page=1000'
-    serviceAPITrailers      = 'http://tvthek.orf.at/service_api/token/%s/episodes/trailers?page=0&entries_per_page=1000'
-
-    serviceAPILive          = 'http://tvthek.orf.at/service_api/token/%s/livestreams/from/%s/till/%s/detail?page=0&entries_per_page=%i'
-    serviceAPIHighlights    = 'http://tvthek.orf.at/service_api/token/%s/teaser_content/highlights'
+    serviceAPIEpisode    = __urlBase + 'episode/%s'
+    serviceAPIDate       = __urlBase + 'episodes/by_date/%s?page=0&entries_per_page=1000'
+    serviceAPIDateFrom   = __urlBase + 'episodes/from/%s0000/till/%s0000?page=0&entries_per_page=1000'
+    serviceAPIProgram    = __urlBase + 'episodes/by_program/%s'
+    servieAPITopic       = __urlBase + 'topic/%s'
+    serviceAPITrailers   = __urlBase + 'episodes/trailers?page=0&entries_per_page=1000'
+    serviceAPIHighlights = __urlBase + 'teaser_content/highlights'
 
     
     def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode):
@@ -49,19 +47,18 @@ class serviceAPI(Scraper):
 
 
     def getMostViewed(self):
-        self.getTableResults(self.UrlMostViewed)
+        self.getTableResults(self.__urlMostViewed)
 
 
     def getNewest(self):
-        self.getTableResults(self.UrlNewest)
+        self.getTableResults(self.__urlNewest)
 
 
     def getTips(self):
-        self.getTableResults(self.UrlTip)
+        self.getTableResults(self.__urlTips)
 
 
     def getTableResults(self, urlAPI):
-        urlAPI = urlAPI % self.serviceAPItoken
         try:
             response = urllib2.urlopen(urlAPI)
             responseCode = response.getcode()
@@ -159,7 +156,7 @@ class serviceAPI(Scraper):
     def getCategories(self):
         list = []
         try:
-            response = urllib2.urlopen(self.serviceAPIPrograms % self.serviceAPItoken)
+            response = urllib2.urlopen(self.__urlShows)
             responseCode = response.getcode()
         except urllib2.HTTPError, error:
             responseCode = error.getcode()
@@ -192,9 +189,9 @@ class serviceAPI(Scraper):
     # list all Episodes for the given Date
     def getDate(self, date, dateFrom = None):
         if dateFrom == None:
-            url = self.serviceAPIDate % (self.serviceAPItoken, date)
+            url = self.serviceAPIDate % date
         else:
-            url = self.serviceAPIDateFrom % (self.serviceAPItoken, dateFrom, date)
+            url = self.serviceAPIDateFrom % (dateFrom, date)
         response = urllib2.urlopen(url)
 
         if dateFrom == None:
@@ -208,7 +205,7 @@ class serviceAPI(Scraper):
 
     # list all Entries for the given Topic
     def getTopic(self,topicID):
-        url = self.servieAPITopic % (self.serviceAPItoken, topicID)
+        url = self.servieAPITopic % topicID
         response = urllib2.urlopen(url)
 
         for entrie in json.loads(response.read())['topicDetail'].get('entries'):
@@ -235,7 +232,7 @@ class serviceAPI(Scraper):
 
     # list all Episodes for the given Broadcast
     def getProgram(self,programID,playlist):
-        url = self.serviceAPIProgram % (self.serviceAPItoken, programID)
+        url = self.serviceAPIProgram % programID
         response = urllib2.urlopen(url)
         responseCode = response.getcode()
 
@@ -258,7 +255,7 @@ class serviceAPI(Scraper):
     def getEpisode(self,episodeID,playlist):
         playlist.clear()
 
-        url = self.serviceAPIEpisode % (self.serviceAPItoken, episodeID)
+        url = self.serviceAPIEpisode % episodeID
         response = urllib2.urlopen(url)
         result = json.loads(response.read())['episodeDetail']
 
@@ -294,7 +291,7 @@ class serviceAPI(Scraper):
     # Parses the Topic Overview Page
     def getThemen(self):
         try: 
-            response = urllib2.urlopen(self.serviceAPITopics % self.serviceAPItoken)
+            response = urllib2.urlopen(self.__urlTopics)
             responseCode = response.getcode()
         except ValueError, error:
             responseCode = 404
@@ -320,7 +317,7 @@ class serviceAPI(Scraper):
     def getSegment(self,episodeID, segmentID,playlist):
         playlist.clear()
 
-        url = self.serviceAPIEpisode % (self.serviceAPItoken, episodeID)
+        url = self.serviceAPIEpisode % episodeID
         response = urllib2.urlopen(url)
         responseCode = response.getcode()
 
@@ -339,9 +336,8 @@ class serviceAPI(Scraper):
                     
     # list all Trailers for further airings
     def getTrailers(self):
-        url = self.serviceAPITrailers % self.serviceAPItoken
         try: 
-            response = urllib2.urlopen(url)
+            response = urllib2.urlopen(self.serviceAPITrailers)
             responseCode = response.getcode()
         except ValueError, error:
             responseCode = 404
@@ -371,7 +367,7 @@ class serviceAPI(Scraper):
     
     # Returns Live Stream Listing
     def getLiveStreams(self):
-        url = self.serviceAPILive % (self.serviceAPItoken, datetime.datetime.now().strftime('%Y%m%d%H%M'), (datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y%m%d%H%M'), 25)
+        url = self.__urlLive % (datetime.datetime.now().strftime('%Y%m%d%H%M'), (datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y%m%d%H%M'), 25)
         try: 
             response = urllib2.urlopen(url)
             responseCode = response.getcode()
@@ -447,7 +443,7 @@ class serviceAPI(Scraper):
             xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
 
     def getLiveNotOnline(self,link):
-        url = self.serviceAPIEpisode % (self.serviceAPItoken, link)
+        url = self.serviceAPIEpisode % link
         response = urllib2.urlopen(url)
         result = json.loads(response.read())['episodeDetail']
 
