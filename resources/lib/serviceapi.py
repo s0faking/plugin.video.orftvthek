@@ -155,7 +155,6 @@ class serviceAPI(Scraper):
     
     # list all Categories
     def getCategories(self):
-        list = []
         try:
             response = urllib2.urlopen(self.__urlShows)
             responseCode = response.getcode()
@@ -173,13 +172,6 @@ class serviceAPI(Scraper):
                 if result.get('episodesCount') == 0:
                     continue
 
-                dict = {}
-                dict['title'] = title
-                dict['image'] = image
-                dict['desc'] = description
-                dict['link'] = link
-                dict['mode'] = 'openProgram'
-                
                 parameters = {'mode' : 'openProgram', 'link': link}
                 u = sys.argv[0] + '?' + urllib.urlencode(parameters)
                 createListItem(title, image, description, "", "", '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)
