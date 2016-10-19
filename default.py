@@ -66,7 +66,7 @@ defaultbackdrop = os.path.join(media_path,"fanart.jpg")
 
 #load settings
 forceView = settings.getSetting("forceView") == "true"
-useServiceAPI = False
+useServiceAPI = settings.getSetting('useServiceAPI') == 'true'
 useSubtitles = settings.getSetting("useSubtitles") == "true"
 videoQuality = settings.getSetting("videoQuality")
 enableBlacklist = settings.getSetting("enableBlacklist") == "true"
@@ -81,10 +81,8 @@ except:
 tvthekplayer = xbmc.Player()
 
 #init scrapers
-if useServiceAPI:
-    jsonScraper = serviceAPI(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode)
-else:
-    htmlScraper = htmlScraper(xbmc,settings,pluginhandle,videoQuality,videoProtocol,videoDelivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode)
+jsonScraper = serviceAPI(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop, useSubtitles, defaultViewMode)
+htmlScraper = htmlScraper(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop, useSubtitles, defaultViewMode)
 
 #parameters
 params=parameters_string_to_dict(sys.argv[2])
@@ -225,11 +223,6 @@ elif mode == 'openTopic':
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'openEpisode':
     jsonScraper.getEpisode(link,playlist)
-    if playlist != None:
-        tvthekplayer.play(playlist)
-    listCallback(False,defaultViewMode,pluginhandle)
-elif mode == 'openSegment':
-    jsonScraper.getSegment(link, params.get('segmentID'),playlist)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'liveStreamNotOnline':
     jsonScraper.getLiveNotOnline(link)
