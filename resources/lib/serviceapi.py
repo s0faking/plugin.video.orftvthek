@@ -61,7 +61,7 @@ class serviceAPI(Scraper):
 
 	def getTableResults(self, urlAPI):
 		try:
-			response = urllib2.urlopen(urlAPI)
+			response = self.__makeRequest(urlAPI)
 			responseCode = response.getcode()
 		except urllib2.HTTPError, error:
 			responseCode = error.getcode()
@@ -156,7 +156,7 @@ class serviceAPI(Scraper):
 	# list all Categories
 	def getCategories(self):
 		try:
-			response = urllib2.urlopen(self.__urlShows)
+			response = self.__makeRequest(self.__urlShows)
 			responseCode = response.getcode()
 		except urllib2.HTTPError, error:
 			responseCode = error.getcode()
@@ -185,7 +185,7 @@ class serviceAPI(Scraper):
 			url = self.serviceAPIDate % date
 		else:
 			url = self.serviceAPIDateFrom % (dateFrom, date)
-		response = urllib2.urlopen(url)
+		response = self.__makeRequest(url)
 
 		if dateFrom == None:
 			episodes = json.loads(response.read())['episodeShorts']
@@ -198,9 +198,7 @@ class serviceAPI(Scraper):
 
 	# list all Entries for the given Topic
 	def getTopic(self,topicID):
-		url = self.servieAPITopic % topicID
-		response = urllib2.urlopen(url)
-
+		response = self.__makeRequest(self.servieAPITopic % topicID)
 		for entrie in json.loads(response.read())['topicDetail'].get('entries'):
 			title       = entrie.get('title').encode('UTF-8')
 			image       = self.JSONImage(entrie.get('images'))
@@ -223,8 +221,7 @@ class serviceAPI(Scraper):
 
 	# list all Episodes for the given Broadcast
 	def getProgram(self,programID,playlist):
-		url = self.serviceAPIProgram % programID
-		response = urllib2.urlopen(url)
+		response = self.__makeRequest(self.serviceAPIProgram % programID)
 		responseCode = response.getcode()
 
 		if responseCode == 200:
@@ -245,8 +242,7 @@ class serviceAPI(Scraper):
 	def getEpisode(self,episodeID,playlist):
 		playlist.clear()
 
-		url = self.serviceAPIEpisode % episodeID
-		response = urllib2.urlopen(url)
+		response = self.__makeRequest(self.serviceAPIEpisode % episodeID)
 		result = json.loads(response.read())['episodeDetail']
 
 		title       = result.get('title').encode('UTF-8')
@@ -281,7 +277,7 @@ class serviceAPI(Scraper):
 	# Parses the Topic Overview Page
 	def getThemen(self):
 		try: 
-			response = urllib2.urlopen(self.__urlTopics)
+			response = self.__makeRequest(self.__urlTopics)
 			responseCode = response.getcode()
 		except ValueError, error:
 			responseCode = 404
@@ -327,7 +323,7 @@ class serviceAPI(Scraper):
 	# list all Trailers for further airings
 	def getTrailers(self):
 		try: 
-			response = urllib2.urlopen(self.serviceAPITrailers)
+			response = self.__makeRequest(self.serviceAPITrailers)
 			responseCode = response.getcode()
 		except ValueError, error:
 			responseCode = 404
@@ -359,7 +355,7 @@ class serviceAPI(Scraper):
 	def getLiveStreams(self):
 		url = self.__urlLive % (datetime.datetime.now().strftime('%Y%m%d%H%M'), (datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y%m%d%H%M'), 25)
 		try: 
-			response = urllib2.urlopen(url)
+			response = self.__makeRequest(url)
 			responseCode = response.getcode()
 		except urllib2.HTTPError, error:
 			responseCode = error.getcode()
@@ -432,8 +428,7 @@ class serviceAPI(Scraper):
 			xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
 
 	def getLiveNotOnline(self,link):
-		url = self.serviceAPIEpisode % link
-		response = urllib2.urlopen(url)
+		response = self.__makeRequest(self.serviceAPIEpisode % link)
 		result = json.loads(response.read())['episodeDetail']
 
 		title       = result.get('title').encode('UTF-8')
@@ -461,3 +456,8 @@ class serviceAPI(Scraper):
 				streamingURL = livestreamStreamingURLs[len(livestreamStreamingURLs) - 1].replace('q4a', self.videoQuality)
 				listItem = createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False, self.defaultbackdrop,self.pluginhandle,subtitles)
 				self.xbmc.Player().play(streamingURL, listItem)
+
+
+	def __makeRequest(self, url):
+		request = urllib2.Request(url)
+		return urllib2.urlopen(request)
