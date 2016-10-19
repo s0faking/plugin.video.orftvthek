@@ -28,7 +28,7 @@ class serviceAPI(Scraper):
     serviceAPITrailers   = __urlBase + 'episodes/trailers?page=0&entries_per_page=1000'
     serviceAPIHighlights = __urlBase + 'teaser_content/highlights'
 
-    
+
     def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode):
         self.translation = settings.getLocalizedString
         self.xbmc = xbmc
@@ -94,8 +94,8 @@ class serviceAPI(Scraper):
         else:
             self.xbmc.log(msg='ServiceAPI no available ... switch back to HTML Parsing in the Addon Settings', level=xbmc.LOGDEBUG);
             xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
-            
-            
+
+
     # Useful  Methods for JSON Parsing
     def JSONEpisode2ListItem(self,JSONEpisode, ignoreEpisodeType = None):
         title        = JSONEpisode.get('title').encode('UTF-8')
@@ -152,7 +152,7 @@ class serviceAPI(Scraper):
             if 'http' in streamingURL and 'mp4/playlist.m3u8' in streamingURL:
                 return streamingURL.replace('Q4A', self.videoQuality)
         return ''
-    
+
     # list all Categories
     def getCategories(self):
         try:
@@ -178,7 +178,7 @@ class serviceAPI(Scraper):
         else:
             xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
 
-    
+
     # list all Episodes for the given Date
     def getDate(self, date, dateFrom = None):
         if dateFrom == None:
@@ -220,8 +220,6 @@ class serviceAPI(Scraper):
             # But then there is an error with the Pluginhandle
             createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)
 
-        
-
 
     # list all Episodes for the given Broadcast
     def getProgram(self,programID,playlist):
@@ -240,7 +238,6 @@ class serviceAPI(Scraper):
                 self.JSONEpisode2ListItem(episode, 'teaser')
         else:
             xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
-            
 
 
     # listst all Segments for the Episode with the given episodeID
@@ -280,7 +277,7 @@ class serviceAPI(Scraper):
             for segment in result.get('segments'):
                 listItem = self.JSONSegment2ListItem(segment, date)
                 playlist.add(listItem[0], listItem[1])
-            
+
     # Parses the Topic Overview Page
     def getThemen(self):
         try: 
@@ -305,7 +302,7 @@ class serviceAPI(Scraper):
                 addDirectory(title, image, self.defaultbackdrop, description, link, 'openTopic',self.pluginhandle)
         else:
             xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
-            
+
     # Plays the given Segment, if it is included in the given Episode
     def getSegment(self,episodeID, segmentID,playlist):
         playlist.clear()
@@ -326,7 +323,7 @@ class serviceAPI(Scraper):
         else:
             xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
 
-                    
+
     # list all Trailers for further airings
     def getTrailers(self):
         try: 
@@ -338,14 +335,14 @@ class serviceAPI(Scraper):
         except urllib2.HTTPError, error:
             responseCode = error.getcode()
             pass
-            
+
         if responseCode == 200:
             for episode in json.loads(response.read())['episodeShorts']:
                 self.JSONEpisode2ListItem(episode)    
         else:
             xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
 
-    
+
     # lists archiv overview (date listing)
     def getArchiv(self):
         for x in xrange(9):
@@ -357,7 +354,7 @@ class serviceAPI(Scraper):
                 parameters = {'mode' : 'openDate', 'link': date.strftime('%Y%m%d'), 'from': (date - datetime.timedelta(days=150)).strftime('%Y%m%d')}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
             createListItem(title, '', title, '', date.strftime('%Y-%m-%d'), '', u, 'False', True, self.defaultbackdrop,self.pluginhandle,None)
-    
+
     # Returns Live Stream Listing
     def getLiveStreams(self):
         url = self.__urlLive % (datetime.datetime.now().strftime('%Y%m%d%H%M'), (datetime.datetime.now() + datetime.timedelta(days=1)).strftime('%Y%m%d%H%M'), 25)
@@ -420,10 +417,9 @@ class serviceAPI(Scraper):
                         livestreamStreamingURLs.append(streamingURL.get('streamingUrl'))
 
                 livestreamStreamingURLs.sort()
-				
+
                 link = livestreamStreamingURLs[len(livestreamStreamingURLs) - 1].replace('q4a', self.videoQuality)
-               
-				
+
                 title = "[%s] %s (%s)" % (programName, result.get('title'), time.strftime('%H:%M', livestreamStart))
 
                 if program in bannerurls:
