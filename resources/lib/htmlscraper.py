@@ -412,7 +412,12 @@ class htmlScraper(Scraper):
                         else:
                             debugLog("No Video Description for %s" % title,'Info')
                             desc = ""
-                        duration = video_item["duration"]
+                        
+                        if video_item["duration"]:
+                            duration = float(video_item["duration"])
+                            duration = int(duration / 1000)
+                        else:
+                            duration = 0
                        
                         
                         preview_img = video_item["preview_image_url"]
