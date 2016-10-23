@@ -134,8 +134,8 @@ def listCallback(sort,viewMode,pluginhandle):
     if forceView:
         xbmc.executebuiltin(viewMode)     
     
-def startPlaylist(player,playlist,autoPlayPrompt):
-    if playlist != None  or not autoPlayPrompt:
+def startPlaylist(player,playlist):
+    if playlist != None:
         player.play(playlist)
     else:
         d = xbmcgui.Dialog()
@@ -232,7 +232,7 @@ elif mode == 'liveStreamNotOnline':
     jsonScraper.getLiveNotOnline(link)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'playlist':
-    startPlaylist(tvthekplayer,playlist,autoPlayPrompt)
+    startPlaylist(tvthekplayer,playlist)
 elif sys.argv[2] == '':
     getMainMenu()
 else:
