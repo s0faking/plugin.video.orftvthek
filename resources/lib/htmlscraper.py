@@ -74,6 +74,7 @@ class htmlScraper(Scraper):
             title = common.parseDOM(item,name='h4',attrs={'class': "item_title"},ret=False)
             title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
             desc = common.parseDOM(item,name='div',attrs={'class': "item_description"},ret=False)
+            
             time = ""
             date = ""
             if desc != None and len(desc) > 0:
@@ -293,6 +294,9 @@ class htmlScraper(Scraper):
                 blacklist = True
         debugLog("Adding List Item","Info")
         debugLog("Videourl: %s" % videourl,"Info")
+        debugLog("Duration: %s" % duration,"Info")
+        
+        
         
         liz = createListItem(title,banner,description,duration,date,channel,videourl,playable,folder, backdrop,self.pluginhandle,subtitles,blacklist)
         return liz
@@ -355,80 +359,91 @@ class htmlScraper(Scraper):
         
         html = common.fetchPage({'link': url})
         data = common.parseDOM(html.get("content"),name='div',attrs={'class': "jsb_ jsb_VideoPlaylist"},ret='data-jsb')
-        
-        data = data[0]
-        data = common.replaceHTMLCodes(data)
-        data = json.loads(data)
-        
-        video_items = data.get("playlist")["videos"]
-        
-        try:
-            current_title_prefix = data.get("selected_video")["title_prefix"]
-            current_title = data.get("selected_video")["title"]
-            if data.get("selected_video")["description"]:
-                current_desc = data.get("selected_video")["description"].encode('UTF-8')
-            else:
-                current_desc = ""
-            current_duration = data.get("selected_video")["duration"]
-            current_preview_img = data.get("selected_video")["preview_image_url"]
-            if self.useSubtitles:
-                if "subtitles" in data.get("selected_video"):
-                    current_subtitles = []
-                    for sub in data.get("selected_video")["subtitles"]:
-                        current_subtitles.append(sub.get(u'src'))
+        if len(data):
+            try:
+                data = data[0]
+                data = common.replaceHTMLCodes(data)
+                data = json.loads(data)
+                
+                video_items = data.get("playlist")["videos"]
+            
+            
+                current_title_prefix = data.get("selected_video")["title_prefix"]
+                current_title = data.get("selected_video")["title"]
+                if data.get("selected_video")["description"]:
+                    current_desc = data.get("selected_video")["description"].encode('UTF-8')
+                else:
+                    current_desc = ""
+                
+                if data.get("selected_video")["duration"]:
+                    current_duration = float(data.get("selected_video")["duration"])
+                    current_duration = int(current_duration / 1000)
+                else:
+                    current_duration = 0
+                    
+                current_preview_img = data.get("selected_video")["preview_image_url"]
+                if self.useSubtitles:
+                    if "subtitles" in data.get("selected_video"):
+                        current_subtitles = []
+                        for sub in data.get("selected_video")["subtitles"]:
+                            current_subtitles.append(sub.get(u'src'))
+                    else:
+                        current_subtitles = None
                 else:
                     current_subtitles = None
-            else:
+                current_id = data.get("selected_video")["id"]
+                current_videourl = self.getVideoUrl(data.get("selected_video")["sources"]);
+            except Exception, e:
+                debugLog("Error Loading Episode from %s" % url,'Exception')
+                notifyUser("This video is offline")
                 current_subtitles = None
-            current_id = data.get("selected_video")["id"]
-            current_videourl = self.getVideoUrl(data.get("selected_video")["sources"]);
-        except Exception, e:
-            debugLog(e,'Exception')
-            current_subtitles = None
 
-        if len(video_items) > 1:
-            debugLog("Found Video Playlist with %d Items" % len(video_items),'Info')
-            parameters = {"mode" : "playlist"}
-            u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem("[ "+(self.translation(30015)).encode("utf-8")+" ]",banner,"",(self.translation(30015)).encode("utf-8"),'','','',u, None,True,'true');
-            for video_item in video_items:
-                try:
-                    title_prefix = video_item["title_prefix"]
-                    title = video_item["title"].encode('UTF-8')
-                    if video_item["description"]:
-                        desc = video_item["description"].encode('UTF-8')
-                    else:
-                        debugLog("No Video Description for %s" % title,'Info')
-                        desc = ""
-                    duration = video_item["duration"]
-                   
-                    
-                    preview_img = video_item["preview_image_url"]
-                    id = video_item["id"]
-                    sources = video_item["sources"]
-                    if self.useSubtitles:
-                        if "subtitles" in video_item:
-                            debugLog("Found Subtitles for %s" % title,'Info')
-                            subtitles = []
-                            for sub in video_item["subtitles"]:
-                                subtitles.append(sub.get(u'src'))
+            if len(video_items) > 1:
+                debugLog("Found Video Playlist with %d Items" % len(video_items),'Info')
+                parameters = {"mode" : "playlist"}
+                u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+                liz = self.html2ListItem("[ "+(self.translation(30015)).encode("utf-8")+" ]",banner,"",(self.translation(30015)).encode("utf-8"),'','','',u, None,True,'true');
+                for video_item in video_items:
+                    try:
+                        title_prefix = video_item["title_prefix"]
+                        title = video_item["title"].encode('UTF-8')
+                        if video_item["description"]:
+                            desc = video_item["description"].encode('UTF-8')
+                        else:
+                            debugLog("No Video Description for %s" % title,'Info')
+                            desc = ""
+                        duration = video_item["duration"]
+                       
+                        
+                        preview_img = video_item["preview_image_url"]
+                        id = video_item["id"]
+                        sources = video_item["sources"]
+                        if self.useSubtitles:
+                            if "subtitles" in video_item:
+                                debugLog("Found Subtitles for %s" % title,'Info')
+                                subtitles = []
+                                for sub in video_item["subtitles"]:
+                                    subtitles.append(sub.get(u'src'))
+                            else:
+                                subtitles = None
                         else:
                             subtitles = None
-                    else:
-                        subtitles = None
-                    videourl = self.getVideoUrl(sources);
+                        videourl = self.getVideoUrl(sources);
 
-                    liz = self.html2ListItem(title,preview_img,"",desc,duration,'','',videourl, subtitles,False,'true')
-                    playlist.add(videourl,liz)
-                except Exception, e:
-                    debugLog(e,'Error')
-                    continue
-            return playlist
-        else:      
-            debugLog("No Playlist Items found for %s. Setting up single video view." % current_title.encode('UTF-8'),'Info')
-            liz = self.html2ListItem(current_title,current_preview_img,"",current_desc,current_duration,'','',current_videourl, current_subtitles,False,'true')
-            playlist.add(current_videourl,liz)
-            return playlist
+                        liz = self.html2ListItem(title,preview_img,"",desc,duration,'','',videourl, subtitles,False,'true')
+                        playlist.add(videourl,liz)
+                    except Exception, e:
+                        debugLog(e,'Error')
+                        continue
+                return playlist
+            else:      
+                debugLog("No Playlist Items found for %s. Setting up single video view." % current_title.encode('UTF-8'),'Info')
+                liz = self.html2ListItem(current_title,current_preview_img,"",current_desc,current_duration,'','',current_videourl, current_subtitles,False,'true')
+                playlist.add(current_videourl,liz)
+                return playlist
+        else:
+            notifyUser("This video is offline")
+            sys.exit()
     
 
     # Returns Live Stream Listing

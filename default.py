@@ -18,7 +18,7 @@ except:
 socket.setdefaulttimeout(30) 
 cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
-version = "0.5.8"
+version = "0.5.9"
 plugin = "ORF-TVthek-" + version
 author = "sofaking,Rechi"
 
@@ -70,6 +70,7 @@ useServiceAPI = settings.getSetting('useServiceAPI') == 'true'
 useSubtitles = settings.getSetting("useSubtitles") == "true"
 videoQuality = settings.getSetting("videoQuality")
 enableBlacklist = settings.getSetting("enableBlacklist") == "true"
+autoPlayPrompt = settings.getSetting("autoPlayPrompt") == "true"
 
 try:
     videoQuality = video_quality_list[int(videoQuality)]
@@ -133,8 +134,8 @@ def listCallback(sort,viewMode,pluginhandle):
     if forceView:
         xbmc.executebuiltin(viewMode)     
     
-def startPlaylist(player,playlist):
-    if playlist != None:
+def startPlaylist(player,playlist,autoPlayPrompt):
+    if playlist != None  or not autoPlayPrompt:
         player.play(playlist)
     else:
         d = xbmcgui.Dialog()
@@ -145,7 +146,9 @@ def startPlaylist(player,playlist):
 if mode == 'openSeries':
     playlist.clear()
     playlist = htmlScraper.getLinks(link,banner,playlist)
-    if playlist != None:
+    if not autoPlayPrompt:
+        listCallback(False,defaultViewMode,pluginhandle)
+    elif playlist != None:
         ok = xbmcgui.Dialog().yesno((translation(30047)).encode("utf-8"),(translation(30048)).encode("utf-8"))
         if ok:
             debugLog("Starting Playlist for %s" % urllib.unquote(link),'Info')
@@ -153,6 +156,7 @@ if mode == 'openSeries':
             xbmc.executebuiltin(defaultViewMode) 
     else:
         listCallback(False,defaultViewMode,pluginhandle)
+        
 elif mode == 'unblacklistShow':
     title=params.get('title')
     unblacklistItem(title)
@@ -228,7 +232,7 @@ elif mode == 'liveStreamNotOnline':
     jsonScraper.getLiveNotOnline(link)
     listCallback(False,defaultViewMode,pluginhandle)
 elif mode == 'playlist':
-    startPlaylist(tvthekplayer,playlist)
+    startPlaylist(tvthekplayer,playlist,autoPlayPrompt)
 elif sys.argv[2] == '':
     getMainMenu()
 else:
