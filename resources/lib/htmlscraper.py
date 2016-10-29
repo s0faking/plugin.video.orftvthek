@@ -11,7 +11,7 @@ from Scraper import *
 class htmlScraper(Scraper):
 
     __urlBase       = 'http://tvthek.orf.at'
-    __urlLive       = __urlBase + 'live'
+    __urlLive       = __urlBase + '/live'
     __urlMostViewed = __urlBase + '/most_viewed'
     __urlNewest     = __urlBase + '/newest'
     __urlSchedule   = __urlBase + '/schedule'
