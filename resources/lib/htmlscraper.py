@@ -458,37 +458,74 @@ class htmlScraper(Scraper):
         liveurls['ORF1'] = "http://apasfiisl.apa.at/ipad/orf1_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
         liveurls['ORF2'] = "http://apasfiisl.apa.at/ipad/orf2_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
         liveurls['ORF3'] = "http://apasfiisl.apa.at/ipad/orf3_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
-        liveurls['ORFS'] = "http://apasfiisl.apa.at/ipad/orfs_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
+        liveurls['ORF'] = "http://apasfiisl.apa.at/ipad/orfs_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
+        
+        channelnames = {}
+        channelnames['ORF1'] = "ORF 1"
+        channelnames['ORF2'] = "ORF 2"
+        channelnames['ORF3'] = "ORF III"
+        channelnames['ORF'] = "ORF Sport+"
             
         html = common.fetchPage({'link': self.__urlLive})
-        wrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper.*mod_epg'})
+        wrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper mod_epg'})
         items = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'})
         items_class = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'},ret="class")
         i = 0
         for item in items:
             program = items_class[i].split(" ")[2].encode('UTF-8').upper()
             i += 1
-                
-            banner = common.parseDOM(item,name='img',ret="src")
-            banner = common.replaceHTMLCodes(banner[0]).encode('UTF-8')
-              
-            title = common.parseDOM(item,name='h4')
-            title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
-               
-            time = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_time'})
-            time = common.replaceHTMLCodes(time[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
+            if channelnames[program]:                    
+                banner = common.parseDOM(item,name='img',ret="src")
+                banner = common.replaceHTMLCodes(banner[0]).encode('UTF-8')
+                  
+                title = common.parseDOM(item,name='h4')
+                title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+                   
+                time = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_time'})
+                time = common.replaceHTMLCodes(time[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
 
-            if self.getBroadcastState(time):
-                state = (self.translation(30019)).encode("utf-8")
-                state_short = "Online"
-            else:
-                state = (self.translation(30020)).encode("utf-8")
-                state_short = "Offline"
-            if program in liveurls:
-                link = liveurls[program]
+                if self.getBroadcastState(time):
+                    state = (self.translation(30019)).encode("utf-8")
+                    state_short = "Online"
+                else:
+                    state = (self.translation(30020)).encode("utf-8")
+                    state_short = "Offline"
                 
-                title = "[%s] - %s (%s)" % (program,title,time)
-                liz = self.html2ListItem(title,banner,"",state,time,program,program,link,None,False,'true')
+                link = liveurls[program]
+                final_title = "[%s] - %s (%s)" % (channelnames[program],title,time)
+                liz = self.html2ListItem(final_title,banner,"",state,time,program,program,link,None,False,'true')
+                child_list = common.parseDOM(item,name='li',attrs={'class': 'base_list_item'})
+                for child_list_item in child_list:
+                    child_list_title = common.parseDOM(child_list_item,name='h4')
+                    child_list_title = common.replaceHTMLCodes(child_list_title[0]).encode('UTF-8')
+                    child_list_link = common.parseDOM(child_list_item,name='a',attrs={'class': 'base_list_item_inner'},ret="href")
+                    child_list_link = common.replaceHTMLCodes(child_list_link[0])
+                    child_list_time = common.parseDOM(child_list_item,name='span',attrs={'class': 'meta.meta_time'})
+                    child_list_time = common.replaceHTMLCodes(child_list_time[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
+                    if child_list_time == time and child_list_title != title:
+                        child_list_streaming_url = self.getLivestreamUrl(child_list_link,self.videoQuality)
+                        print child_list_title
+                        print child_list_streaming_url
+                        print child_list_time
+                        child_list_final_title = "[%s] - %s (%s)" % (channelnames[program],child_list_title,child_list_time)
+                        liz = self.html2ListItem(child_list_final_title,banner,"",state,time,program,program,child_list_streaming_url,None,False,'true')
+     
+
+    def getLivestreamUrl(self,url,quality):
+        html = common.fetchPage({'link': url})
+        container = common.parseDOM(html.get("content"),name='div',attrs={'class': "player_viewport.*?"})
+        data_sets = common.parseDOM(container[0],name='div',attrs={},ret="data-jsb")
+        for data in data_sets:
+            try:
+                data = common.replaceHTMLCodes(data)
+                data = json.loads(data)
+                if data['playlist']['videos']:
+                    for video_items in data['playlist']['videos']:
+                        for video_sources in video_items['sources']:
+                            if video_sources['quality'].lower() == quality.lower() and video_sources['protocol'].lower() == "http" and video_sources['delivery'].lower() == 'hls':
+                                return video_sources['src']
+            except:
+                continue
     
     # Helper for Livestream Listing - Returns if Stream is currently running
     def getBroadcastState(self,time):
