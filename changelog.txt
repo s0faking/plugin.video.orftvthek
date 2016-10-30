@@ -1,3 +1,7 @@
+0.6.0
+- fixed faulty liveurl from htmlscraper
+- livestreams with the same timestamp are playable now using the htmlscraper(Bundesland Heute)
+
 0.5.9
 - Service API V3
 - fixed runtime display for htmlscraper
