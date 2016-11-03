@@ -185,6 +185,7 @@ class htmlScraper(Scraper):
     
     # Parses Details for the selected Show
     def getCategoriesDetail(self,category,banner):
+        print "GET CAT DETAILS"
         url =  urllib.unquote(category)
         banner =  urllib.unquote(banner)
         html = common.fetchPage({'link': url})
@@ -196,6 +197,7 @@ class htmlScraper(Scraper):
             showname = ""
         playerHeader = common.parseDOM(html.get("content"),name='header',attrs={'class': 'player_header'})
         bcast_info = common.parseDOM(playerHeader,name='div',attrs={'class': 'broadcast_information'})
+        
         
         try:
             current_duration = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta.meta_duration'})
@@ -274,7 +276,29 @@ class htmlScraper(Scraper):
             liz = self.html2ListItem(title,"","","","",date,"",url,None,True,'false');
     
     def getArchiv(self):
-        pass
+        html = common.fetchPage({'link': self.__urlArchive})
+        html_content = html.get("content")
+            
+        content = common.parseDOM(html_content,name='section',attrs={'class':'mod_archive_items.*?'})
+        archives = common.parseDOM(content,name='article',attrs={'class':'item'})
+
+        for archive in archives:
+            title = common.parseDOM(archive,name='h4',attrs={'class':'item_title'})
+            if title[0]:
+                title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+
+                link = common.parseDOM(archive,name='a',attrs={},ret="href")
+                link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
+
+                image = common.parseDOM(archive,name='img',ret="src")
+                image = common.replaceHTMLCodes(image[0]).replace("width=395","width=500").replace("height=209.07070707071","height=265").encode('UTF-8')
+                
+                description = common.parseDOM(archive,name='div',attrs={'class':'item_description'})
+                description = common.replaceHTMLCodes(description[0]).encode('UTF-8')
+
+                parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getArchiveDetail"}
+                url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+                liz = self.html2ListItem(title,image,"",description,"","","",url,None,True,'false');
     
     # Creates a XBMC List Item
     def html2ListItem(self,title,banner,backdrop,description,duration,date,channel,videourl,subtitles=None,folder=True,playable='false'):
@@ -574,13 +598,14 @@ class htmlScraper(Scraper):
                 liz = self.html2ListItem(title,image,"",description,"","","",url,None,True,'false');
 
     
-    # Parses the Topic Detail Page
-    def getThemenDetail(self,url):
+    # Parses the Archive Detail Page
+    def getArchiveDetail(self,url):
         url = urllib.unquote(url)
         html = common.fetchPage({'link': url})
         html_content = html.get("content")
         
         content = common.parseDOM(html_content,name='section',attrs={'class':'mod_container_list.*?'})
+        
         topics = common.parseDOM(content,name='article',attrs={'class':'item.*?'})
 
         for topic in topics:
