@@ -19,6 +19,7 @@ class htmlScraper(Scraper):
     __urlShows      = __urlBase + '/profiles/a-z'
     __urlTips       = __urlBase + '/tips'
     __urlTopics     = __urlBase + '/topics'
+    __urlArchive    = __urlBase + '/archive'
 
     
     def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode):
@@ -244,7 +245,7 @@ class htmlScraper(Scraper):
                 liz = self.html2ListItem(title,banner,"",desc,"","","",url,None,True,'false');
         
     # Parses "Sendung verpasst?" Date Listing
-    def getArchiv(self):
+    def getSchedule(self):
         html = common.fetchPage({'link': self.__urlSchedule})
         articles = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'})
         articles_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'},ret="href")
@@ -268,10 +269,12 @@ class htmlScraper(Scraper):
                 
             title = day + " - " + date
             
-            parameters = {"link" : link,"title" : title,"banner" : "","backdrop" : "", "mode" : "getArchivDetail"}
+            parameters = {"link" : link,"title" : title,"banner" : "","backdrop" : "", "mode" : "getScheduleDetail"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             liz = self.html2ListItem(title,"","","","",date,"",url,None,True,'false');
     
+    def getArchiv(self):
+        pass
     
     # Creates a XBMC List Item
     def html2ListItem(self,title,banner,backdrop,description,duration,date,channel,videourl,subtitles=None,folder=True,playable='false'):
@@ -545,29 +548,30 @@ class htmlScraper(Scraper):
         html = common.fetchPage({'link': self.__urlTopics})
         html_content = html.get("content")
             
-        content = common.parseDOM(html_content,name='section',attrs={'class':'mod_container_list'})
-        topics = common.parseDOM(content,name='section',attrs={'class':'item_wrapper'})
+        content = common.parseDOM(html_content,name='section',attrs={})
+        #topics = common.parseDOM(content,name='section',attrs={'class':'item_wrapper'})
 
-        for topic in topics:
-            title = common.parseDOM(topic,name='h3',attrs={'class':'item_wrapper_headline.subheadline.*?'})
-            title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
-              
-            link = common.parseDOM(topic,name='a',attrs={'class':'more.service_link.service_link_more'},ret="href")
-            link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
-                
-            image = common.parseDOM(topic,name='img',ret="src")
-            image = common.replaceHTMLCodes(image[0]).replace("width=395","width=500").replace("height=209.07070707071","height=265").encode('UTF-8')
-                
-            descs = common.parseDOM(topic,name='h4',attrs={'class':'item_title'})
-            description = ""
-            for desc in descs:
-                description += "* "+common.replaceHTMLCodes(desc).encode('UTF-8') + "\n"
-            if description == "":
-                description = self.translation(30008).encode('UTF-8')
+        for topic in content:
+            title = common.parseDOM(topic,name='h3',attrs={'class':'item_wrapper_headline.subheadline'})
+            if title:
+                title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+                  
+                link = common.parseDOM(topic,name='a',attrs={'class':'more.service_link.service_link_more'},ret="href")
+                link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
 
-            parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getThemenDetail"}
-            url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,image,"",description,"","","",url,None,True,'false');
+                image = common.parseDOM(topic,name='img',ret="src")
+                image = common.replaceHTMLCodes(image[0]).replace("width=395","width=500").replace("height=209.07070707071","height=265").encode('UTF-8')
+                
+                descs = common.parseDOM(topic,name='h4',attrs={'class':'item_title'})
+                description = ""
+                for desc in descs:
+                    description += "* "+common.replaceHTMLCodes(desc).encode('UTF-8') + "\n"
+                if description == "":
+                    description = self.translation(30008).encode('UTF-8')
+
+                parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getThemenDetail"}
+                url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+                liz = self.html2ListItem(title,image,"",description,"","","",url,None,True,'false');
 
     
     # Parses the Topic Detail Page
@@ -576,7 +580,7 @@ class htmlScraper(Scraper):
         html = common.fetchPage({'link': url})
         html_content = html.get("content")
         
-        content = common.parseDOM(html_content,name='section',attrs={'class':'mod_container_list'})
+        content = common.parseDOM(html_content,name='section',attrs={'class':'mod_container_list.*?'})
         topics = common.parseDOM(content,name='article',attrs={'class':'item.*?'})
 
         for topic in topics:
