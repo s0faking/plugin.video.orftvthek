@@ -185,7 +185,6 @@ class htmlScraper(Scraper):
     
     # Parses Details for the selected Show
     def getCategoriesDetail(self,category,banner):
-        print "GET CAT DETAILS"
         url =  urllib.unquote(category)
         banner =  urllib.unquote(banner)
         html = common.fetchPage({'link': url})
@@ -531,9 +530,6 @@ class htmlScraper(Scraper):
                     child_list_time = common.replaceHTMLCodes(child_list_time[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
                     if child_list_time == time and child_list_title != title:
                         child_list_streaming_url = self.getLivestreamUrl(child_list_link,self.videoQuality)
-                        print child_list_title
-                        print child_list_streaming_url
-                        print child_list_time
                         child_list_final_title = "[%s] - %s (%s)" % (channelnames[program],child_list_title,child_list_time)
                         liz = self.html2ListItem(child_list_final_title,banner,"",state,time,program,program,child_list_streaming_url,None,False,'true')
      
