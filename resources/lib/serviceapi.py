@@ -27,7 +27,7 @@ class serviceAPI(Scraper):
 	serviceAPIHighlights = __urlBase + 'page/startpage'
 
 
-	def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode):
+	def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop, defaultViewMode):
 		self.translation = settings.getLocalizedString
 		self.xbmc = xbmc
 		self.defaultViewMode = defaultViewMode
@@ -37,7 +37,6 @@ class serviceAPI(Scraper):
 		self.pluginhandle = pluginhandle
 		self.defaultbanner = defaultbanner
 		self.defaultbackdrop = defaultbackdrop
-		self.useSubtitles = useSubtitles
 		self.xbmc.log(msg='ServiceAPI  - Init done', level=xbmc.LOGDEBUG);
 
 

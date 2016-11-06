@@ -68,7 +68,6 @@ defaultbackdrop = os.path.join(media_path,"fanart.jpg")
 
 #load settings
 useServiceAPI = Settings.serviceAPI()
-useSubtitles = Settings.subtitles()
 videoQuality = Settings.videoQuality()
 autoPlayPrompt = settings.getSetting("autoPlayPrompt") == "true"
 
@@ -82,8 +81,8 @@ except:
 tvthekplayer = xbmc.Player()
 
 #init scrapers
-jsonScraper = serviceAPI(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop, useSubtitles, defaultViewMode)
-htmlScraper = htmlScraper(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop, useSubtitles, defaultViewMode)
+jsonScraper = serviceAPI(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop, defaultViewMode)
+htmlScraper = htmlScraper(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop, defaultViewMode)
 
 #parameters
 params=parameters_string_to_dict(sys.argv[2])
@@ -106,7 +105,7 @@ if videourl:
     debugLog("Videourl: %s" % urllib.unquote(videourl),'Info')
 if title:
     debugLog("Title: %s" % title.encode('UTF-8'),'Info')
-    
+
 
 def getMainMenu():
     debugLog("Building Main Menu","Info")

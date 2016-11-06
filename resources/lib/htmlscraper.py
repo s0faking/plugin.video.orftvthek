@@ -22,7 +22,7 @@ class htmlScraper(Scraper):
     __urlArchive    = __urlBase + '/archive'
 
     
-    def __init__(self,xbmc,settings,pluginhandle,quality,protocol,delivery,defaultbanner,defaultbackdrop,useSubtitles,defaultViewMode):
+    def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop, defaultViewMode):
         self.translation = settings.getLocalizedString
         self.xbmc = xbmc
         self.videoQuality = quality
@@ -31,7 +31,6 @@ class htmlScraper(Scraper):
         self.pluginhandle = pluginhandle
         self.defaultbanner = defaultbanner
         self.defaultbackdrop = defaultbackdrop
-        self.useSubtitles = useSubtitles
         self.enableBlacklist = settings.getSetting("enableBlacklist") == "true"
         debugLog('HTML Scraper - Init done','Info')
 
@@ -307,8 +306,6 @@ class htmlScraper(Scraper):
             backdrop = self.defaultbackdrop
         if description == '':
             description = (self.translation(30008)).encode("utf-8")
-        if not self.useSubtitles:
-            subtitles = None;
         params = parameters_string_to_dict(videourl)
         mode = params.get('mode')
         if not mode:
@@ -408,13 +405,10 @@ class htmlScraper(Scraper):
                     current_duration = 0
                     
                 current_preview_img = data.get("selected_video")["preview_image_url"]
-                if self.useSubtitles:
-                    if "subtitles" in data.get("selected_video"):
-                        current_subtitles = []
-                        for sub in data.get("selected_video")["subtitles"]:
-                            current_subtitles.append(sub.get(u'src'))
-                    else:
-                        current_subtitles = None
+                if "subtitles" in data.get("selected_video"):
+                    current_subtitles = []
+                    for sub in data.get("selected_video")["subtitles"]:
+                        current_subtitles.append(sub.get(u'src'))
                 else:
                     current_subtitles = None
                 current_id = data.get("selected_video")["id"]
@@ -449,14 +443,11 @@ class htmlScraper(Scraper):
                         preview_img = video_item["preview_image_url"]
                         id = video_item["id"]
                         sources = video_item["sources"]
-                        if self.useSubtitles:
-                            if "subtitles" in video_item:
-                                debugLog("Found Subtitles for %s" % title,'Info')
-                                subtitles = []
-                                for sub in video_item["subtitles"]:
-                                    subtitles.append(sub.get(u'src'))
-                            else:
-                                subtitles = None
+                        if "subtitles" in video_item:
+                            debugLog("Found Subtitles for %s" % title,'Info')
+                            subtitles = []
+                            for sub in video_item["subtitles"]:
+                                subtitles.append(sub.get(u'src'))
                         else:
                             subtitles = None
                         videourl = self.getVideoUrl(sources);

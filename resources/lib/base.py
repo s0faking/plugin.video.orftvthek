@@ -40,8 +40,8 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
         liz.addStreamInfo('video', videoStreamInfo)
 
         liz.addStreamInfo('audio', {"codec": "aac", "language": "de", "channels": 2})
-        if subtitles != None:
-            if subtitles[0].endswith('.srt'):
+        if subtitles != None and Settings.subtitles():
+            if len(subtitles) > 0 and subtitles[0].endswith('.srt'):
                 subtitles.pop(0)
             liz.addStreamInfo('subtitle', {"language": "de"})
             liz.setSubtitles(subtitles)   
