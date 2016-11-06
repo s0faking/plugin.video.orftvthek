@@ -100,7 +100,7 @@ class htmlScraper(Scraper):
 
             
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True,'false');
+            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
             
     	
     def openArchiv(self,url):
@@ -133,7 +133,7 @@ class htmlScraper(Scraper):
             
             parameters = {"link" : link,"title" : title,"banner" : banner,"backdrop" : self.defaultbackdrop, "mode" : "openSeries"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,banner,"",description,"","","",url,None,True,'false');
+            liz = self.html2ListItem(title,banner,"",description,"","","",url,None,True, False);
         
     
     # Parses the Frontpage Carousel
@@ -158,7 +158,7 @@ class htmlScraper(Scraper):
             
             parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "openSeries"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True,'false');
+            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
     
     # Parses the Frontpage Show Overview Carousel
     def getCategories(self):
@@ -181,7 +181,7 @@ class htmlScraper(Scraper):
             desc = self.translation(30008).encode('UTF-8')
             parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getSendungenDetail"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True,'false');      
+            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
     
     # Parses Details for the selected Show
     def getCategoriesDetail(self,category,banner):
@@ -217,11 +217,11 @@ class htmlScraper(Scraper):
                     current_desc = self.translation(30008).encode('UTF-8');
                 parameters = {"link" :  current_link,"title" :current_title,"banner" : banner,"backdrop" : "", "mode" : "openSeries"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                liz = self.html2ListItem(current_title,banner,"",current_desc,"","","",url,None,True,'false');
+                liz = self.html2ListItem(current_title,banner,"",current_desc,"","","",url,None,True, False);
             else:
-                liz = self.html2ListItem((self.translation(30014)).encode('UTF-8'),self.defaultbanner,"","","","","","",None,True,'false');
+                liz = self.html2ListItem((self.translation(30014)).encode('UTF-8'),self.defaultbanner,"","","","","","",None,True, False);
         except:
-            liz = self.html2ListItem((self.translation(30014)).encode('UTF-8'),self.defaultbanner,"","","","","","",None,True,'false');
+            liz = self.html2ListItem((self.translation(30014)).encode('UTF-8'),self.defaultbanner,"","","","","","",None,True, False);
         
         itemwrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper.mod_latest_episodes'})
         if len(itemwrapper) > 0:
@@ -243,7 +243,7 @@ class htmlScraper(Scraper):
                     desc = self.translation(30008).encode('UTF-8');
                 parameters = {"link" :  link[0],"title" :title,"banner" : banner,"backdrop" : "", "mode" : "openSeries"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                liz = self.html2ListItem(title,banner,"",desc,"","","",url,None,True,'false');
+                liz = self.html2ListItem(title,banner,"",desc,"","","",url,None,True, False);
         
     # Parses "Sendung verpasst?" Date Listing
     def getSchedule(self):
@@ -272,7 +272,7 @@ class htmlScraper(Scraper):
             
             parameters = {"link" : link,"title" : title,"banner" : "","backdrop" : "", "mode" : "getScheduleDetail"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,"","","","",date,"",url,None,True,'false');
+            liz = self.html2ListItem(title,"","","","",date,"",url,None,True, False);
     
     def getArchiv(self):
         html = common.fetchPage({'link': self.__urlArchive})
@@ -297,10 +297,10 @@ class htmlScraper(Scraper):
 
                 parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getArchiveDetail"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                liz = self.html2ListItem(title,image,"",description,"","","",url,None,True,'false');
+                liz = self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
     
     # Creates a XBMC List Item
-    def html2ListItem(self,title,banner,backdrop,description,duration,date,channel,videourl,subtitles=None,folder=True,playable='false'):
+    def html2ListItem(self,title,banner,backdrop,description,duration,date,channel,videourl,subtitles=None,folder=True,playable = False):
         if banner == '':
             banner = self.defaultbanner
         if backdrop == '':
@@ -353,7 +353,7 @@ class htmlScraper(Scraper):
                     link = common.replaceHTMLCodes(item_href[0]).encode('UTF-8')
                     parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getSendungenDetail"}
                     url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                    liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True,'false');
+                    liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
             
     # Parses all "Bundesland Heute" Shows 
     def getBundeslandHeute(self,url,image):
@@ -372,7 +372,7 @@ class htmlScraper(Scraper):
             desc = self.translation(30008).encode('UTF-8')
             parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getSendungenDetail"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True,'false');
+            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
             i = i + 1
         
     # Parses a Video Page and extracts the Playlist/Description/...
@@ -428,7 +428,7 @@ class htmlScraper(Scraper):
                 debugLog("Found Video Playlist with %d Items" % len(video_items),'Info')
                 parameters = {"mode" : "playlist"}
                 u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                liz = self.html2ListItem("[ "+(self.translation(30015)).encode("utf-8")+" ]",banner,"",(self.translation(30015)).encode("utf-8"),'','','',u, None,True,'true');
+                liz = self.html2ListItem("[ "+(self.translation(30015)).encode("utf-8")+" ]",banner,"",(self.translation(30015)).encode("utf-8"),'','','',u, None,True, True);
                 for video_item in video_items:
                     try:
                         title_prefix = video_item["title_prefix"]
@@ -461,7 +461,7 @@ class htmlScraper(Scraper):
                             subtitles = None
                         videourl = self.getVideoUrl(sources);
 
-                        liz = self.html2ListItem(title,preview_img,"",desc,duration,'','',videourl, subtitles,False,'true')
+                        liz = self.html2ListItem(title,preview_img,"",desc,duration,'','',videourl, subtitles,False, True)
                         playlist.add(videourl,liz)
                     except Exception, e:
                         debugLog(e,'Error')
@@ -469,7 +469,7 @@ class htmlScraper(Scraper):
                 return playlist
             else:      
                 debugLog("No Playlist Items found for %s. Setting up single video view." % current_title.encode('UTF-8'),'Info')
-                liz = self.html2ListItem(current_title,current_preview_img,"",current_desc,current_duration,'','',current_videourl, current_subtitles,False,'true')
+                liz = self.html2ListItem(current_title,current_preview_img,"",current_desc,current_duration,'','',current_videourl, current_subtitles,False, True)
                 playlist.add(current_videourl,liz)
                 return playlist
         else:
@@ -519,7 +519,7 @@ class htmlScraper(Scraper):
                 
                 link = liveurls[program]
                 final_title = "[%s] - %s (%s)" % (channelnames[program],title,time)
-                liz = self.html2ListItem(final_title,banner,"",state,time,program,program,link,None,False,'true')
+                liz = self.html2ListItem(final_title,banner,"",state,time,program,program,link,None,False, True)
                 child_list = common.parseDOM(item,name='li',attrs={'class': 'base_list_item'})
                 for child_list_item in child_list:
                     child_list_title = common.parseDOM(child_list_item,name='h4')
@@ -531,7 +531,7 @@ class htmlScraper(Scraper):
                     if child_list_time == time and child_list_title != title:
                         child_list_streaming_url = self.getLivestreamUrl(child_list_link,self.videoQuality)
                         child_list_final_title = "[%s] - %s (%s)" % (channelnames[program],child_list_title,child_list_time)
-                        liz = self.html2ListItem(child_list_final_title,banner,"",state,time,program,program,child_list_streaming_url,None,False,'true')
+                        liz = self.html2ListItem(child_list_final_title,banner,"",state,time,program,program,child_list_streaming_url,None,False, True)
      
 
     def getLivestreamUrl(self,url,quality):
@@ -591,7 +591,7 @@ class htmlScraper(Scraper):
 
                 parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getThemenDetail"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                liz = self.html2ListItem(title,image,"",description,"","","",url,None,True,'false');
+                liz = self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
 
     
     # Parses the Archive Detail Page
@@ -633,12 +633,12 @@ class htmlScraper(Scraper):
             
             parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "openSeries"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True,'false');
+            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
     
     def getSearchHistory(self,cache):
         parameters = {'mode' : 'getSearchResults'}
         u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-        createListItem((self.translation(30007)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)
+        createListItem((self.translation(30007)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, False, True, self.defaultbackdrop,self.pluginhandle,None)
 
         cache.table_name = "searchhistory"
         some_dict = cache.get("searches").split("|")
@@ -646,7 +646,7 @@ class htmlScraper(Scraper):
             if str.strip() != '':
                 parameters = {'mode' : 'getSearchResults','link' : str.replace(" ","+")}
                 u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                createListItem(str.encode('UTF-8'), self.defaultbanner, "", "", "", '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)
+                createListItem(str.encode('UTF-8'), self.defaultbanner, "", "", "", '', u, False, True, self.defaultbackdrop,self.pluginhandle,None)
 
     def removeUmlauts(self,str):
         return str.replace("Ö","O").replace("ö","o").replace("Ü","U").replace("ü","u").replace("Ä","A").replace("ä","a")
@@ -665,4 +665,4 @@ class htmlScraper(Scraper):
         else:
             parameters = {'mode' : 'getSearchHistory'}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            createListItem((self.translation(30014)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, 'false', True, self.defaultbackdrop,self.pluginhandle,None)
+            createListItem((self.translation(30014)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, False, True, self.defaultbackdrop,self.pluginhandle,None)

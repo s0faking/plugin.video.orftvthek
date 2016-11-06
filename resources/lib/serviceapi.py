@@ -105,7 +105,7 @@ class serviceAPI(Scraper):
 		duration     = JSONSegment.get('duration_seconds')
 		date         = time.strptime(JSONSegment.get('episode_date')[0:19], '%Y-%m-%dT%H:%M:%S')
 		streamingURL = self.JSONStreamingURL(JSONSegment.get('sources'))
-		return [streamingURL, createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, 'true', False, self.defaultbackdrop,self.pluginhandle)]
+		return [streamingURL, createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, True, False, self.defaultbackdrop,self.pluginhandle)]
 
 
 	def JSONImage(self,jsonImages, name = 'image_full'):
@@ -203,7 +203,7 @@ class serviceAPI(Scraper):
 		else:
 			parameters = {'mode' : 'playlist'}
 			u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-			createListItem('[ '+(self.translation(30015)).encode('UTF-8')+' ]', image, '%s\n%s' % ((self.translation(30015)).encode('UTF-8'), description), duration, time.strftime('%Y-%m-%d', date), result.get('_embedded').get('channel').get('name'), u, 'false', False, self.defaultbackdrop,self.pluginhandle)
+			createListItem('[ '+(self.translation(30015)).encode('UTF-8')+' ]', image, '%s\n%s' % ((self.translation(30015)).encode('UTF-8'), description), duration, time.strftime('%Y-%m-%d', date), result.get('_embedded').get('channel').get('name'), u, False, False, self.defaultbackdrop,self.pluginhandle)
 
 			for segment in result.get('_embedded').get('segments'):
 				listItem = self.JSONSegment2ListItem(segment)
@@ -263,7 +263,7 @@ class serviceAPI(Scraper):
 				title = 'älter als %s' % title
 				parameters = {'mode' : 'openDate', 'link': date.strftime('%Y-%m-%d'), 'from': (date - datetime.timedelta(days=150)).strftime('%Y-%m-%d')}
 			u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-			createListItem(title, None, None, None, date.strftime('%Y-%m-%d'), '', u, 'False', True, self.defaultbackdrop,self.pluginhandle)
+			createListItem(title, None, None, None, date.strftime('%Y-%m-%d'), '', u, False, True, self.defaultbackdrop,self.pluginhandle)
 
 	# Returns Live Stream Listing
 	def getLiveStreams(self):
@@ -293,7 +293,7 @@ class serviceAPI(Scraper):
 
 				banner = self.JSONImage(result.get('_embedded').get('image'))
 
-				createListItem(title, banner, description, duration, time.strftime('%Y-%m-%d', livestreamStart), programName, link, 'True', False, self.defaultbackdrop, self.pluginhandle)
+				createListItem(title, banner, description, duration, time.strftime('%Y-%m-%d', livestreamStart), programName, link, True, False, self.defaultbackdrop, self.pluginhandle)
 		else:
 			xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
 
@@ -321,7 +321,7 @@ class serviceAPI(Scraper):
 				self.xbmc.sleep(sleepTime * 1000)
 				if dialog.yesno('', (self.translation(30035)).encode("utf-8")):
 					streamingURL = link = self.JSONStreamingURL(result.get('sources'))
-					listItem = createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), result.get('_embedded').get('channel').get('name'), streamingURL, 'true', False, self.defaultbackdrop, self.pluginhandle)
+					listItem = createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), result.get('_embedded').get('channel').get('name'), streamingURL, True, False, self.defaultbackdrop, self.pluginhandle)
 					self.xbmc.Player().play(streamingURL, listItem)
 
 
@@ -341,7 +341,7 @@ class serviceAPI(Scraper):
 			time.strftime('%Y-%m-%d', time.strptime(JSONEpisode.get('date')[0:19], '%Y-%m-%dT%H:%M:%S')),
 			JSONEpisode.get('_embedded').get('channel').get('name') if JSONEpisode.get('_embedded').get('channel') != None else None,
 			sys.argv[0] + '?' + urllib.urlencode({'mode' : 'openEpisode', 'link': JSONEpisode.get('id')}),
-			'False',
+			False,
 			True,
 			self.defaultbackdrop,
 			self.pluginhandle,
@@ -357,7 +357,7 @@ class serviceAPI(Scraper):
 			None,
 			None,
 			sys.argv[0] + '?' + urllib.urlencode({'mode' : 'openProgram', 'link': jsonProfile.get('id')}),
-			'False',
+			False,
 			True,
 			self.defaultbackdrop,
 			self.pluginhandle
