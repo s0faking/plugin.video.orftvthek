@@ -4,6 +4,7 @@
 import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time,os,os.path,urlparse,json
 import CommonFunctions as common
 
+import resources.lib.Settings
 from resources.lib.base import *
 from resources.lib.helpers import *
 from resources.lib.serviceapi import *
@@ -66,11 +67,9 @@ blacklist_banner =  os.path.join(media_path,"blacklist_banner.jpg")
 defaultbackdrop = os.path.join(media_path,"fanart.jpg")
 
 #load settings
-forceView = settings.getSetting("forceView") == "true"
-useServiceAPI = settings.getSetting('useServiceAPI') == 'true'
-useSubtitles = settings.getSetting("useSubtitles") == "true"
-videoQuality = settings.getSetting("videoQuality")
-enableBlacklist = settings.getSetting("enableBlacklist") == "true"
+useServiceAPI = Settings.serviceAPI()
+useSubtitles = Settings.subtitles()
+videoQuality = Settings.videoQuality()
 autoPlayPrompt = settings.getSetting("autoPlayPrompt") == "true"
 
 try:
@@ -123,7 +122,7 @@ def getMainMenu():
         addDirectory((translation(30049)).encode("utf-8"),schedule_banner,defaultbackdrop, "","","getArchiv",pluginhandle)
     addDirectory((translation(30007)).encode("utf-8"),search_banner,defaultbackdrop, "","","getSearchHistory",pluginhandle)
     addDirectory((translation(30027)).encode("utf-8"),trailer_banner,defaultbackdrop, "","","openTrailers",pluginhandle)
-    if enableBlacklist:
+    if Settings.blacklist():
         addDirectory((translation(30037)).encode("utf-8"),blacklist_banner,defaultbackdrop, "","","openBlacklist",pluginhandle)
     listCallback(False,thumbViewMode,pluginhandle)
     
@@ -133,7 +132,7 @@ def listCallback(sort,viewMode,pluginhandle):
     if sort:
         xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
     xbmcplugin.endOfDirectory(pluginhandle)
-    if forceView:
+    if Settings.forceView():
         xbmc.executebuiltin(viewMode)     
     
 def startPlaylist(player,playlist):
