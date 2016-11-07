@@ -105,7 +105,7 @@ def printBlacklist(banner,backdrop,translation,pluginhandle):
                 description = "%s %s %s" % ((translation(30040)).encode("utf-8"),item,(translation(30041)).encode("utf-8"))
                 link = item
                 mode = "unblacklistShow"
-                addDirectory(item,banner,backdrop,translation,description,link,mode,pluginhandle)
+                addDirectory(item,banner,backdrop, description,link,mode,pluginhandle)
 
 
 def setBlacklist(data,file):
