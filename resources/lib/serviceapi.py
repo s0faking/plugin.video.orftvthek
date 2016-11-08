@@ -98,6 +98,9 @@ class serviceAPI(Scraper):
 
 	# Useful  Methods for JSON Parsing
 	def JSONSegment2ListItem(self,JSONSegment):
+		if JSONSegment.get('killdate') != None and time.strptime(JSONSegment.get('killdate')[0:19], '%Y-%m-%dT%H:%M:%S') < time.localtime():
+			return
+		
 		title        = JSONSegment.get('title').encode('UTF-8')
 		image        = self.JSONImage(JSONSegment.get('_embedded').get('image'))
 		description  = JSONSegment.get('description')
@@ -332,6 +335,9 @@ class serviceAPI(Scraper):
 
 
 	def __JSONEpisode2ListItem(self, JSONEpisode, ignoreEpisodeType = None):
+		if JSONEpisode.get('killdate') != None and time.strptime(JSONEpisode.get('killdate')[0:19], '%Y-%m-%dT%H:%M:%S') < time.localtime():
+			return
+
 		# Direcotory should be set to False, that the Duration is shown, but then there is an error with the Pluginhandle
 		createListItem(
 			JSONEpisode.get('title'),
