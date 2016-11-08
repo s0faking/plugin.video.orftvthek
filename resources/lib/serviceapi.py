@@ -93,7 +93,7 @@ class serviceAPI(Scraper):
 
 		else:
 			self.xbmc.log(msg='ServiceAPI no available ... switch back to HTML Parsing in the Addon Settings', level=xbmc.LOGDEBUG);
-			xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
+			xbmcgui.Dialog().notification(self.translation(30045).encode('UTF-8'), self.translation(30046).encode('UTF-8'), xbmcaddon.Addon().getAddonInfo('icon'))
 
 
 	# Useful  Methods for JSON Parsing
@@ -137,7 +137,7 @@ class serviceAPI(Scraper):
 			for result in json.loads(response.read()).get('_embedded').get('items'):
 				self.__JSONProfile2ListItem(result)
 		else:
-			xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
+			xbmcgui.Dialog().notification(self.translation(30045).encode('UTF-8'), self.translation(30046).encode('UTF-8'), xbmcaddon.Addon().getAddonInfo('icon'))
 
 
 	# list all Episodes for the given Date
@@ -178,7 +178,7 @@ class serviceAPI(Scraper):
 			for episode in episodes:
 				self.__JSONEpisode2ListItem(episode, 'teaser')
 		else:
-			xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
+			xbmcgui.Dialog().notification(self.translation(30045).encode('UTF-8'), self.translation(30046).encode('UTF-8'), xbmcaddon.Addon().getAddonInfo('icon'))
 
 
 	# listst all Segments for the Episode with the given episodeID
@@ -228,7 +228,7 @@ class serviceAPI(Scraper):
 				addDirectory(title, None, self.defaultbackdrop, description, link, 'openTopic', self.pluginhandle)
 
 		else:
-			xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
+			xbmcgui.Dialog().notification(self.translation(30045).encode('UTF-8'), self.translation(30046).encode('UTF-8'), xbmcaddon.Addon().getAddonInfo('icon'))
 
 
 	# list all Trailers for further airings
@@ -247,7 +247,7 @@ class serviceAPI(Scraper):
 			for episode in json.loads(response.read())['_embedded']['items']:
 				self.__JSONEpisode2ListItem(episode)
 		else:
-			xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
+			xbmcgui.Dialog().notification(self.translation(30045).encode('UTF-8'), self.translation(30046).encode('UTF-8'), xbmcaddon.Addon().getAddonInfo('icon'))
 
 	def getArchiv(self):
 		pass
@@ -294,7 +294,7 @@ class serviceAPI(Scraper):
 
 				createListItem(title, banner, description, duration, time.strftime('%Y-%m-%d', livestreamStart), programName, link, True, False, self.defaultbackdrop, self.pluginhandle)
 		else:
-			xbmc.executebuiltin('XBMC.Notification("%s", "%s", %s)' % ( (self.translation(30045)).encode("utf-8"), (self.translation(30046)).encode("utf-8"), "") )
+			xbmcgui.Dialog().notification(self.translation(30045).encode('UTF-8'), self.translation(30046).encode('UTF-8'), xbmcaddon.Addon().getAddonInfo('icon'))
 
 	def getLiveNotOnline(self,link):
 		try:
