@@ -475,13 +475,13 @@ class htmlScraper(Scraper):
         liveurls['ORF1'] = "http://apasfiisl.apa.at/ipad/orf1_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
         liveurls['ORF2'] = "http://apasfiisl.apa.at/ipad/orf2_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
         liveurls['ORF3'] = "http://apasfiisl.apa.at/ipad/orf3_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
-        liveurls['ORF'] = "http://apasfiisl.apa.at/ipad/orfs_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
+        liveurls['ORFS'] = "http://apasfiisl.apa.at/ipad/orfs_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
         
         channelnames = {}
         channelnames['ORF1'] = "ORF 1"
         channelnames['ORF2'] = "ORF 2"
         channelnames['ORF3'] = "ORF III"
-        channelnames['ORF'] = "ORF Sport+"
+        channelnames['ORFS'] = "ORF Sport+"
             
         html = common.fetchPage({'link': self.__urlLive})
         wrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper mod_epg'})
