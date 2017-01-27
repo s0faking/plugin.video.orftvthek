@@ -94,7 +94,7 @@ class htmlScraper(Scraper):
             if date != "":
                 title = "%s - %s" % (title,date)
 
-            parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "openSeries"}
+            parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "openSeries"}
             
 
             
@@ -130,7 +130,7 @@ class htmlScraper(Scraper):
             banner = common.parseDOM(teaser.replace('>"', '"'), name='img', ret='src')
             banner = common.replaceHTMLCodes(banner[1]).encode("utf-8")
             
-            parameters = {"link" : link,"title" : title,"banner" : banner,"backdrop" : self.defaultbackdrop, "mode" : "openSeries"}
+            parameters = {"link" : link,"title" : title,"banner" : banner, "mode" : "openSeries"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             liz = self.html2ListItem(title,banner,"",description,"","","",url,None,True, False);
         
@@ -155,7 +155,7 @@ class htmlScraper(Scraper):
             image = common.parseDOM(teasers,name='img',ret="src")
             image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
             
-            parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "openSeries"}
+            parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "openSeries"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
     
@@ -178,7 +178,7 @@ class htmlScraper(Scraper):
             image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
 
             desc = self.translation(30008).encode('UTF-8')
-            parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getSendungenDetail"}
+            parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "getSendungenDetail"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
     
@@ -214,7 +214,7 @@ class htmlScraper(Scraper):
                     current_desc = (self.translation(30009)).encode("utf-8")+' %s - %s\n'+(self.translation(30011)).encode("utf-8")+': %s' % (current_date,current_time,current_duration)
                 except:
                     current_desc = self.translation(30008).encode('UTF-8');
-                parameters = {"link" :  current_link,"title" :current_title,"banner" : banner,"backdrop" : "", "mode" : "openSeries"}
+                parameters = {"link" :  current_link,"title" :current_title,"banner" : banner, "mode" : "openSeries"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
                 liz = self.html2ListItem(current_title,banner,"",current_desc,"","","",url,None,True, False);
             else:
@@ -240,7 +240,7 @@ class htmlScraper(Scraper):
                     desc = (self.translation(30009)).encode("utf-8")+" %s - %s\n"+(self.translation(30011)).encode("utf-8")+": %s" % (date,time,duration)
                 except:
                     desc = self.translation(30008).encode('UTF-8');
-                parameters = {"link" :  link[0],"title" :title,"banner" : banner,"backdrop" : "", "mode" : "openSeries"}
+                parameters = {"link" :  link[0],"title" :title,"banner" : banner, "mode" : "openSeries"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
                 liz = self.html2ListItem(title,banner,"",desc,"","","",url,None,True, False);
         
@@ -269,7 +269,7 @@ class htmlScraper(Scraper):
                 
             title = day + " - " + date
             
-            parameters = {"link" : link,"title" : title,"banner" : "","backdrop" : "", "mode" : "getScheduleDetail"}
+            parameters = {"link" : link,"title" : title,"banner" : "", "mode" : "getScheduleDetail"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             liz = self.html2ListItem(title,"","","","",date,"",url,None,True, False);
     
@@ -294,7 +294,7 @@ class htmlScraper(Scraper):
                 description = common.parseDOM(archive,name='div',attrs={'class':'item_description'})
                 description = common.replaceHTMLCodes(description[0]).encode('UTF-8')
 
-                parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getArchiveDetail"}
+                parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "getArchiveDetail"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
                 liz = self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
     
@@ -348,7 +348,7 @@ class htmlScraper(Scraper):
                     
                 if len(item_href) > 0:
                     link = common.replaceHTMLCodes(item_href[0]).encode('UTF-8')
-                    parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getSendungenDetail"}
+                    parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "getSendungenDetail"}
                     url = sys.argv[0] + '?' + urllib.urlencode(parameters)
                     liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
             
@@ -367,7 +367,7 @@ class htmlScraper(Scraper):
             link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')        
             title = items_title[i].encode('UTF-8')
             desc = self.translation(30008).encode('UTF-8')
-            parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getSendungenDetail"}
+            parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "getSendungenDetail"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
             i = i + 1
@@ -580,7 +580,7 @@ class htmlScraper(Scraper):
                 if description == "":
                     description = self.translation(30008).encode('UTF-8')
 
-                parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "getThemenDetail"}
+                parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "getThemenDetail"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
                 liz = self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
 
@@ -622,7 +622,7 @@ class htmlScraper(Scraper):
 
             desc = "%s - (%s) \n%s" % (str(date),str(time).strip(),str(desc))
             
-            parameters = {"link" : link,"title" : title,"banner" : image,"backdrop" : "", "mode" : "openSeries"}
+            parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "openSeries"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
     

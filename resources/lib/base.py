@@ -5,7 +5,7 @@ import simplejson
 import Settings
 
 def addDirectory(title,banner,backdrop, description,link,mode,pluginhandle):
-    parameters = {"link" : link,"title" : title,"banner" : banner,"backdrop" : backdrop, "mode" : mode}
+    parameters = {"link" : link,"title" : title,"banner" : banner, "mode" : mode}
     u = sys.argv[0] + '?' + urllib.urlencode(parameters)
     createListItem(title,banner,description,'','','',u, False,True, backdrop,pluginhandle,None)
 
