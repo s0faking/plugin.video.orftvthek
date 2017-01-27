@@ -168,7 +168,6 @@ elif mode == 'blacklistShow':
     blacklistItem(title)
     xbmc.executebuiltin('Container.Refresh')
 if mode == 'openBlacklist':
-    addDirectory(">> %s <<" % (translation(30039)).encode("utf-8"),defaultbanner,defaultbackdrop, "","","",pluginhandle)
     printBlacklist(defaultbanner,defaultbackdrop,translation,pluginhandle)
     xbmcplugin.endOfDirectory(pluginhandle)
 elif mode == 'getSendungen':
