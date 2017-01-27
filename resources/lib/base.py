@@ -5,13 +5,11 @@ import simplejson
 import Settings
 
 def addDirectory(title,banner,backdrop, description,link,mode,pluginhandle):
-    parameters = {"link" : link,"title" : title,"banner" : banner,"backdrop" : backdrop, "mode" : mode}
+    parameters = {"link" : link,"title" : title,"banner" : banner, "mode" : mode}
     u = sys.argv[0] + '?' + urllib.urlencode(parameters)
     createListItem(title,banner,description,'','','',u, False,True, backdrop,pluginhandle,None)
 
 def createListItem(title,banner,description,duration,date,channel,videourl,playable,folder, backdrop,pluginhandle,subtitles=None,blacklist=False):
-    if description == '':
-        description = Settings.localizedString(30008).encode("utf-8")
     liz=xbmcgui.ListItem(title, iconImage=banner, thumbnailImage=banner)
     liz.setInfo( type="Video", infoLabels={ "Title": title } )
     liz.setInfo( type="Video", infoLabels={ "Tvshowtitle": title } )
