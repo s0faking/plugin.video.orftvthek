@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time,os,os.path,urlparse,json
-import CommonFunctions as common
+import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,datetime,time,os,os.path,urlparse,json
 
 from base import *
 from Scraper import *
@@ -275,7 +274,6 @@ class serviceAPI(Scraper):
 		if responseCode == 200:
 			for result in json.loads(response.read()).get('_embedded').get('items'):
 				description     = result.get('description')
-				program         = result.get('_embedded').get('channel').get('reel').upper()
 				programName     = result.get('_embedded').get('channel').get('name')
 				livestreamStart = time.strptime(result.get('start')[0:19], '%Y-%m-%dT%H:%M:%S')
 				livestreamEnd   = time.strptime(result.get('end')[0:19],   '%Y-%m-%dT%H:%M:%S')

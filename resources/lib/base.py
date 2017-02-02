@@ -146,6 +146,5 @@ def blacklistItem(title):
         
         
 def unblacklistItem(title):
-    addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek");
     title = urllib.unquote(title).replace("+"," ").strip()
     removeBlacklist(title)

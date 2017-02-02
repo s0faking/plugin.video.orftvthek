@@ -1,10 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,socket,datetime,time,os,os.path,urlparse,json
+import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,socket,time,os,os.path,urlparse,json
 import CommonFunctions as common
 
-import resources.lib.Settings
 from resources.lib.base import *
 from resources.lib.helpers import *
 from resources.lib.serviceapi import *

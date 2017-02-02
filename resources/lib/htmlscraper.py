@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import urllib,urllib2,re,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time,os,os.path,urlparse,json
+import urllib,urllib2,re,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time,os,urlparse,json
 import CommonFunctions as common
 
 from resources.lib.helpers import *
@@ -325,7 +325,6 @@ class htmlScraper(Scraper):
             if len(title) > 0:
                 title = title[0].encode('UTF-8')
                 item_href = common.parseDOM(item,name='a',attrs={'class':'base_list_item_inner.*?'},ret="href")
-                image_container = common.parseDOM(item,name='figure',attrs={'class':'episode_image'},ret="href")
                 image = common.parseDOM(item,name='img',attrs={},ret="src")
                 if len(image) > 0:
                     image = common.replaceHTMLCodes(image[0]).encode('UTF-8').replace("height=180","height=265").replace("width=320","width=500")
@@ -374,9 +373,6 @@ class htmlScraper(Scraper):
                 data = json.loads(data)
                 
                 video_items = data.get("playlist")["videos"]
-            
-            
-                current_title_prefix = data.get("selected_video")["title_prefix"]
                 current_title = data.get("selected_video")["title"]
                 if data.get("selected_video")["description"]:
                     current_desc = data.get("selected_video")["description"].encode('UTF-8')
@@ -396,7 +392,6 @@ class htmlScraper(Scraper):
                         current_subtitles.append(sub.get(u'src'))
                 else:
                     current_subtitles = None
-                current_id = data.get("selected_video")["id"]
                 current_videourl = self.getVideoUrl(data.get("selected_video")["sources"]);
             except Exception, e:
                 debugLog("Error Loading Episode from %s" % url,'Exception')
@@ -486,10 +481,8 @@ class htmlScraper(Scraper):
 
                 if self.getBroadcastState(time):
                     state = (self.translation(30019)).encode("utf-8")
-                    state_short = "Online"
                 else:
                     state = (self.translation(30020)).encode("utf-8")
-                    state_short = "Offline"
                 
                 link = liveurls[program]
                 final_title = "[%s] - %s (%s)" % (channelnames[program],title,time)
