@@ -394,7 +394,7 @@ class htmlScraper(Scraper):
                 current_videourl = self.getVideoUrl(data.get("selected_video")["sources"]);
             except Exception, e:
                 debugLog("Error Loading Episode from %s" % url,'Exception')
-                notifyUser("This video is offline")
+                notifyUser((self.translation(30052)).encode("utf-8"))
                 current_subtitles = None
 
             if len(video_items) > 1:
@@ -441,7 +441,7 @@ class htmlScraper(Scraper):
                 playlist.add(current_videourl,liz)
                 return playlist
         else:
-            notifyUser("This video is offline")
+            notifyUser((self.translation(30052)).encode("utf-8"))
             sys.exit()
     
 

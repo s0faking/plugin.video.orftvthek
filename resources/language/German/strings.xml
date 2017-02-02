@@ -42,4 +42,7 @@
     <string id="30047">Video abspielen</string>
     <string id="30048">Soll die Playlist sofort gestartet werden?</string>
     <string id="30049">Archiv</string>
+    <string id="30050">Die Playlist konnte nicht abgespielt werden.</string>
+    <string id="30051">Fehler</string>
+    <string id="30052">Dieses Video ist offline</string>
 </strings>

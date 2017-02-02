@@ -17,5 +17,13 @@ def serviceAPI():
 def subtitles():
 	return __addon__.getSetting('useSubtitles') == 'true'
 
-def videoQuality():
-	return int(__addon__.getSetting('videoQuality'))
+def videoQuality(quality_list):
+    default_return_index = 2
+    videoQuality = int(__addon__.getSetting('videoQuality'))
+    try:
+        return quality_list[int(videoQuality)]
+    except:
+        return quality_list[default_return_index]
+	 
+def autoPlayPrompt():
+	return __addon__.getSetting("autoPlayPrompt") == "true"

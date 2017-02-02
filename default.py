@@ -58,12 +58,9 @@ defaultbackdrop = os.path.join(media_path,"fanart.jpg")
 
 #load settings
 useServiceAPI = Settings.serviceAPI()
-videoQuality = Settings.videoQuality()
-autoPlayPrompt = settings.getSetting("autoPlayPrompt") == "true"
-try:
-    videoQuality = video_quality_list[int(videoQuality)]
-except:
-    videoQuality = video_quality_list[2]
+videoQuality = Settings.videoQuality(video_quality_list)
+autoPlayPrompt = Settings.autoPlayPrompt()
+
 
 #init scrapers
 if useServiceAPI:
@@ -126,7 +123,7 @@ def startPlaylist(player,playlist):
         player.play(playlist)
     else:
         d = xbmcgui.Dialog()
-        d.ok('VIDEO QUEUE EMPTY', 'The XBMC video queue is empty.','Add more links to video queue.')
+        d.ok((translation(30051)).encode("utf-8"), (translation(30050)).encode("utf-8"),'')
 
     
 #modes

@@ -42,4 +42,7 @@
     <string id="30047">Play Video</string>
     <string id="30048">Do you want the playlist to start immediately?</string>
     <string id="30049">Archive</string>
+    <string id="30050">An Error occured while loading the selected playlist</string>
+    <string id="30051">Error</string>
+    <string id="30052">This Video is offline</string>
 </strings>
