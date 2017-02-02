@@ -20,13 +20,14 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
     liz.setInfo( type="Video", infoLabels={ "Studio": channel } )
     liz.setProperty('fanart_image',backdrop)
     liz.setProperty('IsPlayable', str(playable))
-        
+    
     if not folder:
+        liz.setInfo( type="Video", infoLabels={ "mediatype" : 'video'})
         videoStreamInfo = {'codec': 'h264', 'aspect': 1.78}
         try:
             videoStreamInfo.update({'duration': int(duration)})
         except:
-            pass
+            debugLog("No Duration found in Video",'Info')
         if videourl.lower().endswith('_q8c.mp4') or '_q8c' in videourl.lower():
             videoStreamInfo.update({'width': 1280, 'height': 720})
         elif videourl.lower().endswith('_q6a.mp4') or '_q6a' in videourl.lower():
@@ -42,7 +43,7 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
             if len(subtitles) > 0 and subtitles[0].endswith('.srt'):
                 subtitles.pop(0)
             liz.addStreamInfo('subtitle', {"language": "de"})
-            liz.setSubtitles(subtitles)   
+            liz.setSubtitles(subtitles)
     
     if blacklist:
         match = re.search(r'( - \w\w, \d\d.\d\d.\d\d\d\d)',title)
@@ -146,6 +147,5 @@ def blacklistItem(title):
         
 def unblacklistItem(title):
     addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek");
-    bl_json_file = os.path.join(addonUserDataFolder, 'blacklist.json')
     title = urllib.unquote(title).replace("+"," ").strip()
     removeBlacklist(title)

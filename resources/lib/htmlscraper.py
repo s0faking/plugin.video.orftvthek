@@ -1,9 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time,os,os.path,urlparse,json
+import urllib,urllib2,re,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time,os,os.path,urlparse,json
 import CommonFunctions as common
 
-import Settings
 from resources.lib.helpers import *
 from base import *
 from Scraper import *
@@ -20,9 +19,8 @@ class htmlScraper(Scraper):
     __urlTips       = __urlBase + '/tips'
     __urlTopics     = __urlBase + '/topics'
     __urlArchive    = __urlBase + '/archive'
-
     
-    def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop, defaultViewMode):
+    def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop):
         self.translation = settings.getLocalizedString
         self.xbmc = xbmc
         self.videoQuality = quality
@@ -47,7 +45,7 @@ class htmlScraper(Scraper):
         self.getTableResults(self.__urlTips)
 
         
-    # Extracts VideoURL from JSON String    
+    # Extracts VideoURL from JSON String
     def getVideoUrl(self,sources):
         for source in sources:
             if source["protocol"].lower() == self.videoProtocol.lower():
@@ -56,7 +54,7 @@ class htmlScraper(Scraper):
                         return source["src"]
         return False
     
-    # Converts Page URL to Title 
+    # Converts Page URL to Title
     def programUrlTitle(self,url):
         title = url.replace(self.__urlBase,"").split("/")
         if title[1] == 'index.php':
@@ -97,7 +95,7 @@ class htmlScraper(Scraper):
 
             
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
+            self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
             
     	
     def openArchiv(self,url):
@@ -128,7 +126,7 @@ class htmlScraper(Scraper):
             
             parameters = {"link" : link,"title" : title,"banner" : banner, "mode" : "openSeries"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,banner,"",description,"","","",url,None,True, False);
+            self.html2ListItem(title,banner,"",description,"","","",url,None,True, False);
         
     
     # Parses the Frontpage Carousel
@@ -153,7 +151,7 @@ class htmlScraper(Scraper):
             
             parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "openSeries"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
+            self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
     
     # Parses the Frontpage Show Overview Carousel
     def getCategories(self):
@@ -175,7 +173,7 @@ class htmlScraper(Scraper):
 
             parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "getSendungenDetail"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,image,"", None,"","","",url,None,True, False);
+            self.html2ListItem(title,image,"", None,"","","",url,None,True, False);
     
     # Parses Details for the selected Show
     def getCategoriesDetail(self,category,banner):
@@ -204,23 +202,22 @@ class htmlScraper(Scraper):
             current_time = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta meta_time'})
             current_link = url
             if len(showname) > 0:
-                current_title = "%s - %s" % (showname,current_date)       
+                current_title = "%s - %s" % (showname,current_date)
                 try:
                     current_desc = (self.translation(30009)).encode("utf-8")+' %s - %s\n'+(self.translation(30011)).encode("utf-8")+': %s' % (current_date,current_time,current_duration)
                 except:
                     current_desc = None
                 parameters = {"link" :  current_link,"title" :current_title,"banner" : banner,"mode" : "openSeries"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                liz = self.html2ListItem(current_title,banner,"",current_desc,"","","",url,None,True, False);
+                self.html2ListItem(current_title,banner,"",current_desc,"","","",url,None,True, False);
             else:
-                liz = self.html2ListItem((self.translation(30014)).encode('UTF-8'),self.defaultbanner,"","","","","","",None,True, False);
+                self.html2ListItem((self.translation(30014)).encode('UTF-8'),self.defaultbanner,"","","","","","",None,True, False);
         except:
-            liz = self.html2ListItem((self.translation(30014)).encode('UTF-8'),self.defaultbanner,"","","","","","",None,True, False);
+            self.html2ListItem((self.translation(30014)).encode('UTF-8'),self.defaultbanner,"","","","","","",None,True, False);
         
         itemwrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper.mod_latest_episodes'})
         if len(itemwrapper) > 0:
             items = common.parseDOM(itemwrapper,name='li',attrs={'class': 'base_list_item'})
-            feedcount = len(items)
             i = 0
             for item in items:
                 i = i+1
@@ -237,7 +234,7 @@ class htmlScraper(Scraper):
                     desc = None
                 parameters = {"link" :  link[0],"title" :title,"banner" : banner, "mode" : "openSeries"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                liz = self.html2ListItem(title,banner,"",desc,"","","",url,None,True, False);
+                self.html2ListItem(title,banner,"",desc,"","","",url,None,True, False);
         
     # Parses "Sendung verpasst?" Date Listing
     def getSchedule(self):
@@ -266,7 +263,7 @@ class htmlScraper(Scraper):
             
             parameters = {"link" : link,"title" : title,"banner" : "", "mode" : "getScheduleDetail"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,"","","","",date,"",url,None,True, False);
+            self.html2ListItem(title,"","","","",date,"",url,None,True, False);
     
     def getArchiv(self):
         html = common.fetchPage({'link': self.__urlArchive})
@@ -291,7 +288,7 @@ class htmlScraper(Scraper):
 
                 parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "getArchiveDetail"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                liz = self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
+                self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
     
     # Creates a XBMC List Item
     def html2ListItem(self,title,banner,backdrop,description,duration,date,channel,videourl,subtitles=None,folder=True,playable = False):
@@ -311,11 +308,8 @@ class htmlScraper(Scraper):
         debugLog("Adding List Item","Info")
         debugLog("Videourl: %s" % videourl,"Info")
         debugLog("Duration: %s" % duration,"Info")
-        
-        
-        
-        liz = createListItem(title,banner,description,duration,date,channel,videourl,playable,folder, backdrop,self.pluginhandle,subtitles,blacklist)
-        return liz
+
+        return createListItem(title,banner,description,duration,date,channel,videourl,playable,folder, backdrop,self.pluginhandle,subtitles,blacklist)
     
     # Parses all "ZIB" Shows
     def getZIB(self,baseimage):
@@ -342,7 +336,7 @@ class htmlScraper(Scraper):
                     link = common.replaceHTMLCodes(item_href[0]).encode('UTF-8')
                     parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "getSendungenDetail"}
                     url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                    liz = self.html2ListItem(title,image,"", None,"","","",url,None,True, False);
+                    self.html2ListItem(title,image,"", None,"","","",url,None,True, False);
             
     # Parses all "Bundesland Heute" Shows 
     def getBundeslandHeute(self,url,image):
@@ -356,11 +350,11 @@ class htmlScraper(Scraper):
         
         i = 0
         for item in items:
-            link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')        
+            link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')
             title = items_title[i].encode('UTF-8')
             parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "getSendungenDetail"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,image,"", None,"","","",url,None,True, False);
+            self.html2ListItem(title,image,"", None,"","","",url,None,True, False);
             i = i + 1
         
     # Parses a Video Page and extracts the Playlist/Description/...
@@ -416,7 +410,6 @@ class htmlScraper(Scraper):
                 liz = self.html2ListItem("[ "+(self.translation(30015)).encode("utf-8")+" ]",banner,"",(self.translation(30015)).encode("utf-8"),'','','',u, None,True, True);
                 for video_item in video_items:
                     try:
-                        title_prefix = video_item["title_prefix"]
                         title = video_item["title"].encode('UTF-8')
                         if video_item["description"]:
                             desc = video_item["description"].encode('UTF-8')
@@ -432,7 +425,6 @@ class htmlScraper(Scraper):
                        
                         
                         preview_img = video_item["preview_image_url"]
-                        id = video_item["id"]
                         sources = video_item["sources"]
                         if "subtitles" in video_item:
                             debugLog("Found Subtitles for %s" % title,'Info')
@@ -449,7 +441,7 @@ class htmlScraper(Scraper):
                         debugLog(e,'Error')
                         continue
                 return playlist
-            else:      
+            else:
                 debugLog("No Playlist Items found for %s. Setting up single video view." % current_title.encode('UTF-8'),'Info')
                 liz = self.html2ListItem(current_title,current_preview_img,"",current_desc,current_duration,'','',current_videourl, current_subtitles,False, True)
                 playlist.add(current_videourl,liz)
@@ -482,7 +474,7 @@ class htmlScraper(Scraper):
         for item in items:
             program = items_class[i].split(" ")[2].encode('UTF-8').upper()
             i += 1
-            if channelnames[program]:                    
+            if channelnames[program]:
                 banner = common.parseDOM(item,name='img',ret="src")
                 banner = common.replaceHTMLCodes(banner[0]).encode('UTF-8')
                   
@@ -501,7 +493,7 @@ class htmlScraper(Scraper):
                 
                 link = liveurls[program]
                 final_title = "[%s] - %s (%s)" % (channelnames[program],title,time)
-                liz = self.html2ListItem(final_title,banner,"",state,time,program,program,link,None,False, True)
+                self.html2ListItem(final_title,banner,"",state,time,program,program,link,None,False, True)
                 child_list = common.parseDOM(item,name='li',attrs={'class': 'base_list_item'})
                 for child_list_item in child_list:
                     child_list_title = common.parseDOM(child_list_item,name='h4')
@@ -513,7 +505,7 @@ class htmlScraper(Scraper):
                     if child_list_time == time and child_list_title != title:
                         child_list_streaming_url = self.getLivestreamUrl(child_list_link,self.videoQuality)
                         child_list_final_title = "[%s] - %s (%s)" % (channelnames[program],child_list_title,child_list_time)
-                        liz = self.html2ListItem(child_list_final_title,banner,"",state,time,program,program,child_list_streaming_url,None,False, True)
+                        self.html2ListItem(child_list_final_title,banner,"",state,time,program,program,child_list_streaming_url,None,False, True)
      
 
     def getLivestreamUrl(self,url,quality):
@@ -530,7 +522,7 @@ class htmlScraper(Scraper):
                             if video_sources['quality'].lower() == quality.lower() and video_sources['protocol'].lower() == "http" and video_sources['delivery'].lower() == 'hls':
                                 return video_sources['src']
             except:
-                continue
+                debugLog("Error getting Livestream","Info")
     
     # Helper for Livestream Listing - Returns if Stream is currently running
     def getBroadcastState(self,time):
@@ -571,7 +563,7 @@ class htmlScraper(Scraper):
 
                 parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "getThemenDetail"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                liz = self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
+                self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
 
     
     # Parses the Archive Detail Page
@@ -613,7 +605,7 @@ class htmlScraper(Scraper):
             
             parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "openSeries"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            liz = self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
+            self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
     
     def getSearchHistory(self,cache):
         parameters = {'mode' : 'getSearchResults'}
@@ -622,11 +614,11 @@ class htmlScraper(Scraper):
 
         cache.table_name = "searchhistory"
         some_dict = cache.get("searches").split("|")
-        for str in reversed(some_dict):
-            if str.strip() != '':
-                parameters = {'mode' : 'getSearchResults','link' : str.replace(" ","+")}
+        for str_val in reversed(some_dict):
+            if str_val.strip() != '':
+                parameters = {'mode' : 'getSearchResults','link' : str_val.replace(" ","+")}
                 u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                createListItem(str.encode('UTF-8'), self.defaultbanner, "", "", "", '', u, False, True, self.defaultbackdrop,self.pluginhandle,None)
+                createListItem(str_val.encode('UTF-8'), self.defaultbanner, "", "", "", '', u, False, True, self.defaultbackdrop,self.pluginhandle,None)
 
     def removeUmlauts(self,str):
         return str.replace("Ö","O").replace("ö","o").replace("Ü","U").replace("ü","u").replace("Ä","A").replace("ä","a")

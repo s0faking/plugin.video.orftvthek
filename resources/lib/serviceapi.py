@@ -3,7 +3,6 @@
 import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time,os,os.path,urlparse,json
 import CommonFunctions as common
 
-import Settings
 from base import *
 from Scraper import *
 
@@ -27,10 +26,9 @@ class serviceAPI(Scraper):
 	serviceAPIHighlights = __urlBase + 'page/startpage'
 
 
-	def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop, defaultViewMode):
+	def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop):
 		self.translation = settings.getLocalizedString
 		self.xbmc = xbmc
-		self.defaultViewMode = defaultViewMode
 		self.videoQuality = quality
 		self.videoDelivery = delivery
 		self.videoProtocol = protocol
@@ -46,7 +44,6 @@ class serviceAPI(Scraper):
 			responseCode = response.getcode()
 		except urllib2.HTTPError, error:
 			responseCode = error.getcode()
-			pass
 
 		if responseCode == 200:
 			for result in json.loads(response.read()).get('highlight_teasers'):
@@ -100,7 +97,6 @@ class serviceAPI(Scraper):
 	def JSONSegment2ListItem(self,JSONSegment):
 		if JSONSegment.get('killdate') != None and time.strptime(JSONSegment.get('killdate')[0:19], '%Y-%m-%dT%H:%M:%S') < time.localtime():
 			return
-		
 		title        = JSONSegment.get('title').encode('UTF-8')
 		image        = self.JSONImage(JSONSegment.get('_embedded').get('image'))
 		description  = JSONSegment.get('description')
@@ -193,7 +189,6 @@ class serviceAPI(Scraper):
 		response = self.__makeRequest(self.serviceAPIEpisode % episodeID)
 		result = json.loads(response.read())
 
-		title       = result.get('title').encode('UTF-8')
 		image       = self.JSONImage(result.get('_embedded').get('image'))
 		description = result.get('description').encode('UTF-8') if result.get('description') != None else result.get('description')
 		duration    = result.get('duration_seconds')
