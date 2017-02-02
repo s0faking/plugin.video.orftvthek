@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,base64,datetime,time,os,os.path,urlparse,json
+import urllib,urllib2,re,xbmcgui,sys,xbmcaddon,base64,datetime,time,os,os.path,urlparse,json
 
 from base import *
 from Scraper import *
@@ -56,7 +56,6 @@ class serviceAPI(Scraper):
 			responseCode = response.getcode()
 		except urllib2.HTTPError, error:
 			responseCode = error.getcode()
-			pass
 
 		if responseCode == 200:
 			for result in json.loads(response.read()).get('most_viewed_segments'):

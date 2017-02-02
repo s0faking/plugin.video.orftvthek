@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import urllib,urllib2,re,xbmcgui,sys,xbmcaddon,base64,socket,datetime,time,os,urlparse,json
+import urllib,urllib2,re,xbmcgui,sys,xbmcaddon,socket,datetime,time,os,urlparse,json
 import CommonFunctions as common
 
 from resources.lib.helpers import *

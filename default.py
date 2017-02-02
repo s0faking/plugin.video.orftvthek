@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import urllib,urllib2,re,xbmcplugin,xbmcgui,sys,xbmcaddon,socket,time,os,os.path,urlparse,json
+import urllib,re,xbmcplugin,xbmcgui,sys,xbmcaddon,socket,time,os,os.path,urlparse,json
 import CommonFunctions as common
 
 from resources.lib.base import *
@@ -113,7 +113,7 @@ def getMainMenu():
     if Settings.blacklist():
         addDirectory((translation(30037)).encode("utf-8"),blacklist_banner,defaultbackdrop, "","","openBlacklist",pluginhandle)
     listCallback(False,pluginhandle)
-    
+
     
 def listCallback(sort,pluginhandle):
     xbmcplugin.setContent(pluginhandle,'episodes')
