@@ -32,7 +32,7 @@ translation = settings.getLocalizedString
 #video playback
 tvthekplayer = xbmc.Player()
 playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
- 
+
 #hardcoded
 video_quality_list = ["Q1A", "Q4A", "Q6A", "Q8C"]
 videoProtocol = "http"

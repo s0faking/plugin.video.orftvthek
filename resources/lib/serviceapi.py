@@ -116,7 +116,7 @@ class serviceAPI(Scraper):
 				if streamingUrl.get('quality_key') == self.videoQuality:
 					return streamingUrl.get('src')
 				source = streamingUrl.get('src')
-			
+
 		for streamingUrl in jsonVideos.get('hls'):
 			if streamingUrl.get('quality_key') == self.videoQuality:
 				return streamingUrl.get('src')

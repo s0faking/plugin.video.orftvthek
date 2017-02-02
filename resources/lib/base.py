@@ -20,7 +20,7 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
     liz.setInfo( type="Video", infoLabels={ "Studio": channel } )
     liz.setProperty('fanart_image',backdrop)
     liz.setProperty('IsPlayable', str(playable))
-    
+
     if not folder:
         liz.setInfo( type="Video", infoLabels={ "mediatype" : 'video'})
         videoStreamInfo = {'codec': 'h264', 'aspect': 1.78}

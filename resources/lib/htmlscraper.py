@@ -19,7 +19,7 @@ class htmlScraper(Scraper):
     __urlTips       = __urlBase + '/tips'
     __urlTopics     = __urlBase + '/topics'
     __urlArchive    = __urlBase + '/archive'
-    
+
     def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop):
         self.translation = settings.getLocalizedString
         self.xbmc = xbmc
@@ -337,7 +337,7 @@ class htmlScraper(Scraper):
                     url = sys.argv[0] + '?' + urllib.urlencode(parameters)
                     self.html2ListItem(title,image,"", None,"","","",url,None,True, False);
             
-    # Parses all "Bundesland Heute" Shows 
+    # Parses all "Bundesland Heute" Shows
     def getBundeslandHeute(self,url,image):
         html = common.fetchPage({'link': url})
         html_content = html.get("content")
@@ -613,8 +613,8 @@ class htmlScraper(Scraper):
                 u = sys.argv[0] + '?' + urllib.urlencode(parameters)
                 createListItem(str_val.encode('UTF-8'), self.defaultbanner, "", "", "", '', u, False, True, self.defaultbackdrop,self.pluginhandle,None)
 
-    def removeUmlauts(self,str):
-        return str.replace("Ö","O").replace("ö","o").replace("Ü","U").replace("ü","u").replace("Ä","A").replace("ä","a")
+    def removeUmlauts(self,str_val):
+        return str_val.replace("Ö","O").replace("ö","o").replace("Ü","U").replace("ü","u").replace("Ä","A").replace("ä","a")
                 
     def getSearchResults(self,link,cache):
         keyboard = self.xbmc.Keyboard(link)

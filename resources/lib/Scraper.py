@@ -34,7 +34,7 @@ class Scraper(object):
 	@abc.abstractmethod
 	def getSchedule(self):
 		pass
-        
+
 	@abc.abstractmethod
 	def getArchiv(self):
 		pass
