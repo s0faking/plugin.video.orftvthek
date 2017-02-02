@@ -557,7 +557,6 @@ class htmlScraper(Scraper):
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
                 self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
 
-    
     # Parses the Archive Detail Page
     def getArchiveDetail(self,url):
         url = urllib.unquote(url)

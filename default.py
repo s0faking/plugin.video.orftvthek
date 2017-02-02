@@ -178,7 +178,7 @@ elif mode == 'getSendungenDetail':
     scraper.getCategoriesDetail(link,banner)
     listCallback(False,pluginhandle)
 elif mode == 'getThemenDetail':
-    scraper.getThemenDetail(link)
+    scraper.getArchiveDetail(link)
     listCallback(False,pluginhandle)
 elif mode == 'getArchiveDetail':
     scraper.getArchiveDetail(link)
