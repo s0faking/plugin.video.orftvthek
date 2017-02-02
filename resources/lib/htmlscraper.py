@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import urllib,urllib2,re,xbmcgui,sys,xbmcaddon,socket,datetime,time,os,urlparse,json
+import urllib,urllib2,xbmcgui,sys,xbmcaddon,socket,datetime,time,os,urlparse,json
 import CommonFunctions as common
 
 from resources.lib.helpers import *
@@ -44,7 +44,6 @@ class htmlScraper(Scraper):
     def getTips(self):
         self.getTableResults(self.__urlTips)
 
-        
     # Extracts VideoURL from JSON String
     def getVideoUrl(self,sources):
         for source in sources:
