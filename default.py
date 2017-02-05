@@ -24,7 +24,7 @@ author = "sofaking,Rechi"
 
 #initial
 common.plugin = plugin
-settings = xbmcaddon.Addon()
+settings = xbmcaddon.Addon("plugin.video.orftvthek")
 pluginhandle = int(sys.argv[1])
 basepath = settings.getAddonInfo('path')
 translation = settings.getLocalizedString

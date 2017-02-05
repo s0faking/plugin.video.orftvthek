@@ -1,5 +1,5 @@
 0.7.0
-- Jarvis Release
+- Bugfixes & Code Cleanup
 
 0.6.1
 - cleaned image resources
