@@ -43,7 +43,12 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
             if len(subtitles) > 0 and subtitles[0].endswith('.srt'):
                 subtitles.pop(0)
             liz.addStreamInfo('subtitle', {"language": "de"})
-            liz.setSubtitles(subtitles)
+            try:
+                liz.setSubtitles(subtitles)
+            except AttributeError:
+                # setSubtitles was introduced in Helix (v14)
+                # catch the error in Gotham (v13)
+                pass
     
     if blacklist:
         match = re.search(r'( - \w\w, \d\d.\d\d.\d\d\d\d)',title)
