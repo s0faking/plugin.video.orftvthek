@@ -4,6 +4,8 @@ import xbmc,xbmcplugin,xbmcgui,sys,urllib,re,os
 import simplejson
 import Settings
 
+from helpers import *
+
 def addDirectory(title,banner,backdrop, description,link,mode,pluginhandle):
     parameters = {"link" : link,"title" : title,"banner" : banner, "mode" : mode}
     u = sys.argv[0] + '?' + urllib.urlencode(parameters)
