@@ -77,7 +77,6 @@ class serviceAPI(Scraper):
 			responseCode = response.getcode()
 		except urllib2.HTTPError, error:
 			responseCode = error.getcode()
-			pass
 
 		if responseCode == 200:
 			for result in json.loads(response.read()):
@@ -129,7 +128,6 @@ class serviceAPI(Scraper):
 			responseCode = response.getcode()
 		except urllib2.HTTPError, error:
 			responseCode = error.getcode()
-			pass
 
 		if responseCode == 200:
 			for result in json.loads(response.read()).get('_embedded').get('items'):
@@ -212,10 +210,8 @@ class serviceAPI(Scraper):
 			responseCode = response.getcode()
 		except ValueError, error:
 			responseCode = 404
-			pass
 		except urllib2.HTTPError, error:
 			responseCode = error.getcode()
-			pass
 
 		if responseCode == 200:
 			for topic in json.loads(response.read()).get('_embedded').get('items'):
@@ -235,10 +231,8 @@ class serviceAPI(Scraper):
 			responseCode = response.getcode()
 		except ValueError, error:
 			responseCode = 404
-			pass
 		except urllib2.HTTPError, error:
 			responseCode = error.getcode()
-			pass
 
 		if responseCode == 200:
 			for episode in json.loads(response.read())['_embedded']['items']:
@@ -268,7 +262,6 @@ class serviceAPI(Scraper):
 			responseCode = response.getcode()
 		except urllib2.HTTPError, error:
 			responseCode = error.getcode()
-			pass
 
 		if responseCode == 200:
 			for result in json.loads(response.read()).get('_embedded').get('items'):
@@ -298,7 +291,6 @@ class serviceAPI(Scraper):
 			responseCode = response.getcode()
 		except urllib2.HTTPError, error:
 			responseCode = error.getcode()
-			pass
 
 		if responseCode == 200:
 			result = json.loads(response.read())
