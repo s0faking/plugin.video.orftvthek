@@ -203,7 +203,7 @@ class htmlScraper(Scraper):
             if len(showname) > 0:
                 current_title = "%s - %s" % (showname,current_date)
                 try:
-                    current_desc = (self.translation(30009)).encode("utf-8")+' %s - %s\n'+(self.translation(30011)).encode("utf-8")+': %s' % (current_date,current_time,current_duration)
+                    current_desc = '%s %s - %s\n%s: %s' % (self.translation(30009), current_date, current_time[0], self.translation(30011), current_duration[0])
                 except:
                     current_desc = None
                 parameters = {"link" :  current_link,"title" :current_title,"banner" : banner,"mode" : "openSeries"}
@@ -228,7 +228,7 @@ class htmlScraper(Scraper):
                 title = "%s - %s" % (title,date)
                 link = common.parseDOM(item,name='a',ret="href");
                 try:
-                    desc = (self.translation(30009)).encode("utf-8")+" %s - %s\n"+(self.translation(30011)).encode("utf-8")+": %s" % (date,time,duration)
+                    desc = '%s %s - %s\n%s: %s' % (self.translation(30009), date, time[0], self.translation(30011), duration[0])
                 except:
                     desc = None
                 parameters = {"link" :  link[0],"title" :title,"banner" : banner, "mode" : "openSeries"}
