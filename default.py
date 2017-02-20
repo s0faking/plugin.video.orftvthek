@@ -12,7 +12,7 @@ from resources.lib.Scraper import *
 
 try:
    import StorageServer
-except:
+except ImportError:
    import storageserverdummy as StorageServer
 
 socket.setdefaulttimeout(30)

@@ -30,7 +30,7 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
         videoStreamInfo = {'codec': 'h264', 'aspect': 1.78}
         try:
             videoStreamInfo.update({'duration': int(duration)})
-        except:
+        except (TypeError, ValueError):
             debugLog("No Duration found in Video",'Info')
         if videourl.lower().endswith('_q8c.mp4') or '_q8c' in videourl.lower():
             videoStreamInfo.update({'width': 1280, 'height': 720})
