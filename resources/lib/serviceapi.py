@@ -100,7 +100,7 @@ class serviceAPI(Scraper):
 		duration     = JSONSegment.get('duration_seconds')
 		date         = time.strptime(JSONSegment.get('episode_date')[0:19], '%Y-%m-%dT%H:%M:%S')
 		streamingURL = self.JSONStreamingURL(JSONSegment.get('sources'))
-		subtitles    = map(lambda x: x.get('src'), JSONSegment.get('playlist').get('subtitles'))
+		subtitles    = [x.get('src') for x in JSONSegment.get('playlist').get('subtitles')]
 		return [streamingURL, createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, True, False, self.defaultbackdrop,self.pluginhandle, subtitles)]
 
 
