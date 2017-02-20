@@ -500,7 +500,8 @@ class htmlScraper(Scraper):
                         self.html2ListItem(child_list_final_title,banner,"",state,time,program,program,child_list_streaming_url,None,False, True)
      
 
-    def getLivestreamUrl(self,url,quality):
+    @staticmethod
+    def getLivestreamUrl(url,quality):
         html = common.fetchPage({'link': url})
         container = common.parseDOM(html.get("content"),name='div',attrs={'class': "player_viewport.*?"})
         data_sets = common.parseDOM(container[0],name='div',attrs={},ret="data-jsb")
@@ -517,7 +518,8 @@ class htmlScraper(Scraper):
                 debugLog("Error getting Livestream","Info")
     
     # Helper for Livestream Listing - Returns if Stream is currently running
-    def getBroadcastState(self,time):
+    @staticmethod
+    def getBroadcastState(time):
         time_probe = time.split(":")
             
         current_hour = datetime.datetime.now().strftime('%H')
@@ -611,7 +613,8 @@ class htmlScraper(Scraper):
                 u = sys.argv[0] + '?' + urllib.urlencode(parameters)
                 createListItem(str_val.encode('UTF-8'), self.defaultbanner, "", "", "", '', u, False, True, self.defaultbackdrop,self.pluginhandle,None)
 
-    def removeUmlauts(self,str_val):
+    @staticmethod
+    def removeUmlauts(str_val):
         return str_val.replace("Ö","O").replace("ö","o").replace("Ü","U").replace("ü","u").replace("Ä","A").replace("ä","a")
                 
     def getSearchResults(self,link,cache):

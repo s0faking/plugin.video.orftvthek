@@ -104,7 +104,8 @@ class serviceAPI(Scraper):
 		return [streamingURL, createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, True, False, self.defaultbackdrop,self.pluginhandle, subtitles)]
 
 
-	def JSONImage(self,jsonImages, name = 'image_full'):
+	@staticmethod
+	def JSONImage(jsonImages, name = 'image_full'):
 		return jsonImages.get('public_urls').get('highlight_teaser').get('url')
 
 	def JSONStreamingURL(self,jsonVideos):
@@ -312,7 +313,8 @@ class serviceAPI(Scraper):
 					self.xbmc.Player().play(streamingURL, listItem)
 
 
-	def __makeRequest(self, url):
+	@staticmethod
+	def __makeRequest(url):
 		request = urllib2.Request(url)
 		request.add_header('Authorization', 'Basic %s' % 'cHNfYW5kcm9pZF92Mzo2YTYzZDRkYTI5YzcyMWQ0YTk4NmZkZDMxZWRjOWU0MQ==')
 		return urllib2.urlopen(request)
