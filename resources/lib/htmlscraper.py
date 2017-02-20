@@ -346,14 +346,12 @@ class htmlScraper(Scraper):
         items_href = common.parseDOM(items,name='a',attrs={},ret="href")
         items_title = common.parseDOM(items,name='h4')
         
-        i = 0
-        for item in items:
+        for i in range(len(items)):
             link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')
             title = items_title[i].encode('UTF-8')
             parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "getSendungenDetail"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             self.html2ListItem(title,image,"", None,"","","",url,None,True, False);
-            i = i + 1
         
     # Parses a Video Page and extracts the Playlist/Description/...
     def getLinks(self,url,banner,playlist):
