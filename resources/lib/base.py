@@ -110,10 +110,8 @@ def printBlacklist(banner,backdrop,translation,pluginhandle):
             data = getBlacklist(bl_json_file)
             for item in data:
                 item = item.encode('UTF-8')
-                description = "%s %s %s" % ((translation(30040)).encode("utf-8"),item,(translation(30041)).encode("utf-8"))
-                link = item
-                mode = "unblacklistShow"
-                addDirectory(item,banner,backdrop, description,link,mode,pluginhandle)
+                description = translation(30040).encode('UTF-8') % item
+                createListItem(item, banner, description, None, None, None, sys.argv[0] + '?' + urllib.urlencode({'link': item, 'mode': 'unblacklistShow'}), True, False, backdrop, pluginhandle)
 
 
 def setBlacklist(data,file):
