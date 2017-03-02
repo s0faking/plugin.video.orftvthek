@@ -141,11 +141,10 @@ if mode == 'openSeries':
         listCallback(False,pluginhandle)
         
 elif mode == 'unblacklistShow':
-    title=params.get('title')
-    unblacklistItem(title)
-    addDirectory(">> %s <<" % (translation(30039)).encode("utf-8"),defaultbanner,defaultbackdrop, "","","",pluginhandle)
-    printBlacklist(defaultbanner,defaultbackdrop,translation,pluginhandle)
-    xbmcplugin.endOfDirectory(pluginhandle)
+    heading = translation(30040).encode('UTF-8') % urllib.unquote(link).replace('+', ' ').strip()
+    if xbmcgui.Dialog().yesno(heading, heading):
+        unblacklistItem(link)
+        xbmc.executebuiltin('Container.Refresh')
 elif mode == 'blacklistShow':
     title=params.get('title')
     blacklistItem(title)
