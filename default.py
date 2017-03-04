@@ -18,7 +18,7 @@ except ImportError:
 socket.setdefaulttimeout(30)
 cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
-version = "0.7.1"
+version = "0.7.2"
 plugin = "ORF-TVthek-" + version
 author = "sofaking,Rechi"
 
