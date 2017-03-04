@@ -446,12 +446,12 @@ class htmlScraper(Scraper):
     # Returns Live Stream Listing
     def getLiveStreams(self):
         liveurls = {}
-        
-        liveurls['ORF1'] = "http://apasfiisl.apa.at/ipad/orf1_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
-        liveurls['ORF2'] = "http://apasfiisl.apa.at/ipad/orf2_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
-        liveurls['ORF3'] = "http://apasfiisl.apa.at/ipad/orf3_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
-        liveurls['ORFS'] = "http://apasfiisl.apa.at/ipad/orfs_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
-        
+
+        liveurls['ORF1'] = "http://apasfiisl.apa.at/ipad/orf1_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8|User-Agent=Mozilla"
+        liveurls['ORF2'] = "http://apasfiisl.apa.at/ipad/orf2_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8|User-Agent=Mozilla"
+        liveurls['ORF3'] = "http://apasfiisl.apa.at/ipad/orf3_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8|User-Agent=Mozilla"
+        liveurls['ORFS'] = "http://apasfiisl.apa.at/ipad/orfs_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8|User-Agent=Mozilla"
+
         channelnames = {}
         channelnames['ORF1'] = "ORF 1"
         channelnames['ORF2'] = "ORF 2"
@@ -493,7 +493,7 @@ class htmlScraper(Scraper):
                     child_list_time = common.parseDOM(child_list_item,name='span',attrs={'class': 'meta.meta_time'})
                     child_list_time = common.replaceHTMLCodes(child_list_time[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
                     if child_list_time == time and child_list_title != title:
-                        child_list_streaming_url = self.getLivestreamUrl(child_list_link,self.videoQuality)
+                        child_list_streaming_url = self.getLivestreamUrl(child_list_link,self.videoQuality) + '|User-Agent=Mozilla'
                         child_list_final_title = "[%s] - %s (%s)" % (channelnames[program],child_list_title,child_list_time)
                         self.html2ListItem(child_list_final_title,banner,"",state,time,program,program,child_list_streaming_url,None,False, True)
      
