@@ -1,6 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import urllib,urllib2,re,xbmcgui,sys,xbmcaddon,datetime,time,os,os.path,urlparse,json
+
+import datetime
+import json
+import sys
+import time
+import urllib
+import urllib2
+import xbmcaddon
+import xbmcgui
 
 from base import *
 from Scraper import *
