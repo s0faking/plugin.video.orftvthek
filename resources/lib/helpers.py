@@ -14,10 +14,6 @@ def parameters_string_to_dict(parameters):
     return paramDict
 
 
-def cleanText(string):
-    string = string.replace('\\n', '').replace("&#160;"," ").replace("&quot;","'").replace('&amp;', '&').replace('&#039;', '´')
-    return string
-
 def debugLog(message,type):
     output = "[ORF TVTHEK] ("+type+") "+message;
     xbmc.log(msg=output, level=xbmc.LOGDEBUG)
