@@ -1,6 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import xbmc,xbmcplugin,xbmcgui,sys,urllib,re,os
+
+import os
+import re
+import sys
+import urllib
+import xbmc
+import xbmcgui
+import xbmcplugin
+
 import simplejson
 import Settings
 
