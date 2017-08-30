@@ -1,6 +1,14 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import xbmc,xbmcplugin,xbmcgui,sys,urllib,re,os
+
+import os
+import re
+import sys
+import urllib
+import xbmc
+import xbmcgui
+import xbmcplugin
+
 import simplejson
 import Settings
 
@@ -53,18 +61,17 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
                 # setSubtitles was introduced in Helix (v14)
                 # catch the error in Gotham (v13)
                 pass
-    
+
     if blacklist:
         match = re.search(r'( - \w\w, \d\d.\d\d.\d\d\d\d)',title)
         if match != None:
             bltitle = title.split(" - ")
             bltitle = bltitle[0].split(": ")
-            
+
             bl_title = bltitle[0].replace("+"," ").strip()
         else:
             bl_title = title.replace("+"," ").strip()
-        
-        
+
         blparameters = {"mode" : "blacklistShow", "title": bl_title}
         blurl = sys.argv[0] + '?' + urllib.urlencode(blparameters)
         commands = []
@@ -88,8 +95,8 @@ def checkBlacklist(title):
                 if item.encode('UTF-8') == title:
                     return True
     return False
-    
-    
+
+
 def removeBlacklist(title):
     addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek");
     bl_json_file = os.path.join(addonUserDataFolder, 'blacklist.json')
@@ -101,7 +108,7 @@ def removeBlacklist(title):
                 if item.encode('UTF-8') == title:
                     tmp.remove(item)
             setBlacklist(tmp,bl_json_file)
-    
+
 def printBlacklist(banner,backdrop,translation,pluginhandle):
     addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek");
     bl_json_file = os.path.join(addonUserDataFolder, 'blacklist.json')
@@ -118,13 +125,13 @@ def setBlacklist(data,file):
     with open(file,'w') as data_file:
         data_file.write(simplejson.dumps(data,'utf-8'))
     data_file.close()
-    
+
 def getBlacklist(file):
     data = []
     with open(file,'r') as data_file:
         data = simplejson.load(data_file,'UTF-8')
     return data
-            
+
 def blacklistItem(title):
     addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek");
     bl_json_file = os.path.join(addonUserDataFolder, 'blacklist.json')
@@ -150,8 +157,8 @@ def blacklistItem(title):
         data = []
         data.append(title)
         setBlacklist(data,bl_json_file)
-        
-        
+
+
 def unblacklistItem(title):
     title = urllib.unquote(title).replace("+"," ").strip()
     removeBlacklist(title)
