@@ -280,8 +280,11 @@ class serviceAPI(Scraper):
 				livestreamEnd   = time.strptime(result.get('end')[0:19],   '%Y-%m-%dT%H:%M:%S')
 				duration        = max(time.mktime(livestreamEnd) - max(time.mktime(livestreamStart), time.mktime(time.localtime())), 1)
 
+				# already finished
+				if time.mktime(livestreamEnd) < time.mktime(time.localtime()):
+					continue
 				# already playing
-				if livestreamStart < time.localtime():
+				elif livestreamStart < time.localtime():
 					link = self.JSONStreamingURL(result.get('sources')) + '|User-Agent=Mozilla'
 				else:
 					link = sys.argv[0] + '?' + urllib.urlencode({'mode': 'liveStreamNotOnline', 'link': result.get('id')})
