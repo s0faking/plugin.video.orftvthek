@@ -273,12 +273,19 @@ class serviceAPI(Scraper):
 			responseCode = error.getcode()
 
 		if responseCode == 200:
+			try:
+				xbmcaddon.Addon('inputstream.adaptive')
+				inputstreamAdaptive = True
+			except RuntimeError:
+				inputstreamAdaptive = False
+
 			for result in json.loads(response.read()).get('_embedded').get('items'):
 				description     = result.get('description')
 				programName     = result.get('_embedded').get('channel').get('name')
 				livestreamStart = time.strptime(result.get('start')[0:19], '%Y-%m-%dT%H:%M:%S')
 				livestreamEnd   = time.strptime(result.get('end')[0:19],   '%Y-%m-%dT%H:%M:%S')
 				duration        = max(time.mktime(livestreamEnd) - max(time.mktime(livestreamStart), time.mktime(time.localtime())), 1)
+				contextMenuItems = []
 
 				# already finished
 				if time.mktime(livestreamEnd) < time.mktime(time.localtime()):
@@ -286,14 +293,16 @@ class serviceAPI(Scraper):
 				# already playing
 				elif livestreamStart < time.localtime():
 					link = self.JSONStreamingURL(result.get('sources')) + '|User-Agent=Mozilla'
+					if inputstreamAdaptive and result.get('restart'):
+						contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), result.get('id'))))
 				else:
 					link = sys.argv[0] + '?' + urllib.urlencode({'mode': 'liveStreamNotOnline', 'link': result.get('id')})
 
-				title = "[%s] %s (%s)" % (programName, result.get('title'), time.strftime('%H:%M', livestreamStart))
+				title = "[%s]%s %s (%s)" % (programName, '[Restart]' if inputstreamAdaptive and result.get('restart') else '', result.get('title'), time.strftime('%H:%M', livestreamStart))
 
 				banner = self.JSONImage(result.get('_embedded').get('image'))
 
-				createListItem(title, banner, description, duration, time.strftime('%Y-%m-%d', livestreamStart), programName, link, True, False, self.defaultbackdrop, self.pluginhandle)
+				createListItem(title, banner, description, duration, time.strftime('%Y-%m-%d', livestreamStart), programName, link, True, False, self.defaultbackdrop, self.pluginhandle, contextMenuItems = contextMenuItems)
 		else:
 			xbmcgui.Dialog().notification(self.translation(30045).encode('UTF-8'), self.translation(30046).encode('UTF-8'), xbmcaddon.Addon().getAddonInfo('icon'))
 
@@ -322,6 +331,40 @@ class serviceAPI(Scraper):
 					streamingURL = link = self.JSONStreamingURL(result.get('sources'))
 					listItem = createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), result.get('_embedded').get('channel').get('name'), streamingURL, True, False, self.defaultbackdrop, self.pluginhandle)
 					self.xbmc.Player().play(streamingURL, listItem)
+
+
+	def liveStreamRestart(self, link):
+		try:
+			xbmcaddon.Addon('inputstream.adaptive')
+		except RuntimeError:
+			return
+
+		try:
+			response = self.__makeRequest(self.__urlBase + 'livestream/' + link)
+			responseCode = response.getcode()
+		except urllib2.HTTPError, error:
+			responseCode = error.getcode()
+
+		if responseCode == 200:
+			result = json.loads(response.read())
+
+			title       = result.get('title').encode('UTF-8')
+			image       = self.JSONImage(result.get('_embedded').get('image'))
+			description = result.get('description')
+			duration    = result.get('duration_seconds')
+			date        = time.strptime(result.get('start')[0:19], '%Y-%m-%dT%H:%M:%S')
+
+			ApiKey = '2e9f11608ede41f1826488f1e23c4a8d'
+			bitmovinStreamId = result.get('_embedded').get('channel').get('bitmovin_stream_id')
+			response = urllib2.urlopen('http://restarttv-delivery.bitmovin.com/livestreams/%s/sections/?state=active&X-Api-Key=%s' % (bitmovinStreamId, ApiKey)) # nosec
+			section = json.loads(response.read())[0]
+
+			streamingURL = 'http://restarttv-delivery.bitmovin.com/livestreams/%s/sections/%s/manifests/hls/?startTime=%s&X-Api-Key=%s' % (bitmovinStreamId, section.get('id'), section.get('metaData').get('timestamp'), ApiKey)
+
+			listItem = createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), result.get('_embedded').get('channel').get('name'), streamingURL, True, False, self.defaultbackdrop, self.pluginhandle)
+			listItem.setProperty('inputstreamaddon', 'inputstream.adaptive')
+			listItem.setProperty('inputstream.adaptive.manifest_type', 'hls')
+			self.xbmc.Player().play(streamingURL, listItem)
 
 
 	@staticmethod

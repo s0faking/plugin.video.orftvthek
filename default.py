@@ -225,6 +225,8 @@ elif mode == 'openEpisode':
 elif mode == 'liveStreamNotOnline':
     scraper.getLiveNotOnline(link)
     listCallback(False,pluginhandle)
+elif mode == 'liveStreamRestart':
+    scraper.liveStreamRestart(link)
 elif mode == 'playlist':
     startPlaylist(tvthekplayer,playlist)
 elif sys.argv[2] == '':
