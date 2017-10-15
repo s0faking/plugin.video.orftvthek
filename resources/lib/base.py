@@ -19,7 +19,9 @@ def addDirectory(title,banner,backdrop, description,link,mode,pluginhandle):
     u = sys.argv[0] + '?' + urllib.urlencode(parameters)
     createListItem(title,banner,description,'','','',u, False,True, backdrop,pluginhandle,None)
 
-def createListItem(title,banner,description,duration,date,channel,videourl,playable,folder, backdrop,pluginhandle,subtitles=None,blacklist=False):
+def createListItem(title,banner,description,duration,date,channel,videourl,playable,folder, backdrop,pluginhandle,subtitles=None,blacklist=False, contextMenuItems = None):
+    contextMenuItems = contextMenuItems or []
+
     liz=xbmcgui.ListItem(title)
     liz.setIconImage(banner)
     liz.setThumbnailImage(banner)
@@ -74,12 +76,11 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
 
         blparameters = {"mode" : "blacklistShow", "title": bl_title}
         blurl = sys.argv[0] + '?' + urllib.urlencode(blparameters)
-        commands = []
-        commands.append(('%s %s %s' % (Settings.localizedString(30038).encode("utf-8"), bl_title, Settings.localizedString(30042).encode("utf-8")), 'XBMC.RunPlugin(%s)' % blurl))
-        liz.addContextMenuItems( commands )
+        contextMenuItems.append(('%s %s %s' % (Settings.localizedString(30038).encode("utf-8"), bl_title, Settings.localizedString(30042).encode("utf-8")), 'XBMC.RunPlugin(%s)' % blurl))
         if checkBlacklist(bl_title):
             return
 
+    liz.addContextMenuItems(contextMenuItems)
     xbmcplugin.addDirectoryItem(pluginhandle, url=videourl, listitem=liz, isFolder=folder)
     return liz
 
