@@ -77,12 +77,11 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
         commands = []
         commands.append(('%s %s %s' % (Settings.localizedString(30038).encode("utf-8"), bl_title, Settings.localizedString(30042).encode("utf-8")), 'XBMC.RunPlugin(%s)' % blurl))
         liz.addContextMenuItems( commands )
-        if not checkBlacklist(bl_title):
-            xbmcplugin.addDirectoryItem(pluginhandle, url=videourl, listitem=liz, isFolder=folder)
-            return liz
-    else:
-        xbmcplugin.addDirectoryItem(pluginhandle, url=videourl, listitem=liz, isFolder=folder)
-        return liz
+        if checkBlacklist(bl_title):
+            return
+
+    xbmcplugin.addDirectoryItem(pluginhandle, url=videourl, listitem=liz, isFolder=folder)
+    return liz
 
 def checkBlacklist(title):
     addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek");
