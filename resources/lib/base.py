@@ -10,9 +10,9 @@ import xbmcgui
 import xbmcplugin
 
 import simplejson
-import Settings
+from . import Settings
 
-from helpers import *
+from .helpers import *
 
 def addDirectory(title,banner,backdrop, description,link,mode,pluginhandle):
     parameters = {"link" : link,"title" : title,"banner" : banner, "mode" : mode}

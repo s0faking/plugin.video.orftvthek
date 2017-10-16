@@ -10,8 +10,8 @@ import urllib2
 import xbmcaddon
 import xbmcgui
 
-from base import *
-from Scraper import *
+from .base import *
+from .Scraper import *
 
 class serviceAPI(Scraper):
 

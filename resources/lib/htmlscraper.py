@@ -9,8 +9,8 @@ import urllib
 import CommonFunctions as common
 
 from resources.lib.helpers import *
-from base import *
-from Scraper import *
+from .base import *
+from .Scraper import *
 
 class htmlScraper(Scraper):
 
