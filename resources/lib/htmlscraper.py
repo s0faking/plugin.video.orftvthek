@@ -9,8 +9,8 @@ import urllib
 import CommonFunctions as common
 
 from resources.lib.helpers import *
-from base import *
-from Scraper import *
+from .base import *
+from .Scraper import *
 
 class htmlScraper(Scraper):
 
@@ -391,7 +391,7 @@ class htmlScraper(Scraper):
                 else:
                     current_subtitles = None
                 current_videourl = self.getVideoUrl(data.get("selected_video")["sources"]);
-            except Exception, e:
+            except Exception as e:
                 debugLog("Error Loading Episode from %s" % url,'Exception')
                 notifyUser((self.translation(30052)).encode("utf-8"))
                 current_subtitles = None
@@ -429,7 +429,7 @@ class htmlScraper(Scraper):
 
                         liz = self.html2ListItem(title,preview_img,"",desc,duration,'','',videourl, subtitles,False, True)
                         playlist.add(videourl,liz)
-                    except Exception, e:
+                    except Exception as e:
                         debugLog(e,'Error')
                         continue
                 return playlist

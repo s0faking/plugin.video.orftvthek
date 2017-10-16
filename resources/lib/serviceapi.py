@@ -10,8 +10,8 @@ import urllib2
 import xbmcaddon
 import xbmcgui
 
-from base import *
-from Scraper import *
+from .base import *
+from .Scraper import *
 
 class serviceAPI(Scraper):
 
@@ -49,7 +49,7 @@ class serviceAPI(Scraper):
 		try:
 			response = self.__makeRequest(self.serviceAPIHighlights)
 			responseCode = response.getcode()
-		except urllib2.HTTPError, error:
+		except urllib2.HTTPError as error:
 			responseCode = error.getcode()
 
 		if responseCode == 200:
@@ -62,7 +62,7 @@ class serviceAPI(Scraper):
 		try:
 			response = self.__makeRequest(self.__urlMostViewed)
 			responseCode = response.getcode()
-		except urllib2.HTTPError, error:
+		except urllib2.HTTPError as error:
 			responseCode = error.getcode()
 
 		if responseCode == 200:
@@ -83,7 +83,7 @@ class serviceAPI(Scraper):
 		try:
 			response = self.__makeRequest(urlAPI)
 			responseCode = response.getcode()
-		except urllib2.HTTPError, error:
+		except urllib2.HTTPError as error:
 			responseCode = error.getcode()
 
 		if responseCode == 200:
@@ -135,7 +135,7 @@ class serviceAPI(Scraper):
 		try:
 			response = self.__makeRequest(self.__urlShows)
 			responseCode = response.getcode()
-		except urllib2.HTTPError, error:
+		except urllib2.HTTPError as error:
 			responseCode = error.getcode()
 
 		if responseCode == 200:
@@ -217,9 +217,9 @@ class serviceAPI(Scraper):
 		try:
 			response = self.__makeRequest(self.__urlTopics)
 			responseCode = response.getcode()
-		except ValueError, error:
+		except ValueError as error:
 			responseCode = 404
-		except urllib2.HTTPError, error:
+		except urllib2.HTTPError as error:
 			responseCode = error.getcode()
 
 		if responseCode == 200:
@@ -238,9 +238,9 @@ class serviceAPI(Scraper):
 		try:
 			response = self.__makeRequest(self.serviceAPITrailers)
 			responseCode = response.getcode()
-		except ValueError, error:
+		except ValueError as error:
 			responseCode = 404
-		except urllib2.HTTPError, error:
+		except urllib2.HTTPError as error:
 			responseCode = error.getcode()
 
 		if responseCode == 200:
@@ -269,7 +269,7 @@ class serviceAPI(Scraper):
 		try:
 			response = self.__makeRequest(self.__urlLive)
 			responseCode = response.getcode()
-		except urllib2.HTTPError, error:
+		except urllib2.HTTPError as error:
 			responseCode = error.getcode()
 
 		if responseCode == 200:
@@ -310,7 +310,7 @@ class serviceAPI(Scraper):
 		try:
 			response = self.__makeRequest(self.__urlBase + 'livestream/' + link)
 			responseCode = response.getcode()
-		except urllib2.HTTPError, error:
+		except urllib2.HTTPError as error:
 			responseCode = error.getcode()
 
 		if responseCode == 200:
@@ -342,7 +342,7 @@ class serviceAPI(Scraper):
 		try:
 			response = self.__makeRequest(self.__urlBase + 'livestream/' + link)
 			responseCode = response.getcode()
-		except urllib2.HTTPError, error:
+		except urllib2.HTTPError as error:
 			responseCode = error.getcode()
 
 		if responseCode == 200:
