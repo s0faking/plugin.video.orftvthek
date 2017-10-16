@@ -16,21 +16,21 @@ from .Scraper import *
 class serviceAPI(Scraper):
 
 	__urlBase       = 'https://api-tvthek.orf.at/api/v3/'
-	__urlLive       = __urlBase + 'livestreams/24hours?limit=1000'
-	__urlMostViewed = __urlBase + 'page/startpage'
-	__urlNewest     = __urlBase + 'page/startpage/newest'
+	__urlLive       = 'livestreams/24hours?limit=1000'
+	__urlMostViewed = 'page/startpage'
+	__urlNewest     = 'page/startpage/newest'
 	__urlSearch     = __urlBase + 'search/%s?limit=1000'
-	__urlShows      = __urlBase + 'profiles?limit=1000'
-	__urlTips       = __urlBase + 'page/startpage/tips'
-	__urlTopics     = __urlBase + 'topics/overview?limit=1000'
+	__urlShows      = 'profiles?limit=1000'
+	__urlTips       = 'page/startpage/tips'
+	__urlTopics     = 'topics/overview?limit=1000'
 
-	serviceAPIEpisode    = __urlBase + 'episode/%s'
-	serviceAPIDate       = __urlBase + 'schedule/%s?limit=1000'
-	serviceAPIDateFrom   = __urlBase + 'schedule/%s/%d?limit=1000'
-	serviceAPIProgram    = __urlBase + 'profile/%s/episodes'
-	servieAPITopic       = __urlBase + 'topic/%s'
-	serviceAPITrailers   = __urlBase + 'page/preview?limit=100'
-	serviceAPIHighlights = __urlBase + 'page/startpage'
+	serviceAPIEpisode    = 'episode/%s'
+	serviceAPIDate       = 'schedule/%s?limit=1000'
+	serviceAPIDateFrom   = 'schedule/%s/%d?limit=1000'
+	serviceAPIProgram    = 'profile/%s/episodes'
+	servieAPITopic       = 'topic/%s'
+	serviceAPITrailers   = 'page/preview?limit=100'
+	serviceAPIHighlights = 'page/startpage'
 
 
 	def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop):
@@ -308,7 +308,7 @@ class serviceAPI(Scraper):
 
 	def getLiveNotOnline(self,link):
 		try:
-			response = self.__makeRequest(self.__urlBase + 'livestream/' + link)
+			response = self.__makeRequest('livestream/' + link)
 			responseCode = response.getcode()
 		except urllib2.HTTPError as error:
 			responseCode = error.getcode()
@@ -340,7 +340,7 @@ class serviceAPI(Scraper):
 			return
 
 		try:
-			response = self.__makeRequest(self.__urlBase + 'livestream/' + link)
+			response = self.__makeRequest('livestream/' + link)
 			responseCode = response.getcode()
 		except urllib2.HTTPError as error:
 			responseCode = error.getcode()
@@ -367,11 +367,10 @@ class serviceAPI(Scraper):
 			self.xbmc.Player().play(streamingURL, listItem)
 
 
-	@staticmethod
-	def __makeRequest(url):
-		request = urllib2.Request(url)
+	def __makeRequest(self, url):
+		request = urllib2.Request(self.__urlBase + url) # nosec
 		request.add_header('Authorization', 'Basic %s' % 'cHNfYW5kcm9pZF92Mzo2YTYzZDRkYTI5YzcyMWQ0YTk4NmZkZDMxZWRjOWU0MQ==')
-		return urllib2.urlopen(request)
+		return urllib2.urlopen(request) # nosec
 
 
 	def __JSONEpisode2ListItem(self, JSONEpisode, ignoreEpisodeType = None):
