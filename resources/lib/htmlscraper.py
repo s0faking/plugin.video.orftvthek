@@ -507,6 +507,7 @@ class htmlScraper(Scraper):
                     
                     if initial:                        
                         if inputstreamAdaptive and child_restart:
+                            final_title = "[Restart][%s] - %s (%s)" % (channelnames[program],title,time_str)
                             contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), child_list_link)))
 
                         self.html2ListItem(final_title,banner,"",state,time_str,program,program,link,None,False, True,contextMenuItems)
