@@ -57,7 +57,7 @@ class htmlScraper(Scraper):
             if source["protocol"].lower() == self.videoProtocol.lower():
                 if source["delivery"].lower() == self.videoDelivery.lower():
                     if source["quality"].lower() == self.videoQuality.lower():
-                        return source["src"]
+                        return generateAddonVideoUrl(source["src"])
         return False
 
     # Converts Page URL to Title
@@ -308,6 +308,7 @@ class htmlScraper(Scraper):
             if mode == 'openSeries' or mode == 'getSendungenDetail':
                 blacklist = True
         debugLog("Adding List Item","Info")
+        debugLog("Mode: %s" % mode,"Info")
         debugLog("Videourl: %s" % videourl,"Info")
         debugLog("Duration: %s" % duration,"Info")
 
@@ -428,7 +429,7 @@ class htmlScraper(Scraper):
                         else:
                             subtitles = None
                         videourl = self.getVideoUrl(sources);
-
+                        
                         liz = self.html2ListItem(title,preview_img,"",desc,duration,'','',videourl, subtitles,False, True)
                         playlist.add(videourl,liz)
                     except Exception as e:

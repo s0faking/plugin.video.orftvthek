@@ -121,14 +121,14 @@ class serviceAPI(Scraper):
 		if jsonVideos.get('progressive_download') != None:
 			for streamingUrl in jsonVideos.get('progressive_download'):
 				if streamingUrl.get('quality_key') == self.videoQuality:
-					return streamingUrl.get('src')
+					return generateAddonVideoUrl(streamingUrl.get('src'))
 				source = streamingUrl.get('src')
 
 		for streamingUrl in jsonVideos.get('hls'):
 			if streamingUrl.get('quality_key') == self.videoQuality:
-				return streamingUrl.get('src')
+				return generateAddonVideoUrl(streamingUrl.get('src'))
 			source = streamingUrl.get('src')
-		return source
+		return generateAddonVideoUrl(source)
 
 	# list all Categories
 	def getCategories(self):

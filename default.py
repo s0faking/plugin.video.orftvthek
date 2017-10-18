@@ -229,6 +229,10 @@ elif mode == 'liveStreamRestart':
     scraper.liveStreamRestart(link)
 elif mode == 'playlist':
     startPlaylist(tvthekplayer,playlist)
+elif mode == 'play':
+    play_item = xbmcgui.ListItem(path=videourl)
+    xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
+    listCallback(False,pluginhandle)                         
 elif sys.argv[2] == '':
     getMainMenu()
 else:
