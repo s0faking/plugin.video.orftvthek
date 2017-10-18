@@ -230,6 +230,8 @@ elif mode == 'liveStreamRestart':
 elif mode == 'playlist':
     startPlaylist(tvthekplayer,playlist)
 elif mode == 'play':
+    if 'playlist.m3u' in videourl:
+        videourl = "%s|User-Agent=Mozilla" % videourl
     play_item = xbmcgui.ListItem(path=videourl)
     xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
     listCallback(False,pluginhandle)                         
