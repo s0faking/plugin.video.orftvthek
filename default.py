@@ -25,8 +25,7 @@ except ImportError:
 socket.setdefaulttimeout(30)
 cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
-version = "0.8.1"
-plugin = "ORF-TVthek-" + version
+plugin = "ORF-TVthek-" + xbmcaddon.Addon().getAddonInfo('version')
 
 #initial
 common.plugin = plugin
