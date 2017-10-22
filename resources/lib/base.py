@@ -81,7 +81,7 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
         else:
             bl_title = title.replace("+"," ").strip()
 
-        blparameters = {"mode" : "blacklistShow", "title": bl_title}
+        blparameters = {"mode" : "blacklistShow", "link": bl_title}
         blurl = sys.argv[0] + '?' + urllib.urlencode(blparameters)
         contextMenuItems.append(('%s %s %s' % (Settings.localizedString(30038).encode("utf-8"), bl_title, Settings.localizedString(30042).encode("utf-8")), 'XBMC.RunPlugin(%s)' % blurl))
         if checkBlacklist(bl_title):

@@ -25,9 +25,7 @@ except ImportError:
 socket.setdefaulttimeout(30)
 cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
-version = "0.8.1"
-plugin = "ORF-TVthek-" + version
-author = "sofaking,Rechi"
+plugin = "ORF-TVthek-" + xbmcaddon.Addon().getAddonInfo('version')
 
 #initial
 common.plugin = plugin
@@ -81,7 +79,6 @@ else:
 params=parameters_string_to_dict(sys.argv[2])
 mode=params.get('mode')
 link=params.get('link')
-title=params.get('title')
 banner=params.get('banner')
 videourl=params.get('videourl')
 url=params.get('url')
@@ -95,8 +92,6 @@ if url:
     debugLog("Url: %s" % urllib.unquote(url),'Info')
 if videourl:
     debugLog("Videourl: %s" % urllib.unquote(videourl),'Info')
-if title:
-    debugLog("Title: %s" % title.encode('UTF-8'),'Info')
 
 
 def getMainMenu():
@@ -153,8 +148,7 @@ elif mode == 'unblacklistShow':
         unblacklistItem(link)
         xbmc.executebuiltin('Container.Refresh')
 elif mode == 'blacklistShow':
-    title=params.get('title')
-    blacklistItem(title)
+    blacklistItem(link)
     xbmc.executebuiltin('Container.Refresh')
 if mode == 'openBlacklist':
     printBlacklist(defaultbanner,defaultbackdrop,translation,pluginhandle)
