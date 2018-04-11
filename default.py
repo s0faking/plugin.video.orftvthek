@@ -33,6 +33,7 @@ settings = xbmcaddon.Addon()
 pluginhandle = int(sys.argv[1])
 basepath = settings.getAddonInfo('path')
 translation = settings.getLocalizedString
+userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"
 
 #video playback
 tvthekplayer = xbmc.Player()
@@ -224,8 +225,8 @@ elif mode == 'liveStreamRestart':
 elif mode == 'playlist':
     startPlaylist(tvthekplayer,playlist)
 elif mode == 'play':
-    if 'playlist.m3u' in videourl:
-        videourl = "%s|User-Agent=Mozilla" % videourl
+    videourl = "%s|User-Agent=%s" % (videourl,userAgent)
+    debugLog(videourl,'Info')
     play_item = xbmcgui.ListItem(path=videourl)
     xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
     listCallback(False,pluginhandle)                         
