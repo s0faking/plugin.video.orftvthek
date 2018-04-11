@@ -23,6 +23,8 @@ class serviceAPI(Scraper):
 	__urlShows      = 'profiles?limit=1000'
 	__urlTips       = 'page/startpage/tips'
 	__urlTopics     = 'topics/overview?limit=1000'
+    __uaString       = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
+
 
 	serviceAPIEpisode    = 'episode/%s'
 	serviceAPIDate       = 'schedule/%s?limit=1000'
@@ -292,7 +294,7 @@ class serviceAPI(Scraper):
 					continue
 				# already playing
 				elif livestreamStart < time.localtime():
-					link = self.JSONStreamingURL(result.get('sources')) + '|User-Agent=Mozilla'
+					link = self.JSONStreamingURL(result.get('sources')) + '|User-Agent=%s' % self.__uaString
 					if inputstreamAdaptive and result.get('restart'):
 						contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), result.get('id'))))
 				else:

@@ -26,6 +26,8 @@ class htmlScraper(Scraper):
     __urlTips       = __urlBase + '/tips'
     __urlTopics     = __urlBase + '/topics'
     __urlArchive    = __urlBase + '/archive'
+    __uaString       = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
+
 
     def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop):
         self.translation = settings.getLocalizedString
@@ -456,10 +458,10 @@ class htmlScraper(Scraper):
         except RuntimeError:
             inputstreamAdaptive = False
 
-        liveurls['ORF1'] = "http://apasfiisl.apa.at/ipad/orf1_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8|User-Agent=Mozilla"
-        liveurls['ORF2'] = "http://apasfiisl.apa.at/ipad/orf2_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8|User-Agent=Mozilla"
-        liveurls['ORF3'] = "http://apasfiisl.apa.at/ipad/orf3_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8|User-Agent=Mozilla"
-        liveurls['ORFS'] = "http://apasfiisl.apa.at/ipad/orfs_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8|User-Agent=Mozilla"
+        liveurls['ORF1'] = "http://apasfiisl.apa.at/ipad/orf1_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8|User-Agent=%s" % self.__uaString
+        liveurls['ORF2'] = "http://apasfiisl.apa.at/ipad/orf2_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8|User-Agent=%s" % self.__uaString
+        liveurls['ORF3'] = "http://apasfiisl.apa.at/ipad/orf3_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8|User-Agent=%s" % self.__uaString
+        liveurls['ORFS'] = "http://apasfiisl.apa.at/ipad/orfs_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8|User-Agent=%s" % self.__uaString
 
         channelnames = {}
         channelnames['ORF1'] = "ORF 1"
@@ -517,7 +519,7 @@ class htmlScraper(Scraper):
                     if child_list_time == time_str and child_list_title != title:
                         if inputstreamAdaptive and child_restart:
                             contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), child_list_link)))
-                        child_list_streaming_url = self.getLivestreamUrl(child_list_link,self.videoQuality) + '|User-Agent=Mozilla'
+                        child_list_streaming_url = self.getLivestreamUrl(child_list_link,self.videoQuality) + "|User-Agent=%s" % self.__uaString
                         child_list_final_title = "[%s] - %s (%s)" % (channelnames[program],child_list_title,child_list_time)
 
                         self.html2ListItem(child_list_final_title,banner,"",state,time,program,program,child_list_streaming_url,None,False, True,contextMenuItems)
