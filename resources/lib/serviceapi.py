@@ -23,7 +23,7 @@ class serviceAPI(Scraper):
 	__urlShows      = 'profiles?limit=1000'
 	__urlTips       = 'page/startpage/tips'
 	__urlTopics     = 'topics/overview?limit=1000'
-    __uaString       = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
+	__uaString       = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'
 
 
 	serviceAPIEpisode    = 'episode/%s'
