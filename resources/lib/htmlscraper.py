@@ -264,7 +264,7 @@ class htmlScraper(Scraper):
 
             title = day + " - " + date
 
-            parameters = {"link" : link, "banner" : "", "mode" : "getScheduleDetail"}
+            parameters = {"link" : link, "mode" : "getScheduleDetail"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             self.html2ListItem(title,"","","","",date,"",url,None,True, False);
 
@@ -289,7 +289,7 @@ class htmlScraper(Scraper):
                 description = common.parseDOM(archive,name='div',attrs={'class':'item_description'})
                 description = common.replaceHTMLCodes(description[0]).encode('UTF-8')
 
-                parameters = {"link" : link, "banner" : image, "mode" : "getArchiveDetail"}
+                parameters = {"link" : link, "mode" : "getArchiveDetail"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
                 self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
 
@@ -618,7 +618,7 @@ class htmlScraper(Scraper):
                 for desc in descs:
                     description += "* "+common.replaceHTMLCodes(desc).encode('UTF-8') + "\n"
 
-                parameters = {"link" : link, "banner" : image, "mode" : "getThemenDetail"}
+                parameters = {"link" : link, "mode" : "getThemenDetail"}
                 url = sys.argv[0] + '?' + urllib.urlencode(parameters)
                 self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
 

@@ -80,7 +80,6 @@ else:
 params=parameters_string_to_dict(sys.argv[2])
 mode=params.get('mode')
 link=params.get('link')
-banner=params.get('banner')
 videourl=params.get('videourl')
 
 
@@ -129,7 +128,7 @@ def startPlaylist(player,playlist):
 #modes
 if mode == 'openSeries':
     playlist.clear()
-    playlist = scraper.getLinks(link,banner,playlist)
+    playlist = scraper.getLinks(link,params.get('banner'),playlist)
     if not autoPlayPrompt:
         listCallback(False,pluginhandle)
     elif playlist != None:
@@ -173,7 +172,7 @@ elif mode == 'getThemen':
     scraper.getThemen()
     listCallback(True,pluginhandle)
 elif mode == 'getSendungenDetail':
-    scraper.getCategoriesDetail(link,banner)
+    scraper.getCategoriesDetail(link,params.get('banner'))
     listCallback(False,pluginhandle)
 elif mode == 'getThemenDetail':
     scraper.getArchiveDetail(link)
