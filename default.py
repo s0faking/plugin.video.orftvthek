@@ -82,15 +82,12 @@ mode=params.get('mode')
 link=params.get('link')
 banner=params.get('banner')
 videourl=params.get('videourl')
-url=params.get('url')
 
 
 if mode:
     debugLog("Mode: %s" % mode,'Info')
 if link:
     debugLog("Link: %s" % urllib.unquote(link),'Info')
-if url:
-    debugLog("Url: %s" % urllib.unquote(url),'Info')
 if videourl:
     debugLog("Videourl: %s" % urllib.unquote(videourl),'Info')
 
