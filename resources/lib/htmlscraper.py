@@ -315,49 +315,6 @@ class htmlScraper(Scraper):
 
         return createListItem(title,banner,description,duration,date,channel,videourl,playable,folder, backdrop,self.pluginhandle,subtitles,blacklist,contextMenuItems)
 
-    # Parses all "ZIB" Shows
-    def getZIB(self,baseimage):
-        url = 'http://tvthek.orf.at/programs/genre/ZIB/1';
-        html = common.fetchPage({'link': url})
-        html_content = html.get("content")
-
-        content = common.parseDOM(html_content,name='div',attrs={'class':'base_list_wrapper mod_results_list'})
-        items = common.parseDOM( content ,name='li',attrs={'class':'base_list_item jsb_ jsb_ToggleButton results_item'})
-
-        for item in items:
-            title = common.parseDOM(item,name='h4')
-            if len(title) > 0:
-                title = title[0].encode('UTF-8')
-                item_href = common.parseDOM(item,name='a',attrs={'class':'base_list_item_inner.*?'},ret="href")
-                image = common.parseDOM(item,name='img',attrs={},ret="src")
-                if len(image) > 0:
-                    image = common.replaceHTMLCodes(image[0]).encode('UTF-8').replace("height=180","height=265").replace("width=320","width=500")
-                else:
-                    image = baseimage
-
-                if len(item_href) > 0:
-                    link = common.replaceHTMLCodes(item_href[0]).encode('UTF-8')
-                    parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "getSendungenDetail"}
-                    url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                    self.html2ListItem(title,image,"", None,"","","",url,None,True, False);
-
-    # Parses all "Bundesland Heute" Shows
-    def getBundeslandHeute(self,url,image):
-        html = common.fetchPage({'link': url})
-        html_content = html.get("content")
-
-        content = common.parseDOM(html_content,name='div',attrs={'class':'base_list_wrapper mod_link_list'})
-        items = common.parseDOM(content,name='li',attrs={'class':'base_list_item'})
-        items_href = common.parseDOM(items,name='a',attrs={},ret="href")
-        items_title = common.parseDOM(items,name='h4')
-
-        for i in range(len(items)):
-            link = common.replaceHTMLCodes(items_href[i]).encode('UTF-8')
-            title = items_title[i].encode('UTF-8')
-            parameters = {"link" : link,"title" : title,"banner" : image, "mode" : "getSendungenDetail"}
-            url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            self.html2ListItem(title,image,"", None,"","","",url,None,True, False);
-
     # Parses a Video Page and extracts the Playlist/Description/...
     def getLinks(self,url,banner,playlist):
         playlist.clear()
