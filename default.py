@@ -80,15 +80,12 @@ else:
 params=parameters_string_to_dict(sys.argv[2])
 mode=params.get('mode')
 link=params.get('link')
-videourl=params.get('videourl')
 
 
 if mode:
     debugLog("Mode: %s" % mode,'Info')
 if link:
     debugLog("Link: %s" % urllib.unquote(link),'Info')
-if videourl:
-    debugLog("Videourl: %s" % urllib.unquote(videourl),'Info')
 
 
 def getMainMenu():
@@ -221,9 +218,9 @@ elif mode == 'liveStreamRestart':
 elif mode == 'playlist':
     startPlaylist(tvthekplayer,playlist)
 elif mode == 'play':
-    videourl = "%s|User-Agent=%s" % (videourl,userAgent)
-    debugLog(videourl,'Info')
-    play_item = xbmcgui.ListItem(path=videourl)
+    link = "%s|User-Agent=%s" % (link,userAgent)
+    debugLog(link,'Info')
+    play_item = xbmcgui.ListItem(path=link)
     xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
     listCallback(False,pluginhandle)                         
 elif sys.argv[2] == '':

@@ -20,7 +20,7 @@ def addDirectory(title,banner,backdrop, description,link,mode,pluginhandle):
     createListItem(title,banner,description,'','','',u, False,True, backdrop,pluginhandle,None)
 
 def generateAddonVideoUrl(videourl):
-    return "plugin://%s/?mode=play&videourl=%s"  % (xbmcaddon.Addon().getAddonInfo('id'),videourl)
+    return "plugin://%s/?mode=play&link=%s"  % (xbmcaddon.Addon().getAddonInfo('id'),videourl)
 
     
 def createListItem(title,banner,description,duration,date,channel,videourl,playable,folder, backdrop,pluginhandle,subtitles=None,blacklist=False, contextMenuItems = None):
@@ -39,7 +39,7 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
     liz.setProperty('fanart_image',backdrop)
     if playable and not folder:
         liz.setProperty('IsPlayable', 'true')
-        videourl = "plugin://%s/?mode=play&videourl=%s" % (xbmcaddon.Addon().getAddonInfo('id'),videourl)
+        videourl = "plugin://%s/?mode=play&link=%s" % (xbmcaddon.Addon().getAddonInfo('id'),videourl)
         debugLog("Videourl: %s" % videourl,"ListItem")                       
 
     if not folder:
