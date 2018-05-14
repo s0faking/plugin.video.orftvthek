@@ -33,7 +33,6 @@ settings = xbmcaddon.Addon()
 pluginhandle = int(sys.argv[1])
 basepath = settings.getAddonInfo('path')
 translation = settings.getLocalizedString
-userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36"
 
 #video playback
 tvthekplayer = xbmc.Player()
@@ -80,19 +79,12 @@ else:
 params=parameters_string_to_dict(sys.argv[2])
 mode=params.get('mode')
 link=params.get('link')
-banner=params.get('banner')
-videourl=params.get('videourl')
-url=params.get('url')
 
 
 if mode:
     debugLog("Mode: %s" % mode,'Info')
 if link:
     debugLog("Link: %s" % urllib.unquote(link),'Info')
-if url:
-    debugLog("Url: %s" % urllib.unquote(url),'Info')
-if videourl:
-    debugLog("Videourl: %s" % urllib.unquote(videourl),'Info')
 
 
 def getMainMenu():
@@ -132,7 +124,7 @@ def startPlaylist(player,playlist):
 #modes
 if mode == 'openSeries':
     playlist.clear()
-    playlist = scraper.getLinks(link,banner,playlist)
+    playlist = scraper.getLinks(link,params.get('banner'),playlist)
     if not autoPlayPrompt:
         listCallback(False,pluginhandle)
     elif playlist != None:
@@ -176,7 +168,7 @@ elif mode == 'getThemen':
     scraper.getThemen()
     listCallback(True,pluginhandle)
 elif mode == 'getSendungenDetail':
-    scraper.getCategoriesDetail(link,banner)
+    scraper.getCategoriesDetail(link,params.get('banner'))
     listCallback(False,pluginhandle)
 elif mode == 'getThemenDetail':
     scraper.getArchiveDetail(link)
@@ -225,9 +217,9 @@ elif mode == 'liveStreamRestart':
 elif mode == 'playlist':
     startPlaylist(tvthekplayer,playlist)
 elif mode == 'play':
-    videourl = "%s|User-Agent=%s" % (videourl,userAgent)
-    debugLog(videourl,'Info')
-    play_item = xbmcgui.ListItem(path=videourl)
+    link = "%s|User-Agent=%s" % (link, Settings.userAgent())
+    debugLog(link,'Info')
+    play_item = xbmcgui.ListItem(path=link)
     xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
     listCallback(False,pluginhandle)                         
 elif sys.argv[2] == '':
