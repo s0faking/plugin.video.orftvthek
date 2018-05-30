@@ -124,7 +124,7 @@ def startPlaylist(player,playlist):
 #modes
 if mode == 'openSeries':
     playlist.clear()
-    playlist = scraper.getLinks(link,banner,playlist)
+    playlist = scraper.getLinks(link,params.get('banner'),playlist)
     listCallback(False,pluginhandle)
     if autoPlayPrompt and playlist != None:
         ok = xbmcgui.Dialog().yesno((translation(30047)).encode("utf-8"),(translation(30048)).encode("utf-8"))
