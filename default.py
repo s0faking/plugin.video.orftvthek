@@ -218,7 +218,7 @@ elif mode == 'play':
     debugLog(link,'Info')
     play_item = xbmcgui.ListItem(path=link)
     xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
-    listCallback(False,pluginhandle)                         
+    listCallback(False,pluginhandle)
 elif sys.argv[2] == '':
     getMainMenu()
 else:
