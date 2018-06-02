@@ -387,7 +387,7 @@ class htmlScraper(Scraper):
                         else:
                             subtitles = None
                         videourl = self.getVideoUrl(sources);
-                        
+
                         liz = self.html2ListItem(title,preview_img,"",desc,duration,'','',videourl, subtitles,False, True)
                         playlist.add(videourl,liz)
                     except Exception as e:
@@ -407,7 +407,7 @@ class htmlScraper(Scraper):
     # Returns Live Stream Listing
     def getLiveStreams(self):
         liveurls = {}
-        
+
         try:
             xbmcaddon.Addon('inputstream.adaptive')
             inputstreamAdaptive = True
@@ -447,7 +447,7 @@ class htmlScraper(Scraper):
                     state = (self.translation(30019)).encode("utf-8")
                 else:
                     state = (self.translation(30020)).encode("utf-8")
-                
+
                 initial = True
                 link = liveurls[program]
                 final_title = "[%s] - %s (%s)" % (channelnames[program],title,time_str)
@@ -456,22 +456,22 @@ class htmlScraper(Scraper):
                 for child_list_item in child_list:
                     contextMenuItems = []
                     child_restart = common.parseDOM(child_list_item , name='span',attrs={'class': 'is_restartable.*?'},ret="class")
-                    
+
                     child_list_title = common.parseDOM(child_list_item,name='h4')
                     child_list_title = common.replaceHTMLCodes(child_list_title[0]).encode('UTF-8')
                     child_list_link = common.parseDOM(child_list_item,name='a',attrs={'class': 'base_list_item_inner'},ret="href")
                     child_list_link = common.replaceHTMLCodes(child_list_link[0])
                     child_list_time = common.parseDOM(child_list_item,name='span',attrs={'class': 'meta.meta_time'})
                     child_list_time = common.replaceHTMLCodes(child_list_time[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
-                    
-                    if initial:                        
+
+                    if initial:
                         if inputstreamAdaptive and child_restart:
                             final_title = "[Restart][%s] - %s (%s)" % (channelnames[program],title,time_str)
                             contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), child_list_link)))
 
                         self.html2ListItem(final_title,banner,"",state,time_str,program,program,link,None,False, True,contextMenuItems)
                         initial = False
-                        
+
                     if child_list_time == time_str and child_list_title != title:
                         if inputstreamAdaptive and child_restart:
                             contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), child_list_link)))
@@ -485,21 +485,21 @@ class htmlScraper(Scraper):
             xbmcaddon.Addon('inputstream.adaptive')
         except RuntimeError:
             return
-        
+
         livestream_id = link.rpartition('/')[-1]
         html = common.fetchPage({'link': link})
         bitmovinStreamId = self.getLivestreamBitmovinID(html)
         stream_info = self.getLivestreamInformation(html)
 
         if bitmovinStreamId:
-            
+
             title       = stream_info['title']
             image       = stream_info['image']
             description = stream_info['description']
             duration    = stream_info['duration']
             date        = stream_info['date']
             channel     = stream_info['channel']
-            
+
             ApiKey = '2e9f11608ede41f1826488f1e23c4a8d'
             response = urllib2.urlopen('http://restarttv-delivery.bitmovin.com/livestreams/%s/sections/?state=active&X-Api-Key=%s' % (bitmovinStreamId, ApiKey)) # nosec
             section = json.loads(response.read())[0]
@@ -528,7 +528,7 @@ class htmlScraper(Scraper):
                                     return video_sources['src']
             except:
                 debugLog("Error getting Livestream","Info")
-    
+
     @staticmethod
     def getLivestreamBitmovinID(html):
         container = common.parseDOM(html.get("content"),name='div',attrs={'class': "player_viewport.*?"})
@@ -542,7 +542,7 @@ class htmlScraper(Scraper):
             except:
                 debugLog("Error getting Livestream Bitmovin ID","Info")
 
-    
+
     @staticmethod
     def getLivestreamInformation(html):
         container = common.parseDOM(html.get("content"),name='div',attrs={'class': "player_viewport.*?"})
@@ -554,8 +554,8 @@ class htmlScraper(Scraper):
         date        = ""
         channel     = ""
         time_str    = ""
-        
-        
+
+
         for data in data_sets:
             try:
                 data = common.replaceHTMLCodes(data)
@@ -572,14 +572,14 @@ class htmlScraper(Scraper):
                     if 'livestream_end' in data['playlist']:
                         date = data['playlist']['livestream_end']
                         time_str_end = datetime.datetime.fromtimestamp(int(date)).strftime('%H:%M')
-                    if 'videos' in data['playlist']: 
-                        if 'description' in data['playlist']['videos']: 
+                    if 'videos' in data['playlist']:
+                        if 'description' in data['playlist']['videos']:
                             description = data['playlist']['videos']['description']
- 
+
                     return {"title" : "%s (%s - %s)" % (title,time_str,time_str_end),"image" : image,"description" : description, "date" : date, "duration" : duration, "channel" : channel}
             except:
                 debugLog("Error getting Livestream Infos","Info")
-        
+
     # Helper for Livestream Listing - Returns if Stream is currently running
     @staticmethod
     def getBroadcastState(time):

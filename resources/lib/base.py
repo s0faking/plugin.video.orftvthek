@@ -22,7 +22,7 @@ def addDirectory(title,banner,backdrop, description,link,mode,pluginhandle):
 def generateAddonVideoUrl(videourl):
     return "plugin://%s/?mode=play&link=%s"  % (xbmcaddon.Addon().getAddonInfo('id'),videourl)
 
-    
+
 def createListItem(title,banner,description,duration,date,channel,videourl,playable,folder, backdrop,pluginhandle,subtitles=None,blacklist=False, contextMenuItems = None):
     contextMenuItems = contextMenuItems or []
 
