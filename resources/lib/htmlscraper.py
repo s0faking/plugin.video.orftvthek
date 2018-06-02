@@ -469,7 +469,7 @@ class htmlScraper(Scraper):
                             final_title = "[Restart][%s] - %s (%s)" % (channelnames[program],title,time_str)
                             contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), child_list_link)))
 
-                        self.html2ListItem(final_title,banner,"",state,time_str,program,program,link,None,False, True,contextMenuItems)
+                        self.html2ListItem(final_title,banner,"",state,time_str,program,program, generateAddonVideoUrl(link),None,False, True,contextMenuItems)
                         initial = False
 
                     if child_list_time == time_str and child_list_title != title:
@@ -478,7 +478,7 @@ class htmlScraper(Scraper):
                         child_list_streaming_url = self.getLivestreamUrl(child_list_link,self.videoQuality)
                         child_list_final_title = "[%s] - %s (%s)" % (channelnames[program],child_list_title,child_list_time)
 
-                        self.html2ListItem(child_list_final_title,banner,"",state,time,program,program,child_list_streaming_url,None,False, True,contextMenuItems)
+                        self.html2ListItem(child_list_final_title,banner,"",state,time,program,program, generateAddonVideoUrl(child_list_streaming_url),None,False, True,contextMenuItems)
 
     def liveStreamRestart(self, link):
         try:

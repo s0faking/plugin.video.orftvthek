@@ -37,10 +37,7 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
     liz.setInfo( type="Video", infoLabels={ "Aired": date } )
     liz.setInfo( type="Video", infoLabels={ "Studio": channel } )
     liz.setProperty('fanart_image',backdrop)
-    if playable and not folder:
-        liz.setProperty('IsPlayable', 'true')
-        videourl = "plugin://%s/?mode=play&link=%s" % (xbmcaddon.Addon().getAddonInfo('id'),videourl)
-        debugLog("Videourl: %s" % videourl,"ListItem")                       
+    liz.setProperty('IsPlayable', str(playable and not folder))
 
     if not folder:
         liz.setInfo( type="Video", infoLabels={ "mediatype" : 'video'})
