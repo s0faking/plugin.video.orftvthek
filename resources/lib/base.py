@@ -20,7 +20,12 @@ def addDirectory(title,banner,backdrop, description,link,mode,pluginhandle):
     createListItem(title,banner,description,'','','',u, False,True, backdrop,pluginhandle,None)
 
 def generateAddonVideoUrl(videourl):
+    videourl = buildLink(videourl)
     return "plugin://%s/?mode=play&link=%s"  % (xbmcaddon.Addon().getAddonInfo('id'),videourl)
+
+def buildLink(link):
+    link = link.replace("https://apasfpd.apa.at","https://apasfpd.sf.apa.at")
+    return "%s|User-Agent=%s" % (link, Settings.userAgent())
 
 
 def createListItem(title,banner,description,duration,date,channel,videourl,playable,folder, backdrop,pluginhandle,subtitles=None,blacklist=False, contextMenuItems = None):
