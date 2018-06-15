@@ -414,10 +414,10 @@ class htmlScraper(Scraper):
         except RuntimeError:
             inputstreamAdaptive = False
 
-        liveurls['ORF1'] = "http://apasfiisl.apa.at/ipad/orf1_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
-        liveurls['ORF2'] = "http://apasfiisl.apa.at/ipad/orf2_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
-        liveurls['ORF3'] = "http://apasfiisl.apa.at/ipad/orf3_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
-        liveurls['ORFS'] = "http://apasfiisl.apa.at/ipad/orfs_"+self.videoQuality.lower()+"/orf.sdp/playlist.m3u8"
+        liveurls['ORF1'] = "http://orf1.orfstg.cdn.ors.at/out/u/orf1/"+self.videoQuality.lower()+"/manifest.m3u8"
+        liveurls['ORF2'] = "http://orf2.orfstg.cdn.ors.at/out/u/orf2/"+self.videoQuality.lower()+"/manifest.m3u8"
+        liveurls['ORF3'] = "http://orf2.orfstg.cdn.ors.at/out/u/orf3/"+self.videoQuality.lower()+"/manifest.m3u8"
+        liveurls['ORFS'] = "http://orfs.orfstg.cdn.ors.at/out/u/orfs/"+self.videoQuality.lower()+"/manifest.m3u8"
 
         channelnames = {}
         channelnames['ORF1'] = "ORF 1"
