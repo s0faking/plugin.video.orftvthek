@@ -416,7 +416,7 @@ class htmlScraper(Scraper):
 
         liveurls['ORF1'] = "http://orf1.orfstg.cdn.ors.at/out/u/orf1/"+self.videoQuality.lower()+"/manifest.m3u8"
         liveurls['ORF2'] = "http://orf2.orfstg.cdn.ors.at/out/u/orf2/"+self.videoQuality.lower()+"/manifest.m3u8"
-        liveurls['ORF3'] = "http://orf2.orfstg.cdn.ors.at/out/u/orf3/"+self.videoQuality.lower()+"/manifest.m3u8"
+        liveurls['ORF3'] = "http://orf3.orfstg.cdn.ors.at/out/u/orf3/"+self.videoQuality.lower()+"/manifest.m3u8"
         liveurls['ORFS'] = "http://orfs.orfstg.cdn.ors.at/out/u/orfs/"+self.videoQuality.lower()+"/manifest.m3u8"
 
         channelnames = {}
