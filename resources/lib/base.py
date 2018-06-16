@@ -24,7 +24,6 @@ def generateAddonVideoUrl(videourl):
     return "plugin://%s/?mode=play&link=%s"  % (xbmcaddon.Addon().getAddonInfo('id'),videourl)
 
 def buildLink(link):
-    link = link.replace("https://apasfpd.apa.at","https://apasfpd.sf.apa.at")
     return "%s|User-Agent=%s" % (link, Settings.userAgent())
 
 
