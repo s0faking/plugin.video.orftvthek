@@ -32,6 +32,10 @@ class htmlScraper(Scraper):
         self.translation = settings.getLocalizedString
         self.xbmc = xbmc
         self.videoQuality = quality
+        if settings.getSetting("enableAdaptiveLivestream") == "true":
+            self.livestreamVideoQuality = "QXB"
+        else:
+            self.livestreamVideoQuality = quality
         self.videoDelivery = delivery
         self.videoProtocol = protocol
         self.pluginhandle = pluginhandle
@@ -482,7 +486,7 @@ class htmlScraper(Scraper):
                 uhd_final_title = "[%s][UHD] - %s (%s)" % (channelnames[program],title,time)
             self.html2ListItem(uhd_final_title ,banner,"",state,time,program,program, generateAddonVideoUrl(uhd_streaming_url),None,False, True, uhdContextMenuItems)
                         
-        streaming_url = self.getLivestreamUrl(data,self.videoQuality)
+        streaming_url = self.getLivestreamUrl(data,self.livestreamVideoQuality)
         contextMenuItems = []
         if inputstreamAdaptive and child_restart:
             contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), link)))
