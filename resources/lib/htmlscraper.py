@@ -406,19 +406,6 @@ class htmlScraper(Scraper):
 
     # Returns Live Stream Listing
     def getLiveStreams(self):
-        liveurls = {}
-
-        try:
-            xbmcaddon.Addon('inputstream.adaptive')
-            inputstreamAdaptive = True
-        except RuntimeError:
-            inputstreamAdaptive = False
-
-        liveurls['ORF1'] = "http://orf1.orfstg.cdn.ors.at/out/u/orf1/"+self.videoQuality.lower()+"/manifest.m3u8"
-        liveurls['ORF2'] = "http://orf2.orfstg.cdn.ors.at/out/u/orf2/"+self.videoQuality.lower()+"/manifest.m3u8"
-        liveurls['ORF3'] = "http://orf3.orfstg.cdn.ors.at/out/u/orf3/"+self.videoQuality.lower()+"/manifest.m3u8"
-        liveurls['ORFS'] = "http://orfs.orfstg.cdn.ors.at/out/u/orfs/"+self.videoQuality.lower()+"/manifest.m3u8"
-
         channelnames = {}
         channelnames['ORF1'] = "ORF 1"
         channelnames['ORF2'] = "ORF 2"
@@ -437,49 +424,73 @@ class htmlScraper(Scraper):
                 banner = common.parseDOM(item,name='img',ret="src")
                 banner = common.replaceHTMLCodes(banner[0]).encode('UTF-8')
 
-                title = common.parseDOM(item,name='h4')
-                title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
-
                 time_str = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_time'})
                 time_str = common.replaceHTMLCodes(time_str[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
 
-                if self.getBroadcastState(time_str):
-                    state = (self.translation(30019)).encode("utf-8")
-                else:
-                    state = (self.translation(30020)).encode("utf-8")
-
-                initial = True
-                link = liveurls[program]
-                final_title = "[%s] - %s (%s)" % (channelnames[program],title,time_str)
-
-                child_list = common.parseDOM(item,name='li',attrs={'class': 'base_list_item'})
+                child_list = common.parseDOM(item,name='li',attrs={'class': 'base_list_item.*?'})
                 for child_list_item in child_list:
                     contextMenuItems = []
+                    data_sets = common.parseDOM(child_list_item,name='span',attrs={},ret="data-jsb")
                     child_restart = common.parseDOM(child_list_item , name='span',attrs={'class': 'is_restartable.*?'},ret="class")
-
+                    
                     child_list_title = common.parseDOM(child_list_item,name='h4')
                     child_list_title = common.replaceHTMLCodes(child_list_title[0]).encode('UTF-8')
-                    child_list_link = common.parseDOM(child_list_item,name='a',attrs={'class': 'base_list_item_inner'},ret="href")
-                    child_list_link = common.replaceHTMLCodes(child_list_link[0])
+                    
                     child_list_time = common.parseDOM(child_list_item,name='span',attrs={'class': 'meta.meta_time'})
                     child_list_time = common.replaceHTMLCodes(child_list_time[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
+                    if child_list_time == time_str:
+                        child_list_link = common.parseDOM(child_list_item,name='a',attrs={'class': 'base_list_item_inner'},ret="href")
+                        if len(child_list_link):
+                            child_list_link = common.replaceHTMLCodes(child_list_link[0])
+                            self.buildLivestream(child_list_title,child_list_link,child_list_time,data_sets,child_restart,channelnames,program,banner)
+                        else:
+                            debugLog("Bundesland Heute found.","Info")
+                            bundesland_list_link_containers = common.parseDOM(child_list_item,name='li',attrs={'class': 'federal_state.*?'})
+                            if len(bundesland_list_link_containers):
+                                for bundesland_list_link_container in bundesland_list_link_containers:
+                                    bundesland_list_link = common.parseDOM(bundesland_list_link_container,name='a',attrs={},ret='href')
+                                    bundesland_list_link = common.replaceHTMLCodes(bundesland_list_link[0])
+                                    bundesland_list_title_suffix = common.parseDOM(bundesland_list_link_container,name='a',attrs={})
+                                    bundesland_list_title = "%s [%s]" % (child_list_title, bundesland_list_title_suffix[0].encode('UTF-8').upper())
+                                    self.buildLivestream(bundesland_list_title,bundesland_list_link,child_list_time,False,child_restart,channelnames,program,banner)
 
-                    if initial:
-                        if inputstreamAdaptive and child_restart:
-                            final_title = "[Restart][%s] - %s (%s)" % (channelnames[program],title,time_str)
-                            contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), child_list_link)))
-
-                        self.html2ListItem(final_title,banner,"",state,time_str,program,program, generateAddonVideoUrl(link),None,False, True,contextMenuItems)
-                        initial = False
-
-                    if child_list_time == time_str and child_list_title != title:
-                        if inputstreamAdaptive and child_restart:
-                            contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), child_list_link)))
-                        child_list_streaming_url = self.getLivestreamUrl(child_list_link,self.videoQuality)
-                        child_list_final_title = "[%s] - %s (%s)" % (channelnames[program],child_list_title,child_list_time)
-
-                        self.html2ListItem(child_list_final_title,banner,"",state,time,program,program, generateAddonVideoUrl(child_list_streaming_url),None,False, True,contextMenuItems)
-
+    def buildLivestream(self,title,link,time,data,restart,channelnames,program,banner):
+        if not data:
+            html = common.fetchPage({'link': link})
+            container = common.parseDOM(html.get("content"),name='div',attrs={'class': "player_viewport.*?"})
+            data = common.parseDOM(container[0],name='div',attrs={},ret="data-jsb")
+    
+        if self.getBroadcastState(time):
+            state = (self.translation(30019)).encode("utf-8")
+        else:
+            state = (self.translation(30020)).encode("utf-8")
+        
+        try:
+            xbmcaddon.Addon('inputstream.adaptive')
+            inputstreamAdaptive = True
+        except RuntimeError:
+            inputstreamAdaptive = False
+            
+        uhd_streaming_url = self.getLivestreamUrl(data,'uhdbrowser')
+        if uhd_streaming_url:
+            debugLog("Adding UHD Livestream","Info")
+            uhdContextMenuItems = []
+            if inputstreamAdaptive and child_restart:
+                uhdContextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), link)))
+                uhd_final_title = "[Restart][%s][UHD] - %s (%s)" % (channelnames[program],title,time)
+            else:
+                uhd_final_title = "[%s][UHD] - %s (%s)" % (channelnames[program],title,time)
+            self.html2ListItem(uhd_final_title ,banner,"",state,time,program,program, generateAddonVideoUrl(uhd_streaming_url),None,False, True, uhdContextMenuItems)
+                        
+        streaming_url = self.getLivestreamUrl(data,self.videoQuality)
+        contextMenuItems = []
+        if inputstreamAdaptive and child_restart:
+            contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), link)))
+            final_title = "[Restart][%s] - %s (%s)" % (channelnames[program],title,time)
+        else:
+            final_title = "[%s] - %s (%s)" % (channelnames[program],title,time)
+        self.html2ListItem(final_title,banner,"",state,time,program,program, generateAddonVideoUrl(streaming_url),None,False, True,contextMenuItems)
+                    
     def liveStreamRestart(self, link):
         try:
             xbmcaddon.Addon('inputstream.adaptive')
@@ -512,10 +523,7 @@ class htmlScraper(Scraper):
             self.xbmc.Player().play(streamingURL, listItem)
 
     @staticmethod
-    def getLivestreamUrl(url,quality):
-        html = common.fetchPage({'link': url})
-        container = common.parseDOM(html.get("content"),name='div',attrs={'class': "player_viewport.*?"})
-        data_sets = common.parseDOM(container[0],name='div',attrs={},ret="data-jsb")
+    def getLivestreamUrl(data_sets,quality):
         for data in data_sets:
             try:
                 data = common.replaceHTMLCodes(data)
