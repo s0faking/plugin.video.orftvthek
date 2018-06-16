@@ -212,5 +212,5 @@ msgid "This Video is offline"
 msgstr ""
 
 msgctxt "#30053"
-msgid "Adaptive Livestream"
+msgid "Adaptive"
 msgstr ""

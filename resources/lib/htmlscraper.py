@@ -32,10 +32,6 @@ class htmlScraper(Scraper):
         self.translation = settings.getLocalizedString
         self.xbmc = xbmc
         self.videoQuality = quality
-        if settings.getSetting("enableAdaptiveLivestream") == "true":
-            self.livestreamVideoQuality = "QXB"
-        else:
-            self.livestreamVideoQuality = quality
         self.videoDelivery = delivery
         self.videoProtocol = protocol
         self.pluginhandle = pluginhandle
@@ -334,7 +330,7 @@ class htmlScraper(Scraper):
                 data = data[0]
                 data = common.replaceHTMLCodes(data)
                 data = json.loads(data)
-
+                current_preview_img = data.get("selected_video")["preview_image_url"]
                 video_items = data.get("playlist")["videos"]
                 current_title = data.get("selected_video")["title"]
                 if data.get("selected_video")["description"]:
@@ -348,7 +344,7 @@ class htmlScraper(Scraper):
                 else:
                     current_duration = 0
 
-                current_preview_img = data.get("selected_video")["preview_image_url"]
+                
                 if "subtitles" in data.get("selected_video"):
                     current_subtitles = []
                     for sub in data.get("selected_video")["subtitles"]:
@@ -395,7 +391,7 @@ class htmlScraper(Scraper):
                         liz = self.html2ListItem(title,preview_img,"",desc,duration,'','',videourl, subtitles,False, True)
                         playlist.add(videourl,liz)
                     except Exception as e:
-                        debugLog(e,'Error')
+                        debugLog(str(e),'Error')
                         continue
                 return playlist
             else:
@@ -486,7 +482,7 @@ class htmlScraper(Scraper):
                 uhd_final_title = "[%s][UHD] - %s (%s)" % (channelnames[program],title,time)
             self.html2ListItem(uhd_final_title ,banner,"",state,time,program,program, generateAddonVideoUrl(uhd_streaming_url),None,False, True, uhdContextMenuItems)
                         
-        streaming_url = self.getLivestreamUrl(data,self.livestreamVideoQuality)
+        streaming_url = self.getLivestreamUrl(data,self.videoQuality)
         contextMenuItems = []
         if inputstreamAdaptive and child_restart:
             contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), link)))

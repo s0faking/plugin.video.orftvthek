@@ -51,6 +51,8 @@ def createListItem(title,banner,description,duration,date,channel,videourl,playa
             videoStreamInfo.update({'duration': int(duration)})
         except (TypeError, ValueError):
             debugLog("No Duration found in Video",'Info')
+        if videourl.lower().endswith('_qxb.mp4') or '_qxb' in videourl.lower():
+            videoStreamInfo.update({'width': 1280, 'height': 720})
         if videourl.lower().endswith('_q8c.mp4') or '_q8c' in videourl.lower():
             videoStreamInfo.update({'width': 1280, 'height': 720})
         elif videourl.lower().endswith('_q6a.mp4') or '_q6a' in videourl.lower():

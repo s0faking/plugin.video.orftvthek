@@ -39,9 +39,9 @@ tvthekplayer = xbmc.Player()
 playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
 
 #hardcoded
-video_quality_list = ["Q1A", "Q4A", "Q6A", "Q8C"]
+video_quality_list = ["Q1A", "Q4A", "Q6A", "Q8C", "QXB"]
 videoProtocol = "http"
-videoDelivery = "progressive"
+videoDelivery = "hls"
 
 #media resources
 resource_path = os.path.join( basepath, "resources" )
