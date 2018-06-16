@@ -359,9 +359,6 @@ class htmlScraper(Scraper):
 
             if len(video_items) > 1:
                 debugLog("Found Video Playlist with %d Items" % len(video_items),'Info')
-                parameters = {"mode" : "playlist"}
-                u = sys.argv[0] + '?' + urllib.urlencode(parameters)
-                liz = self.html2ListItem("[ "+(self.translation(30015)).encode("utf-8")+" ]",banner,"",(self.translation(30015)).encode("utf-8"),'','','',u,None,False,False);
                 for video_item in video_items:
                     try:
                         title = video_item["title"].encode('UTF-8')
