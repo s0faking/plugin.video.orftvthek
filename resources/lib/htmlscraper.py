@@ -472,7 +472,7 @@ class htmlScraper(Scraper):
         if uhd_streaming_url:
             debugLog("Adding UHD Livestream","Info")
             uhdContextMenuItems = []
-            if inputstreamAdaptive and child_restart:
+            if inputstreamAdaptive and restart:
                 uhdContextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), link)))
                 uhd_final_title = "[Restart][%s][UHD] - %s (%s)" % (channelnames[program],title,time)
             else:
@@ -481,7 +481,7 @@ class htmlScraper(Scraper):
                         
         streaming_url = self.getLivestreamUrl(data,self.videoQuality)
         contextMenuItems = []
-        if inputstreamAdaptive and child_restart:
+        if inputstreamAdaptive and restart:
             contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), link)))
             final_title = "[Restart][%s] - %s (%s)" % (channelnames[program],title,time)
         else:
