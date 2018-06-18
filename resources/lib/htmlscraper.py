@@ -158,6 +158,13 @@ class htmlScraper(Scraper):
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             if not link.startswith(self.__urlLive) and not link.startswith(self.__urlLive.replace('http:','https:')):
                 self.html2ListItem(title,image,"",desc,"","","",url,None,True, False)
+            else:
+                live_html = common.fetchPage({'link': link})
+                if self.getLivestreamBitmovinID(live_html):
+                    live_restart = True
+                else:
+                    live_restart = False
+                self.buildLivestream(title,link,"",False,live_restart,"","",image)
 
     # Parses the Frontpage Show Overview Carousel
     def getCategories(self):
@@ -464,30 +471,41 @@ class htmlScraper(Scraper):
         else:
             state = (self.translation(30020)).encode("utf-8")
         
+        if time:
+            time_str = " (%s)" % time
+        else:
+            time_str = ""
+        
         try:
             xbmcaddon.Addon('inputstream.adaptive')
             inputstreamAdaptive = True
         except RuntimeError:
             inputstreamAdaptive = False
-            
+        
+        if channelnames and program:
+            channel_id = "[%s]" % channelnames[program]
+        else:
+            channel_id = "LIVE"
+
+        
         uhd_streaming_url = self.getLivestreamUrl(data,'uhdbrowser')
         if uhd_streaming_url:
             debugLog("Adding UHD Livestream","Info")
             uhdContextMenuItems = []
             if inputstreamAdaptive and restart:
                 uhdContextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), link)))
-                uhd_final_title = "[Restart][%s][UHD] - %s (%s)" % (channelnames[program],title,time)
+                uhd_final_title = "[Restart]%s[UHD] - %s%s" % (channel_id,title,time_str)
             else:
-                uhd_final_title = "[%s][UHD] - %s (%s)" % (channelnames[program],title,time)
+                uhd_final_title = "%s[UHD] - %s%s" % (channel_id,title,time_str)
             self.html2ListItem(uhd_final_title ,banner,"",state,time,program,program, generateAddonVideoUrl(uhd_streaming_url),None,False, True, uhdContextMenuItems)
                         
         streaming_url = self.getLivestreamUrl(data,self.videoQuality)
         contextMenuItems = []
         if inputstreamAdaptive and restart:
             contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), link)))
-            final_title = "[Restart][%s] - %s (%s)" % (channelnames[program],title,time)
+            final_title = "[Restart]%s - %s%s" % (channel_id,title,time_str)
         else:
-            final_title = "[%s] - %s (%s)" % (channelnames[program],title,time)
+            final_title = "%s - %s%s" % (channel_id,title,time_str)
         self.html2ListItem(final_title,banner,"",state,time,program,program, generateAddonVideoUrl(streaming_url),None,False, True,contextMenuItems)
                     
     def liveStreamRestart(self, link):
@@ -539,15 +557,19 @@ class htmlScraper(Scraper):
     @staticmethod
     def getLivestreamBitmovinID(html):
         container = common.parseDOM(html.get("content"),name='div',attrs={'class': "player_viewport.*?"})
-        data_sets = common.parseDOM(container[0],name='div',attrs={},ret="data-jsb")
-        for data in data_sets:
-            try:
-                data = common.replaceHTMLCodes(data)
-                data = json.loads(data)
-                if 'bitmovin_stream_id' in data:
-                    return data['bitmovin_stream_id']
-            except:
-                debugLog("Error getting Livestream Bitmovin ID","Info")
+        if len(container):
+            data_sets = common.parseDOM(container[0],name='div',attrs={},ret="data-jsb")
+            if len(data_sets):
+                for data in data_sets:
+                    try:
+                        data = common.replaceHTMLCodes(data)
+                        data = json.loads(data)
+                        if 'bitmovin_stream_id' in data:
+                            return data['bitmovin_stream_id']
+                    except:
+                        debugLog("Error getting Livestream Bitmovin ID","Info")
+                        return False
+        return False               
 
 
     @staticmethod
