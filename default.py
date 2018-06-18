@@ -79,7 +79,6 @@ else:
 params=parameters_string_to_dict(sys.argv[2])
 mode=params.get('mode')
 link=params.get('link')
-autoPlay=params.get('autoPlay')
 
 if mode:
     debugLog("Mode: %s" % mode,'Info')
