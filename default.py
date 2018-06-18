@@ -124,14 +124,12 @@ def startPlaylist(player,playlist):
 if mode == 'openSeries':
     playlist.clear()
     playlist = scraper.getLinks(link,params.get('banner'),playlist)
-    if autoPlayPrompt and playlist != None and not autoPlay:
+    if autoPlayPrompt and playlist != None:
         listCallback(False,pluginhandle)
         ok = xbmcgui.Dialog().yesno((translation(30047)).encode("utf-8"),(translation(30048)).encode("utf-8"))
         if ok:
             debugLog("Starting Playlist for %s" % urllib.unquote(link),'Info')
-            tvthekplayer.play(playlist)                            
-    elif autoPlay and playlist != None:
-        tvthekplayer.play(playlist)
+            tvthekplayer.play(playlist)               
     else:
         debugLog("Running Listcallback from no autoplay openseries","Info")
         listCallback(False,pluginhandle)
