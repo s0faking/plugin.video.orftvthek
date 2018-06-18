@@ -723,4 +723,3 @@ class htmlScraper(Scraper):
             parameters = {'mode' : 'getSearchHistory'}
             u = sys.argv[0] + '?' + urllib.urlencode(parameters)
             createListItem((self.translation(30014)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, False, True, self.defaultbackdrop,self.pluginhandle,None)
-

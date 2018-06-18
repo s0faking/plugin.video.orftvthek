@@ -204,9 +204,7 @@ class serviceAPI(Scraper):
 			listItem = self.JSONSegment2ListItem(result.get('_embedded').get('segments')[0])
 			playlist.add(listItem[0], listItem[1])
 
-		else:
-                                     
-                                                       
+		else:                                             
 			play_all_name = "[ "+(self.translation(30015)).encode("utf-8")+" ]"
 			createPlayAllItem(play_all_name,self.pluginhandle)
 			for segment in result.get('_embedded').get('segments'):

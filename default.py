@@ -123,6 +123,7 @@ def startPlaylist(player,playlist):
 if mode == 'openSeries':
     playlist.clear()
     playlist = scraper.getLinks(link,params.get('banner'),playlist)
+
     if autoPlayPrompt and playlist != None:
         listCallback(False,pluginhandle)
         ok = xbmcgui.Dialog().yesno((translation(30047)).encode("utf-8"),(translation(30048)).encode("utf-8"))
@@ -131,6 +132,15 @@ if mode == 'openSeries':
             tvthekplayer.play(playlist)               
     else:
         debugLog("Running Listcallback from no autoplay openseries","Info")
+        listCallback(False,pluginhandle)
+    if not autoPlayPrompt:
+        listCallback(False,pluginhandle)
+    elif playlist != None:
+        ok = xbmcgui.Dialog().yesno((translation(30047)).encode("utf-8"),(translation(30048)).encode("utf-8"))
+        if ok:
+            debugLog("Starting Playlist for %s" % urllib.unquote(link),'Info')
+            tvthekplayer.play(playlist)
+    else:
         listCallback(False,pluginhandle)
 elif mode == 'unblacklistShow':
     heading = translation(30040).encode('UTF-8') % urllib.unquote(link).replace('+', ' ').strip()
