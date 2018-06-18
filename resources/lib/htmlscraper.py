@@ -156,7 +156,8 @@ class htmlScraper(Scraper):
 
             parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
-            self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
+            if not link.startswith(self.__urlLive) and not link.startswith(self.__urlLive.replace('http:','https:')):
+                self.html2ListItem(title,image,"",desc,"","","",url,None,True, False)
 
     # Parses the Frontpage Show Overview Carousel
     def getCategories(self):
