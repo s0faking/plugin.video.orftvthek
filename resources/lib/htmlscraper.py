@@ -317,7 +317,6 @@ class htmlScraper(Scraper):
 
     # Parses a Video Page and extracts the Playlist/Description/...
     def getLinks(self,url,banner,playlist):
-        playlist.clear()
         url = str(urllib.unquote(url))
         debugLog("Loading Videos from %s" % url,'Info')
         if banner != None:
@@ -358,7 +357,9 @@ class htmlScraper(Scraper):
                 current_subtitles = None
 
             if len(video_items) > 1:
+                play_all_name = "[ "+(self.translation(30015)).encode("utf-8")+" ]"
                 debugLog("Found Video Playlist with %d Items" % len(video_items),'Info')
+                createPlayAllItem(play_all_name,url,self.pluginhandle)                           
                 for video_item in video_items:
                     try:
                         title = video_item["title"].encode('UTF-8')
