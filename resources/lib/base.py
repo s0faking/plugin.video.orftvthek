@@ -29,12 +29,13 @@ def buildLink(link):
     else:
         return link
         
-def createPlayAllItem(name,url,pluginhandle):
-    play_all_parameters = {"mode" : "openSeries","link" : url, "autoPlay" : "true"}
+def createPlayAllItem(name,pluginhandle):
+    play_all_parameters = {"mode" : "playlist"}
     play_all_url = sys.argv[0] + '?' + urllib.urlencode(play_all_parameters)           
     play_all_item = xbmcgui.ListItem(name)
     play_all_item.setInfo(type="Video", infoLabels={"Title": name, "Plot": ""})
     xbmcplugin.addDirectoryItem(pluginhandle,play_all_url,play_all_item,isFolder = False,totalItems = -1)
+
 def createListItem(title,banner,description,duration,date,channel,videourl,playable,folder, backdrop,pluginhandle,subtitles=None,blacklist=False, contextMenuItems = None):
     contextMenuItems = contextMenuItems or []
 
