@@ -569,8 +569,7 @@ class htmlScraper(Scraper):
                     except:
                         debugLog("Error getting Livestream Bitmovin ID","Info")
                         return False
-        return False               
-
+        return False
 
     @staticmethod
     def getLivestreamInformation(html):
