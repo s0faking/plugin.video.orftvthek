@@ -68,8 +68,6 @@ videoQuality = Settings.videoQuality(video_quality_list)
 videoDelivery = Settings.videoDelivery(video_delivery_list)
 autoPlayPrompt = Settings.autoPlayPrompt()
 
-print videoDelivery
-
 #init scrapers
 if useServiceAPI:
     debugLog("Service API activated",'Info')
