@@ -214,3 +214,7 @@ msgstr ""
 msgctxt "#30053"
 msgid "Adaptive"
 msgstr ""
+
+msgctxt "#30054"
+msgid "Stream Method"
+msgstr ""

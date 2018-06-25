@@ -27,6 +27,14 @@ def videoQuality(quality_list):
 		return quality_list[int(videoQuality)]
 	except (IndexError, ValueError):
 		return quality_list[default_return_index]
+        
+def videoDelivery(delivery_list):
+	default_return_index = 0
+	videoDelivery = __addon__.getSetting('videoDelivery')
+	try:
+		return delivery_list[int(videoDelivery)]
+	except (IndexError, ValueError):
+		return delivery_list[default_return_index]
 
 def autoPlayPrompt():
 	return __addon__.getSetting("autoPlayPrompt") == "true"

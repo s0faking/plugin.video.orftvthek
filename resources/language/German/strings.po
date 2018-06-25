@@ -200,3 +200,7 @@ msgstr "Dieses Video ist offline"
 msgctxt "#30053"
 msgid "Adaptiv"
 msgstr ""
+
+msgctxt "#30054"
+msgid "Stream Methode"
+msgstr ""
