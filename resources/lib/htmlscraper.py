@@ -564,8 +564,9 @@ class htmlScraper(Scraper):
                     try:
                         data = common.replaceHTMLCodes(data)
                         data = json.loads(data)
-                        if 'bitmovin_stream_id' in data:
-                            return data['bitmovin_stream_id']
+                        if 'restart_url' in data:
+                            bitmovin_id = data['restart_url'].replace("https://playerapi-restarttv.ors.at/livestreams/","").replace("/sections/","")
+                            return bitmovin_id
                     except:
                         debugLog("Error getting Livestream Bitmovin ID","Info")
                         return False

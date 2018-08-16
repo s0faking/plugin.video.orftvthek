@@ -1,3 +1,6 @@
+0.8.6
+- fixed restart option
+
 0.8.5
 - added UHD livestream option
 - added Adaptive quality settings
