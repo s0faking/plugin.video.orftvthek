@@ -353,7 +353,9 @@ class serviceAPI(Scraper):
 			date        = time.strptime(result.get('start')[0:19], '%Y-%m-%dT%H:%M:%S')
 
 			ApiKey = '2e9f11608ede41f1826488f1e23c4a8d'
-			bitmovinStreamId = result.get('_embedded').get('channel').get('bitmovin_stream_id')
+			bitmovinStreamId = result.get('_embedded').get('channel').get('restart_urls').get('default')
+			if bitmovinStreamId:
+				bitmovinStreamId = bitmovinStreamId.replace("https://playerapi-restarttv.ors.at/livestreams/","").replace("/sections/","")
 			response = urllib2.urlopen('http://restarttv-delivery.bitmovin.com/livestreams/%s/sections/?state=active&X-Api-Key=%s' % (bitmovinStreamId, ApiKey)) # nosec
 			section = json.loads(response.read())[0]
 
