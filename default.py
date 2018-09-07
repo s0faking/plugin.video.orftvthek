@@ -39,7 +39,7 @@ tvthekplayer = xbmc.Player()
 playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
 
 #hardcoded
-video_delivery_list = ["hls", "progressive"]
+video_delivery_list = ["HLS", "Progressive"]
 video_quality_list = ["Q1A", "Q4A", "Q6A", "Q8C", "QXB"]
 videoProtocol = "http"
 
