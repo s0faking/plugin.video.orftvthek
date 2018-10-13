@@ -529,10 +529,10 @@ class htmlScraper(Scraper):
             channel     = stream_info['channel']
 
             ApiKey = '2e9f11608ede41f1826488f1e23c4a8d'
-            response = urllib2.urlopen('http://restarttv-delivery.bitmovin.com/livestreams/%s/sections/?state=active&X-Api-Key=%s' % (bitmovinStreamId, ApiKey)) # nosec
+            response = urllib2.urlopen('https://playerapi-restarttv.ors.at/livestreams/%s/sections/?state=active&X-Api-Key=%s' % (bitmovinStreamId, ApiKey)) # nosec
             section = json.loads(response.read())[0]
 
-            streamingURL = 'http://restarttv-delivery.bitmovin.com/livestreams/%s/sections/%s/manifests/hls/?startTime=%s&X-Api-Key=%s' % (bitmovinStreamId, section.get('id'), section.get('metaData').get('timestamp'), ApiKey)
+            streamingURL = 'https://playerapi-restarttv.ors.at/livestreams/%s/sections/%s/manifests/hls/?startTime=%s&X-Api-Key=%s' % (bitmovinStreamId, section.get('id'), section.get('metaData').get('timestamp'), ApiKey)
 
             listItem = createListItem(title, image, description, duration, date, channel , streamingURL, True, False, self.defaultbackdrop, self.pluginhandle)
             listItem.setProperty('inputstreamaddon', 'inputstream.adaptive')
@@ -566,7 +566,7 @@ class htmlScraper(Scraper):
                         data = json.loads(data)
                         if 'restart_url' in data:
                             bitmovin_id = data['restart_url'].replace("https://playerapi-restarttv.ors.at/livestreams/","").replace("/sections/","")
-                            return bitmovin_id
+                            return bitmovin_id.split("?")[0]
                     except:
                         debugLog("Error getting Livestream Bitmovin ID","Info")
                         return False
