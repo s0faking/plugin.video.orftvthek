@@ -210,5 +210,5 @@ msgid "HLS"
 msgstr ""
 
 msgctxt "#30056"
-msgid "Progressive"
+msgid "Progressive Streaming aktivieren"
 msgstr ""
