@@ -30,11 +30,11 @@ def videoQuality(quality_list):
         
 def videoDelivery(delivery_list):
 	default_return_index = 0
-	videoDelivery = __addon__.getSetting('videoDelivery')
-	try:
-		return delivery_list[int(videoDelivery)]
-	except (IndexError, ValueError):
-		return delivery_list[default_return_index]
+	if serviceAPI():
+		videoDeliveryProgressive = __addon__.getSetting('videoDeliveryProgressive')
+		if videoDeliveryProgressive == "true":
+			return delivery_list[1]
+	return delivery_list[default_return_index]
 
 def autoPlayPrompt():
 	return __addon__.getSetting("autoPlayPrompt") == "true"
