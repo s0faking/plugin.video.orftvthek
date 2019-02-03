@@ -8,3 +8,12 @@ install:
 
 script:
   - kodi-addon-checker --branch=gotham
+
+before_deploy:
+  - pip install git+https://github.com/romanvm/kodi-addon-submitter.git
+
+deploy:
+  - provider: script
+    script: submit-addon -r repo-plugins -b gotham --push-branch plugin.video.orftvthek
+    on:
+      tags: true
