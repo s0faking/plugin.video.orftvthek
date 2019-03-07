@@ -7,10 +7,6 @@ import sys
 import urllib
 
 import CommonFunctions as common
-try:
-   import StorageServer
-except ImportError:
-   import storageserverdummy as StorageServer
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
@@ -22,7 +18,6 @@ from resources.lib.htmlscraper import *
 from resources.lib.Scraper import *
 
 socket.setdefaulttimeout(30)
-cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
 plugin = "ORF-TVthek-" + xbmcaddon.Addon().getAddonInfo('version')
 
@@ -186,13 +181,13 @@ elif mode == 'openTrailers':
     scraper.getTrailers()
     listCallback(False,pluginhandle)
 elif mode == 'getSearchHistory':
-    scraper.getSearchHistory(cache);
+    scraper.getSearchHistory();
     listCallback(False,pluginhandle)
 elif mode == 'getSearchResults':
     if not link == None:
-        scraper.getSearchResults(urllib.unquote(link),cache)
+        scraper.getSearchResults(urllib.unquote(link))
     else:
-        scraper.getSearchResults("",cache)
+        scraper.getSearchResults("")
     listCallback(False,pluginhandle)
 elif mode == 'openDate':
     scraper.getDate(link, params.get('from'))

@@ -9,6 +9,11 @@ import urllib2
 
 import CommonFunctions as common
 import simplejson as json
+try:
+   import StorageServer
+except ImportError:
+   import storageserverdummy as StorageServer
+import xbmcvfs
 
 from resources.lib.helpers import *
 from .base import *
@@ -692,11 +697,12 @@ class htmlScraper(Scraper):
             url = sys.argv[0] + '?' + urllib.urlencode(parameters)
             self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
 
-    def getSearchHistory(self,cache):
+    def getSearchHistory(self):
         parameters = {'mode' : 'getSearchResults'}
         u = sys.argv[0] + '?' + urllib.urlencode(parameters)
         createListItem((self.translation(30007)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, False, True, self.defaultbackdrop,self.pluginhandle,None)
 
+        cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
         cache.table_name = "searchhistory"
         some_dict = cache.get("searches").split("|")
         for str_val in reversed(some_dict):
@@ -709,10 +715,11 @@ class htmlScraper(Scraper):
     def removeUmlauts(str_val):
         return str_val.replace("Ö","O").replace("ö","o").replace("Ü","U").replace("ü","u").replace("Ä","A").replace("ä","a")
 
-    def getSearchResults(self,link,cache):
+    def getSearchResults(self,link):
         keyboard = self.xbmc.Keyboard(link)
         keyboard.doModal()
         if (keyboard.isConfirmed()):
+            cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
             cache.table_name = "searchhistory"
             keyboard_in = self.removeUmlauts(keyboard.getText())
             if keyboard_in != link:
