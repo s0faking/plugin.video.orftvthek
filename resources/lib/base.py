@@ -9,7 +9,7 @@ import xbmc
 import xbmcgui
 import xbmcplugin
 
-import simplejson
+import simplejson as json
 from . import Settings
 
 from .helpers import *
@@ -143,13 +143,13 @@ def printBlacklist(banner,backdrop,translation,pluginhandle):
 
 def setBlacklist(data,file):
     with open(file,'w') as data_file:
-        data_file.write(simplejson.dumps(data,'utf-8'))
+        data_file.write(json.dumps(data,'utf-8'))
     data_file.close()
 
 def getBlacklist(file):
     data = []
     with open(file,'r') as data_file:
-        data = simplejson.load(data_file,'UTF-8')
+        data = json.load(data_file,'UTF-8')
     return data
 
 def blacklistItem(title):

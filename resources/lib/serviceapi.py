@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import json
+import simplejson as json
 import sys
 import time
 import urllib
@@ -54,7 +54,7 @@ class serviceAPI(Scraper):
 			responseCode = error.getcode()
 
 		if responseCode == 200:
-			for result in json.loads(response.read()).get('highlight_teasers'):
+			for result in json.loads(response.read().decode('UTF-8')).get('highlight_teasers'):
 				if result.get('target').get('model') == 'Segment':
 					self.JSONSegment2ListItem(result.get('target'))
 
@@ -67,7 +67,7 @@ class serviceAPI(Scraper):
 			responseCode = error.getcode()
 
 		if responseCode == 200:
-			for result in json.loads(response.read()).get('most_viewed_segments'):
+			for result in json.loads(response.read().decode('UTF-8')).get('most_viewed_segments'):
 				if result.get('model') == 'Segment':
 					self.JSONSegment2ListItem(result)
 
@@ -88,7 +88,7 @@ class serviceAPI(Scraper):
 			responseCode = error.getcode()
 
 		if responseCode == 200:
-			for result in json.loads(response.read()):
+			for result in json.loads(response.read().decode('UTF-8')):
 				if result.get('model') == 'Episode':
 					self.__JSONEpisode2ListItem(result)
 				elif result.get('model') == 'Tip':
@@ -140,7 +140,7 @@ class serviceAPI(Scraper):
 			responseCode = error.getcode()
 
 		if responseCode == 200:
-			for result in json.loads(response.read()).get('_embedded').get('items'):
+			for result in json.loads(response.read().decode('UTF-8')).get('_embedded').get('items'):
 				self.__JSONProfile2ListItem(result)
 		else:
 			xbmcgui.Dialog().notification(self.translation(30045).encode('UTF-8'), self.translation(30046).encode('UTF-8'), xbmcaddon.Addon().getAddonInfo('icon'))
@@ -154,7 +154,7 @@ class serviceAPI(Scraper):
 			url = self.serviceAPIDateFrom % (date, 7)
 		response = self.__makeRequest(url)
 
-		episodes = json.loads(response.read()).get('_embedded').get('items')
+		episodes = json.loads(response.read().decode('UTF-8')).get('_embedded').get('items')
 		if dateFrom != None:
 			episodes = reversed(episodes)
 
@@ -165,7 +165,7 @@ class serviceAPI(Scraper):
 	# list all Entries for the given Topic
 	def getTopic(self,topicID):
 		response = self.__makeRequest(self.servieAPITopic % topicID)
-		for entrie in json.loads(response.read()).get('_embedded').get('video_items'):
+		for entrie in json.loads(response.read().decode('UTF-8')).get('_embedded').get('video_items'):
 			self.__JSONVideoItem2ListItem(entrie)
 
 
@@ -175,7 +175,7 @@ class serviceAPI(Scraper):
 		responseCode = response.getcode()
 
 		if responseCode == 200:
-			episodes = json.loads(response.read()).get('_embedded').get('items')
+			episodes = json.loads(response.read().decode('UTF-8')).get('_embedded').get('items')
 			if len(episodes) == 1:
 				for episode in episodes:
 					self.getEpisode(episode.get('id'), playlist)
@@ -193,7 +193,7 @@ class serviceAPI(Scraper):
 		playlist.clear()
 
 		response = self.__makeRequest(self.serviceAPIEpisode % episodeID)
-		result = json.loads(response.read())
+		result = json.loads(response.read().decode('UTF-8'))
 
 		image       = self.JSONImage(result.get('_embedded').get('image'))
 		description = result.get('description').encode('UTF-8') if result.get('description') != None else result.get('description')
@@ -221,7 +221,7 @@ class serviceAPI(Scraper):
 			responseCode = error.getcode()
 
 		if responseCode == 200:
-			for topic in json.loads(response.read()).get('_embedded').get('items'):
+			for topic in json.loads(response.read().decode('UTF-8')).get('_embedded').get('items'):
 				title       = topic.get('title').encode('UTF-8')
 				description = topic.get('description')
 				link        = topic.get('id')
@@ -242,7 +242,7 @@ class serviceAPI(Scraper):
 			responseCode = error.getcode()
 
 		if responseCode == 200:
-			for episode in json.loads(response.read())['_embedded']['items']:
+			for episode in json.loads(response.read().decode('UTF-8'))['_embedded']['items']:
 				self.__JSONEpisode2ListItem(episode)
 		else:
 			xbmcgui.Dialog().notification(self.translation(30045).encode('UTF-8'), self.translation(30046).encode('UTF-8'), xbmcaddon.Addon().getAddonInfo('icon'))
@@ -277,7 +277,7 @@ class serviceAPI(Scraper):
 			except RuntimeError:
 				inputstreamAdaptive = False
 
-			for result in json.loads(response.read()).get('_embedded').get('items'):
+			for result in json.loads(response.read().decode('UTF-8')).get('_embedded').get('items'):
 				description     = result.get('description')
 				programName     = result.get('_embedded').get('channel').get('name')
 				livestreamStart = time.strptime(result.get('start')[0:19], '%Y-%m-%dT%H:%M:%S')
@@ -312,7 +312,7 @@ class serviceAPI(Scraper):
 			responseCode = error.getcode()
 
 		if responseCode == 200:
-			result = json.loads(response.read())
+			result = json.loads(response.read().decode('UTF-8'))
 
 			title       = result.get('title').encode('UTF-8')
 			image       = self.JSONImage(result.get('_embedded').get('image'))
@@ -344,7 +344,7 @@ class serviceAPI(Scraper):
 			responseCode = error.getcode()
 
 		if responseCode == 200:
-			result = json.loads(response.read())
+			result = json.loads(response.read().decode('UTF-8'))
 
 			title       = result.get('title').encode('UTF-8')
 			image       = self.JSONImage(result.get('_embedded').get('image'))
@@ -358,7 +358,7 @@ class serviceAPI(Scraper):
 				bitmovinStreamId = bitmovinStreamId.replace("https://playerapi-restarttv.ors.at/livestreams/","").replace("/sections/","")
 				bitmovinStreamId = bitmovinStreamId.split("?")[0]
 			response = urllib2.urlopen('https://playerapi-restarttv.ors.at/livestreams/%s/sections/?state=active&X-Api-Key=%s' % (bitmovinStreamId, ApiKey)) # nosec
-			section = json.loads(response.read())[0]
+			section = json.loads(response.read().decode('UTF-8'))[0]
 
 			streamingURL = 'https://playerapi-restarttv.ors.at/livestreams/%s/sections/%s/manifests/hls/?startTime=%s&X-Api-Key=%s' % (bitmovinStreamId, section.get('id'), section.get('metaData').get('timestamp'), ApiKey)
 

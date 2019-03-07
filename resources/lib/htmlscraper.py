@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import json
+import simplejson as json
 import sys
 import time
 import urllib
