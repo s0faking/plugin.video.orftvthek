@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import simplejson as json
 import sys
 import time
 import urllib
 import urllib2
+
+import simplejson as json
 import xbmcaddon
 import xbmcgui
 

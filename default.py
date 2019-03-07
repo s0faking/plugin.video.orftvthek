@@ -5,22 +5,21 @@ import os.path
 import socket
 import sys
 import urllib
+
+import CommonFunctions as common
+try:
+   import StorageServer
+except ImportError:
+   import storageserverdummy as StorageServer
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
-
-import CommonFunctions as common
 
 from resources.lib.base import *
 from resources.lib.helpers import *
 from resources.lib.serviceapi import *
 from resources.lib.htmlscraper import *
 from resources.lib.Scraper import *
-
-try:
-   import StorageServer
-except ImportError:
-   import storageserverdummy as StorageServer
 
 socket.setdefaulttimeout(30)
 cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)

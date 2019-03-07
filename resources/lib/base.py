@@ -5,13 +5,13 @@ import os
 import re
 import sys
 import urllib
+
+import simplejson as json
 import xbmc
 import xbmcgui
 import xbmcplugin
 
-import simplejson as json
 from . import Settings
-
 from .helpers import *
 
 def addDirectory(title,banner,backdrop, description,link,mode,pluginhandle):
