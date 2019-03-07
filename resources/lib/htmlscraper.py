@@ -1,11 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from future.standard_library import install_aliases
+install_aliases()
+
 import datetime
 import sys
 import time
-import urllib
-import urllib2
+import urllib.error
+import urllib.parse
+import urllib.request
 
 import CommonFunctions as common
 import simplejson as json
@@ -76,7 +80,7 @@ class htmlScraper(Scraper):
 
     # Parses Basic Table Layout Page
     def getTableResults(self,url):
-        url = urllib.unquote(url)
+        url = urllib.parse.unquote(url)
         html = common.fetchPage({'link': url})
         items = common.parseDOM(html.get("content"),name='article',attrs={'class': "item.*?"},ret=False)
 
@@ -104,12 +108,12 @@ class htmlScraper(Scraper):
 
             parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
 
-            url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
             self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
 
 
     def openArchiv(self,url):
-        url = self.__urlBase + urllib.unquote(url)
+        url = self.__urlBase + urllib.parse.unquote(url)
         html = common.fetchPage({'link': url})
         teasers = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'})
         teasers_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'},ret="href")
@@ -135,7 +139,7 @@ class htmlScraper(Scraper):
             banner = common.replaceHTMLCodes(banner[1]).encode("utf-8")
 
             parameters = {"link" : link, "banner" : banner, "mode" : "openSeries"}
-            url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
             self.html2ListItem(title,banner,"",description,"","","",url,None,True, False);
 
 
@@ -160,7 +164,7 @@ class htmlScraper(Scraper):
             image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
 
             parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
-            url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
             if not link.startswith(self.__urlLive) and not link.startswith(self.__urlLive.replace('http:','https:')):
                 self.html2ListItem(title,image,"",desc,"","","",url,None,True, False)
             else:
@@ -189,13 +193,13 @@ class htmlScraper(Scraper):
             image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
 
             parameters = {"link" : link, "banner" : image, "mode" : "getSendungenDetail"}
-            url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
             self.html2ListItem(title,image,"", None,"","","",url,None,True, False);
 
     # Parses Details for the selected Show
     def getCategoriesDetail(self,category,banner):
-        url =  urllib.unquote(category)
-        banner =  urllib.unquote(banner)
+        url =  urllib.parse.unquote(category)
+        banner =  urllib.parse.unquote(banner)
         html = common.fetchPage({'link': url})
 
         try:
@@ -224,7 +228,7 @@ class htmlScraper(Scraper):
                 except:
                     current_desc = None
                 parameters = {"link" :  current_link, "banner" : banner,"mode" : "openSeries"}
-                url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+                url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
                 self.html2ListItem(current_title,banner,"",current_desc,"","","",url,None,True, False);
             else:
                 self.html2ListItem((self.translation(30014)).encode('UTF-8'),self.defaultbanner,"","","","","","",None,True, False);
@@ -249,7 +253,7 @@ class htmlScraper(Scraper):
                 except:
                     desc = None
                 parameters = {"link" :  link[0], "banner" : banner, "mode" : "openSeries"}
-                url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+                url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
                 self.html2ListItem(title,banner,"",desc,"","","",url,None,True, False);
 
     # Parses "Sendung verpasst?" Date Listing
@@ -278,7 +282,7 @@ class htmlScraper(Scraper):
             title = day + " - " + date
 
             parameters = {"link" : link, "mode" : "getScheduleDetail"}
-            url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
             self.html2ListItem(title,"","","","",date,"",url,None,True, False);
 
     def getArchiv(self):
@@ -303,7 +307,7 @@ class htmlScraper(Scraper):
                 description = common.replaceHTMLCodes(description[0]).encode('UTF-8')
 
                 parameters = {"link" : link, "mode" : "getArchiveDetail"}
-                url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+                url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
                 self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
 
     # Creates a XBMC List Item
@@ -330,10 +334,10 @@ class htmlScraper(Scraper):
 
     # Parses a Video Page and extracts the Playlist/Description/...
     def getLinks(self,url,banner,playlist):
-        url = str(urllib.unquote(url))
+        url = str(urllib.parse.unquote(url))
         debugLog("Loading Videos from %s" % url,'Info')
         if banner != None:
-            banner = urllib.unquote(banner)
+            banner = urllib.parse.unquote(banner)
 
         html = common.fetchPage({'link': url})
         data = common.parseDOM(html.get("content"),name='div',attrs={'class': "jsb_ jsb_VideoPlaylist"},ret='data-jsb')
@@ -534,7 +538,7 @@ class htmlScraper(Scraper):
             channel     = stream_info['channel']
 
             ApiKey = '2e9f11608ede41f1826488f1e23c4a8d'
-            response = urllib2.urlopen('https://playerapi-restarttv.ors.at/livestreams/%s/sections/?state=active&X-Api-Key=%s' % (bitmovinStreamId, ApiKey)) # nosec
+            response = urllib.request.urlopen('https://playerapi-restarttv.ors.at/livestreams/%s/sections/?state=active&X-Api-Key=%s' % (bitmovinStreamId, ApiKey)) # nosec
             section = json.loads(response.read())[0]
 
             streamingURL = 'https://playerapi-restarttv.ors.at/livestreams/%s/sections/%s/manifests/hls/?startTime=%s&X-Api-Key=%s' % (bitmovinStreamId, section.get('id'), section.get('metaData').get('timestamp'), ApiKey)
@@ -653,12 +657,12 @@ class htmlScraper(Scraper):
                     description += "* "+common.replaceHTMLCodes(desc).encode('UTF-8') + "\n"
 
                 parameters = {"link" : link, "mode" : "getThemenDetail"}
-                url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+                url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
                 self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
 
     # Parses the Archive Detail Page
     def getArchiveDetail(self,url):
-        url = urllib.unquote(url)
+        url = urllib.parse.unquote(url)
         html = common.fetchPage({'link': url})
         html_content = html.get("content")
 
@@ -694,12 +698,12 @@ class htmlScraper(Scraper):
             desc = "%s - (%s) \n%s" % (str(date),str(time).strip(),str(desc))
 
             parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
-            url = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
             self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
 
     def getSearchHistory(self):
         parameters = {'mode' : 'getSearchResults'}
-        u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+        u = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
         createListItem((self.translation(30007)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, False, True, self.defaultbackdrop,self.pluginhandle,None)
 
         cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
@@ -708,7 +712,7 @@ class htmlScraper(Scraper):
         for str_val in reversed(some_dict):
             if str_val.strip() != '':
                 parameters = {'mode' : 'getSearchResults','link' : str_val.replace(" ","+")}
-                u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+                u = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
                 createListItem(str_val.encode('UTF-8'), self.defaultbanner, "", "", "", '', u, False, True, self.defaultbackdrop,self.pluginhandle,None)
 
     @staticmethod
@@ -729,5 +733,5 @@ class htmlScraper(Scraper):
             self.getTableResults(searchurl)
         else:
             parameters = {'mode' : 'getSearchHistory'}
-            u = sys.argv[0] + '?' + urllib.urlencode(parameters)
+            u = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
             createListItem((self.translation(30014)).encode("utf-8")+" ...", self.defaultbanner, "", "", "", '', u, False, True, self.defaultbackdrop,self.pluginhandle,None)
