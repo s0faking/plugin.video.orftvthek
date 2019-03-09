@@ -1,15 +1,20 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from future.standard_library import install_aliases
+install_aliases()
+
 import os.path
 import socket
 import sys
-import urllib
+import urllib.error
+import urllib.parse
+import urllib.request
+
+import CommonFunctions as common
 import xbmcaddon
 import xbmcgui
 import xbmcplugin
-
-import CommonFunctions as common
 
 from resources.lib.base import *
 from resources.lib.helpers import *
@@ -17,13 +22,7 @@ from resources.lib.serviceapi import *
 from resources.lib.htmlscraper import *
 from resources.lib.Scraper import *
 
-try:
-   import StorageServer
-except ImportError:
-   import storageserverdummy as StorageServer
-
 socket.setdefaulttimeout(30)
-cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
 
 plugin = "ORF-TVthek-" + xbmcaddon.Addon().getAddonInfo('version')
 
@@ -84,7 +83,7 @@ link=params.get('link')
 if mode:
     debugLog("Mode: %s" % mode,'Info')
 if link:
-    debugLog("Link: %s" % urllib.unquote(link),'Info')
+    debugLog("Link: %s" % urllib.parse.unquote(link),'Info')
 
 
 def getMainMenu():
@@ -128,13 +127,13 @@ if mode == 'openSeries':
         listCallback(False,pluginhandle)
         ok = xbmcgui.Dialog().yesno((translation(30047)).encode("utf-8"),(translation(30048)).encode("utf-8"))
         if ok:
-            debugLog("Starting Playlist for %s" % urllib.unquote(link),'Info')
+            debugLog("Starting Playlist for %s" % urllib.parse.unquote(link),'Info')
             tvthekplayer.play(playlist)               
     else:
         debugLog("Running Listcallback from no autoplay openseries","Info")
         listCallback(False,pluginhandle)
 elif mode == 'unblacklistShow':
-    heading = translation(30040).encode('UTF-8') % urllib.unquote(link).replace('+', ' ').strip()
+    heading = translation(30040).encode('UTF-8') % urllib.parse.unquote(link).replace('+', ' ').strip()
     if xbmcgui.Dialog().yesno(heading, heading):
         unblacklistItem(link)
         xbmc.executebuiltin('Container.Refresh')
@@ -187,13 +186,13 @@ elif mode == 'openTrailers':
     scraper.getTrailers()
     listCallback(False,pluginhandle)
 elif mode == 'getSearchHistory':
-    scraper.getSearchHistory(cache);
+    scraper.getSearchHistory();
     listCallback(False,pluginhandle)
 elif mode == 'getSearchResults':
     if not link == None:
-        scraper.getSearchResults(urllib.unquote(link),cache)
+        scraper.getSearchResults(urllib.parse.unquote(link))
     else:
-        scraper.getSearchResults("",cache)
+        scraper.getSearchResults("")
     listCallback(False,pluginhandle)
 elif mode == 'openDate':
     scraper.getDate(link, params.get('from'))
