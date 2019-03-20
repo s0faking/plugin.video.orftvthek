@@ -60,6 +60,10 @@ class htmlScraper(Scraper):
 
 	def getTips(self):
 		self.getTableResults(self.__urlTips)
+		
+	# Parses the Frontpage Carousel
+	def getHighlights(self):
+		self.getTeaserSlideshow(self.__urlBase)
 
 	# Extracts VideoURL from JSON String
 	def getVideoUrl(self,sources):
@@ -178,6 +182,37 @@ class htmlScraper(Scraper):
 
 			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
 			self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
+			
+	# Parses a teaser slideshow
+	def getTeaserSlideshow(self,url):
+		url = urllib.parse.unquote(url)
+		html = common.fetchPage({'link': url})
+		container = common.parseDOM(html.get("content"),name='main',attrs={'class': "main"},ret=False)
+		teasers = common.parseDOM(container,name='ul',attrs={'class': "stage-item-list.*?"},ret=False)
+		items = common.parseDOM(teasers,name='li',attrs={'class': "stage-item.*?"},ret=False)
+
+		for item in items:
+			subtitle = common.parseDOM(item,name='h2',attrs={'class': "stage-item-profile-title"},ret=False)
+			subtitle = common.replaceHTMLCodes(subtitle[0]).encode('UTF-8')			
+			
+			title = common.parseDOM(item,name='h3',attrs={'class': "stage-item-teaser-title"},ret=False)
+			title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+			
+			figure = common.parseDOM(item,name='figure',attrs={'class':'stage-item-img'},ret=False)
+			image = common.parseDOM(figure,name='img',attrs={},ret='src')
+			image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
+			
+			link = common.parseDOM(item,name='a',attrs={},ret='href')
+			link = link[0].encode('UTF-8')
+			
+			#Reformat Title
+			if subtitle != title:
+				title = "%s | %s" % (subtitle,title)
+
+			parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
+
+			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
+			self.html2ListItem(title,image,"","","","","",url,None,True, False);
 
 
 	def openArchiv(self,url):
@@ -209,39 +244,6 @@ class htmlScraper(Scraper):
 			parameters = {"link" : link, "banner" : banner, "mode" : "openSeries"}
 			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
 			self.html2ListItem(title,banner,"",description,"","","",url,None,True, False);
-
-
-	# Parses the Frontpage Carousel
-	def getHighlights(self):
-		html = common.fetchPage({'link': self.__urlBase})
-		html_content = html.get("content")
-		teaserbox = common.parseDOM(html_content,name='a',attrs={'class': 'item_inner'})
-		teaserbox_href = common.parseDOM(html_content,name='a',attrs={'class': 'item_inner'},ret="href")
-
-		i = 0
-		for teasers in teaserbox:
-			link = teaserbox_href[i]
-			i = i+1
-			title = common.parseDOM(teasers,name='h3',attrs={'class': 'item_title'})
-			title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
-
-			desc = common.parseDOM(teasers,name='div',attrs={'class': 'item_description'})
-			desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
-
-			image = common.parseDOM(teasers,name='img',ret="src")
-			image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
-
-			parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
-			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
-			if not link.startswith(self.__urlLive) and not link.startswith(self.__urlLive.replace('http:','https:')):
-				self.html2ListItem(title,image,"",desc,"","","",url,None,True, False)
-			else:
-				live_html = common.fetchPage({'link': link})
-				if self.getLivestreamBitmovinID(live_html):
-					live_restart = True
-				else:
-					live_restart = False
-				self.buildLivestream(title,link,"",False,live_restart,"","",image)
 
 	# Parses the Frontpage Show Overview Carousel
 	def getCategories(self):
@@ -730,44 +732,7 @@ class htmlScraper(Scraper):
 
 	# Parses the Archive Detail Page
 	def getArchiveDetail(self,url):
-		url = urllib.parse.unquote(url)
-		html = common.fetchPage({'link': url})
-		html_content = html.get("content")
-
-		content = common.parseDOM(html_content,name='section',attrs={'class':'mod_container_list.*?'})
-
-		topics = common.parseDOM(content,name='article',attrs={'class':'item.*?'})
-
-		for topic in topics:
-			title = common.parseDOM(topic,name='h4',attrs={'class': 'item_title'})
-			title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
-
-			link = common.parseDOM(topic,name='a',ret="href")
-			link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
-
-			image = common.parseDOM(topic,name='img',ret="src")
-			if len(image) > 0:
-				image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
-			else:
-				image = self.defaultbanner
-
-			desc = common.parseDOM(topic,name='div',attrs={'class':'item_description'})
-			if len(desc) > 0:
-				desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
-			else:
-				desc = ''
-
-			date = common.parseDOM(topic,name='time')
-			date = common.replaceHTMLCodes(date[0]).encode('UTF-8')
-
-			time = common.parseDOM(topic,name='span',attrs={'class':'meta.meta_duration'})
-			time = common.replaceHTMLCodes(time[0]).encode('UTF-8')
-
-			desc = "%s - (%s) \n%s" % (str(date),str(time).strip(),str(desc))
-
-			parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
-			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
-			self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
+		self.getTeaserList(url)
 
 	def getSearchHistory(self):
 		parameters = {'mode' : 'getSearchResults'}
