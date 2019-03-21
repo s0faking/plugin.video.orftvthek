@@ -31,7 +31,7 @@ class htmlScraper(Scraper):
 	__urlNewest	 = __urlBase + '/newest'
 	__urlSchedule   = __urlBase + '/schedule'
 	__urlSearch	 = __urlBase + '/search'
-	__urlShows	  = __urlBase + '/profiles/a-z'
+	__urlShows	  = __urlBase + '/profiles'
 	__urlTips	   = __urlBase + '/tips'
 	__urlTopics	 = __urlBase + '/topics'
 	__urlArchive	= __urlBase + '/archive'
@@ -59,7 +59,7 @@ class htmlScraper(Scraper):
 
 
 	def getTips(self):
-		self.getTableResults(self.__urlTips)
+		self.getTeaserList(self.__urlTips)
 		
 	# Parses the Frontpage Carousel
 	def getHighlights(self):
@@ -248,83 +248,174 @@ class htmlScraper(Scraper):
 	# Parses the Frontpage Show Overview Carousel
 	def getCategories(self):
 		html = common.fetchPage({'link': self.__urlShows})
-		html_content = html.get("content")
-
-		content = common.parseDOM(html_content,name='div',attrs={'class':'region_main'})
-		items = common.parseDOM(content,name='article',attrs={'class':'item'})
+		container = common.parseDOM(html.get("content"),name='main',attrs={'class': "main"},ret=False)
+		teasers = common.parseDOM(container,name='div',attrs={'class': "b-profile-results-container.*?"},ret=False)
+		items = common.parseDOM(teasers,name='article',attrs={'class': "b-teaser"},ret=False)
 
 		for item in items:
-			link = common.parseDOM(item,name='a',attrs={'class':'item_inner clearfix'},ret="href")
-			link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
-			title = common.parseDOM(item,name='h4',attrs={'class':'item_title'})
-			title = common.replaceHTMLCodes(title[0]).encode('UTF-8').replace("[","").replace("]","")
+			subtitle = common.parseDOM(item,name='h4',attrs={'class': "profile"},ret=False)
+			subtitle = common.replaceHTMLCodes(subtitle[0]).encode('UTF-8')			
+			
+			title = common.parseDOM(item,name='h5',attrs={'class': "teaser-title.*?"},ret=False)
+			title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+			
+			desc = common.parseDOM(item,name='p',attrs={'class': "description.*?"},ret=False)
+			if len(desc):
+				desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
+			else:
+				desc = ""
+			
+			channel = common.parseDOM(item,name='p',attrs={'class': "channel"},ret=False)
+			if len(channel):
+				channel = common.replaceHTMLCodes(channel[0]).encode('UTF-8')
+			else:
+				channel = ""
+			date = common.parseDOM(item,name='span',attrs={'class':'date'},ret=False)
+			date = date[0].encode('UTF-8')
+			
+			time = common.parseDOM(item,name='span',attrs={'class':'time'},ret=False)
+			time = time[0].encode('UTF-8')
 
-			image = common.parseDOM(item,name='img',ret="src")
+			figure = common.parseDOM(item,name='figure',attrs={'class':'teaser-img'},ret=False)
+			image = common.parseDOM(figure,name='img',attrs={},ret='src')
 			image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
+			
+			link = common.parseDOM(item,name='a',attrs={'class':'teaser-link.*?'},ret='href')
+			link = link[0].encode('UTF-8')
+			
+			date_prefix = self.translation(30009).encode("utf-8")
+			
+			#Reformat
+			if subtitle == title:
+				subtitle = ""
+			else:
+				subtitle = " | [LIGHT]%s[/LIGHT]" % subtitle
+			
+			desc = "[B]%s[/B]%s[CR]%s[CR][CR][I]%s %s - %s[/I]" % (channel,subtitle,desc,date_prefix,date,time)
 
 			parameters = {"link" : link, "banner" : image, "mode" : "getSendungenDetail"}
 			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
-			self.html2ListItem(title,image,"", None,"","","",url,None,True, False);
+			self.html2ListItem(title,image,"", desc,"","","",url,None,True, False);
 
 	# Parses Details for the selected Show
 	def getCategoriesDetail(self,category,banner):
 		url =  urllib.parse.unquote(category)
 		banner =  urllib.parse.unquote(banner)
 		html = common.fetchPage({'link': url})
-
-		try:
-			show = common.parseDOM(html.get("content"),name='h3',attrs={'class': 'video_headline'})
-			showname = common.replaceHTMLCodes(show[0]).encode("utf-8")
-		except:
-			showname = ""
-		playerHeader = common.parseDOM(html.get("content"),name='header',attrs={'class': 'player_header'})
-		bcast_info = common.parseDOM(playerHeader,name='div',attrs={'class': 'broadcast_information'})
-
-		try:
-			current_duration = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta.meta_duration'})
-
-			current_date = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta meta_date'})
-			if len(current_date) > 0:
-				current_date = current_date[0].encode("utf-8")
+		container = common.parseDOM(html.get("content"),name='main',attrs={'class': "main"},ret=False)
+		
+		#Main Episode
+		main_episode_container = common.parseDOM(container,name='section',attrs={'class': "b-video-details.*?"},ret=False)
+			
+		title = common.parseDOM(main_episode_container,name='h2',attrs={'class': "description-title.*?"},ret=False)
+		title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+		
+		subtitle = common.parseDOM(main_episode_container,name='span',attrs={'class': "js-subheadline"},ret=False)
+		if len(subtitle):
+			subtitle = common.replaceHTMLCodes(subtitle[0]).encode('UTF-8')	
+			#Reformat
+			if subtitle == title:
+				subtitle = ""
 			else:
-				current_date = ""
+				subtitle = " | [LIGHT]%s[/LIGHT]" % subtitle		
+		else:
+			subtitle = ""
+		
+				
+		desc = common.parseDOM(main_episode_container,name='p',attrs={'class': "description-text.*?"},ret=False)
+		if len(desc):
+			desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
+		else:
+			desc = ""
+				
+		channel = common.parseDOM(main_episode_container,name='span',attrs={'class': "channel.*?"},ret="aria-label")
+		if len(channel):
+			channel = common.replaceHTMLCodes(channel[0]).encode('UTF-8')
+		else:
+			channel = ""
+			
+		date = common.parseDOM(main_episode_container,name='span',attrs={'class':'date'},ret=False)
+		date = date[0].encode('UTF-8')
+				
+		time = common.parseDOM(main_episode_container,name='span',attrs={'class':'time'},ret=False)
+		time = time[0].encode('UTF-8')
 
-			current_time = common.parseDOM(bcast_info,name='span',attrs={'class': 'meta meta_time'})
-			current_link = url
-			if len(showname) > 0:
-				current_title = "%s - %s" % (showname,current_date)
-				try:
-					current_desc = '%s %s - %s\n%s: %s' % (self.translation(30009), current_date, current_time[0], self.translation(30011), current_duration[0])
-				except:
-					current_desc = None
-				parameters = {"link" :  current_link, "banner" : banner,"mode" : "openSeries"}
-				url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
-				self.html2ListItem(current_title,banner,"",current_desc,"","","",url,None,True, False);
-			else:
-				self.html2ListItem((self.translation(30014)).encode('UTF-8'),self.defaultbanner,"","","","","","",None,True, False);
-		except:
-			self.html2ListItem((self.translation(30014)).encode('UTF-8'),self.defaultbanner,"","","","","","",None,True, False);
+		image = banner
+				
+		date_prefix = self.translation(30009).encode("utf-8")
+				
+		if date != "":
+			title = "%s - %s" % (title,date)
+				
+		desc = "[B]%s[/B]%s[CR][I]%s %s - %s[/I][CR]%s[CR]" % (channel,subtitle,date_prefix,date,time,desc)
 
-		itemwrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper.mod_latest_episodes'})
-		if len(itemwrapper) > 0:
-			items = common.parseDOM(itemwrapper,name='li',attrs={'class': 'base_list_item'})
-			i = 0
+		parameters = {"link" : url, "banner" : image, "mode" : "openSeries"}
+		url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
+		self.html2ListItem(title,image,"", desc,"","","",url,None,True, False);
+		
+		
+		#More Episodes
+		more_episode_container = common.parseDOM(container,name='section',attrs={'class': "related-videos"},ret=False)
+		more_episode_json = common.parseDOM(more_episode_container,name="div",attrs={'class':'more-episodes.*?'},ret='data-jsb')
+		if len(more_episode_json):
+			more_episode_json_raw = common.replaceHTMLCodes(more_episode_json[0]).encode('UTF-8')
+			more_episode_json_data = json.loads(more_episode_json_raw)
+			more_episodes_url = "%s%s" % (self.__urlBase,more_episode_json_data.get('url'))
+			
+			additional_html = common.fetchPage({'link': more_episodes_url})
+
+			items = common.parseDOM(additional_html.get("content"),name='article',attrs={'class': "b-teaser"},ret=False)
+
+			#print(len(items))
 			for item in items:
-				i = i+1
-				duration = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_duration'})
-				date = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_date'})
-				date = date[0].encode("utf-8")
-				time = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_time'})
-				title = common.replaceHTMLCodes(common.parseDOM(item, name='a',ret="title")[0]).encode("utf-8").replace('Sendung ', '')
-				title = "%s - %s" % (title,date)
-				link = common.parseDOM(item,name='a',ret="href");
-				try:
-					desc = '%s %s - %s\n%s: %s' % (self.translation(30009), date, time[0], self.translation(30011), duration[0])
-				except:
-					desc = None
-				parameters = {"link" :  link[0], "banner" : banner, "mode" : "openSeries"}
+				subtitle = common.parseDOM(item,name='h4',attrs={'class': "profile"},ret=False)
+				subtitle = common.replaceHTMLCodes(subtitle[0]).encode('UTF-8')			
+				
+				title = common.parseDOM(item,name='h5',attrs={'class': "teaser-title.*?"},ret=False)
+				title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+				
+				desc = common.parseDOM(item,name='p',attrs={'class': "description.*?"},ret=False)
+				if len(desc):
+					desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
+				else:
+					desc = ""
+				
+				channel = common.parseDOM(item,name='p',attrs={'class': "channel"},ret=False)
+				if len(channel):
+					channel = common.replaceHTMLCodes(channel[0]).encode('UTF-8')
+				else:
+					channel = ""
+				date = common.parseDOM(item,name='span',attrs={'class':'date'},ret=False)
+				date = date[0].encode('UTF-8')
+				
+				time = common.parseDOM(item,name='span',attrs={'class':'time'},ret=False)
+				time = time[0].encode('UTF-8')
+
+				figure = common.parseDOM(item,name='figure',attrs={'class':'teaser-img'},ret=False)
+				image = common.parseDOM(figure,name='img',attrs={},ret='src')
+				image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
+				
+				link = common.parseDOM(item,name='a',attrs={'class':'teaser-link.*?'},ret='href')
+				link = link[0].encode('UTF-8')
+				
+				date_prefix = self.translation(30009).encode("utf-8")
+				
+				#Reformat
+				if subtitle == title:
+					subtitle = ""
+				else:
+					subtitle = " | [LIGHT]%s[/LIGHT]" % subtitle
+					
+				if date != "":
+					title = "%s - %s" % (title,date)
+				
+				desc = "[B]%s[/B]%s[CR][I]%s %s - %s[/I][CR]%s[CR]" % (channel,subtitle,date_prefix,date,time,desc)
+
+				parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
 				url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
-				self.html2ListItem(title,banner,"",desc,"","","",url,None,True, False);
+				self.html2ListItem(title,image,"", desc,"","","",url,None,True, False);
+		
+		
 
 	# Parses "Sendung verpasst?" Date Listing
 	def getSchedule(self):
