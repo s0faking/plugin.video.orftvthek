@@ -34,7 +34,7 @@ class htmlScraper(Scraper):
 	__urlShows	  = __urlBase + '/profiles'
 	__urlTips	   = __urlBase + '/tips'
 	__urlTopics	 = __urlBase + '/topics'
-	__urlArchive	= __urlBase + '/archive'
+	__urlArchive	= __urlBase + '/history'
 
 
 	def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop):
@@ -118,8 +118,7 @@ class htmlScraper(Scraper):
 			link = common.parseDOM(item,name='a',attrs={'class':'teaser-link.*'},ret='href')
 			link = link[0].encode('UTF-8')
 			
-			#Reformat Description
-			desc = (self.translation(30009)).encode("utf-8")+' %s - %s\n%s' % (date,time,desc)
+			desc = self.formatDescription(title,channel,"",desc,date,time)
 			
 			#Reformat Title
 			if date != "":
@@ -168,21 +167,52 @@ class htmlScraper(Scraper):
 			
 			link = common.parseDOM(item,name='a',attrs={'class':'teaser-link.*?'},ret='href')
 			link = link[0].encode('UTF-8')
-			
-			#Reformat Description
-			desc = (self.translation(30009)).encode("utf-8")+' %s - %s\n%s' % (date,time,desc)
-			
-			#Reformat Title
-			if subtitle != title:
-				title = "%s | %s" % (subtitle,title)
-			if date != "":
-				title = "%s - %s" % (title,date)
 
+			desc = self.formatDescription(title,channel,subtitle,desc,date,time)
+			
 			parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
 
 			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
 			self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
+	
+
+	def formatDescription(self,title,channel,subtitle,desc,date,time):
+		date_prefix = self.translation(30009).encode("utf-8")
+		
+		#Reformat Title
+		if subtitle != title:
+			if len(subtitle):
+				title = "%s | %s" % (title,subtitle)
+		if date != "":
+			title = "%s - %s" % (title,date)
+		
+		#Reformat
+		if len(subtitle):
+			if subtitle == title:
+				subtitle = ""
+			else:
+				if len(channel):
+					subtitle = " | [LIGHT]%s[/LIGHT]" % subtitle
+				else:
+					subtitle = "[LIGHT]%s[/LIGHT]" % subtitle
+		else:
+			subtitle = ""
 			
+		if len(desc):
+			desc = "[CR]%s" % desc
+		else:
+			desc = ""
+			
+		if len(channel):
+			channel = "[B]%s[/B]" % channel
+		else:
+			channel = ""
+			
+		if len(date):
+			return "%s%s[CR]%s[CR][I]%s %s - %s[/I]" % (channel,subtitle,desc,date_prefix,date,time)
+		else:
+			return "%s%s[CR]%s" % (channel,subtitle,desc)
+	
 	# Parses a teaser slideshow
 	def getTeaserSlideshow(self,url):
 		url = urllib.parse.unquote(url)
@@ -283,15 +313,7 @@ class htmlScraper(Scraper):
 			link = common.parseDOM(item,name='a',attrs={'class':'teaser-link.*?'},ret='href')
 			link = link[0].encode('UTF-8')
 			
-			date_prefix = self.translation(30009).encode("utf-8")
-			
-			#Reformat
-			if subtitle == title:
-				subtitle = ""
-			else:
-				subtitle = " | [LIGHT]%s[/LIGHT]" % subtitle
-			
-			desc = "[B]%s[/B]%s[CR]%s[CR][CR][I]%s %s - %s[/I]" % (channel,subtitle,desc,date_prefix,date,time)
+			desc = self.formatDescription(title,channel,subtitle,desc,date,time)
 
 			parameters = {"link" : link, "banner" : image, "mode" : "getSendungenDetail"}
 			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
@@ -312,12 +334,7 @@ class htmlScraper(Scraper):
 		
 		subtitle = common.parseDOM(main_episode_container,name='span',attrs={'class': "js-subheadline"},ret=False)
 		if len(subtitle):
-			subtitle = common.replaceHTMLCodes(subtitle[0]).encode('UTF-8')	
-			#Reformat
-			if subtitle == title:
-				subtitle = ""
-			else:
-				subtitle = " | [LIGHT]%s[/LIGHT]" % subtitle		
+			subtitle = common.replaceHTMLCodes(subtitle[0]).encode('UTF-8')		
 		else:
 			subtitle = ""
 		
@@ -341,13 +358,11 @@ class htmlScraper(Scraper):
 		time = time[0].encode('UTF-8')
 
 		image = banner
-				
-		date_prefix = self.translation(30009).encode("utf-8")
-				
+		
 		if date != "":
 			title = "%s - %s" % (title,date)
 				
-		desc = "[B]%s[/B]%s[CR][I]%s %s - %s[/I][CR]%s[CR]" % (channel,subtitle,date_prefix,date,time,desc)
+		desc = self.formatDescription(title,channel,subtitle,desc,date,time)
 
 		parameters = {"link" : url, "banner" : image, "mode" : "openSeries"}
 		url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
@@ -400,16 +415,10 @@ class htmlScraper(Scraper):
 				
 				date_prefix = self.translation(30009).encode("utf-8")
 				
-				#Reformat
-				if subtitle == title:
-					subtitle = ""
-				else:
-					subtitle = " | [LIGHT]%s[/LIGHT]" % subtitle
-					
 				if date != "":
 					title = "%s - %s" % (title,date)
 				
-				desc = "[B]%s[/B]%s[CR][I]%s %s - %s[/I][CR]%s[CR]" % (channel,subtitle,date_prefix,date,time,desc)
+				desc = self.formatDescription(title,channel,subtitle,desc,date,time)
 
 				parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
 				url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
@@ -450,26 +459,32 @@ class htmlScraper(Scraper):
 		html = common.fetchPage({'link': self.__urlArchive})
 		html_content = html.get("content")
 
-		content = common.parseDOM(html_content,name='section',attrs={'class':'mod_archive_items.*?'})
-		archives = common.parseDOM(content,name='article',attrs={'class':'item'})
+		wrapper = common.parseDOM(html_content,name='main',attrs={'class':'main'})
+		items = common.parseDOM(wrapper,name='article',attrs={'class':'b-topic-teaser.*?'})
 
-		for archive in archives:
-			title = common.parseDOM(archive,name='h4',attrs={'class':'item_title'})
-			if title[0]:
-				title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+		for item in items:
+			subtitle = common.parseDOM(item,name='h4',attrs={'class': "sub-headline"},ret=False)
+			subtitle = common.replaceHTMLCodes(subtitle[0]).encode('UTF-8')			
+			
+			title = common.parseDOM(item,name='h5',attrs={'class': "teaser-title.*?"},ret=False)
+			title = common.replaceHTMLCodes(title[0]).encode('UTF-8')		
+			
+			video_count = common.parseDOM(item,name='p',attrs={'class': "topic-video-count"},ret=False)
+			desc = common.replaceHTMLCodes(video_count[0]).encode('UTF-8')
 
-				link = common.parseDOM(archive,name='a',attrs={},ret="href")
-				link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
+			figure = common.parseDOM(item,name='figure',attrs={'class':'teaser-img'},ret=False)
+			image = common.parseDOM(figure,name='img',attrs={},ret='src')
+			image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
+			
+			link = common.parseDOM(item,name='a',ret='href')
+			link = link[0].encode('UTF-8')
 
-				image = common.parseDOM(archive,name='img',ret="src")
-				image = common.replaceHTMLCodes(image[0]).replace("width=395","width=500").replace("height=209.07070707071","height=265").encode('UTF-8')
+			desc = self.formatDescription(title,"",subtitle,desc,"","")
+			
+			parameters = {"link" : link, "banner" : image, "mode" : "getArchiveDetail"}
 
-				description = common.parseDOM(archive,name='div',attrs={'class':'item_description'})
-				description = common.replaceHTMLCodes(description[0]).encode('UTF-8')
-
-				parameters = {"link" : link, "mode" : "getArchiveDetail"}
-				url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
-				self.html2ListItem(title,image,"",description,"","","",url,None,True, False);
+			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
+			self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
 
 	# Creates a XBMC List Item
 	def html2ListItem(self,title,banner,backdrop,description,duration,date,channel,videourl,subtitles=None,folder=True,playable = False,contextMenuItems = None):
@@ -582,61 +597,55 @@ class htmlScraper(Scraper):
 
 	# Returns Live Stream Listing
 	def getLiveStreams(self):
-		channelnames = {}
-		channelnames['ORF1'] = "ORF 1"
-		channelnames['ORF2'] = "ORF 2"
-		channelnames['ORF3'] = "ORF III"
-		channelnames['ORFS'] = "ORF Sport+"
+		html = common.fetchPage({'link': self.__urlBase})
+		wrapper = common.parseDOM(html.get("content"),name='main',attrs={'class': 'main'})
+		section = common.parseDOM(wrapper,name='section',attrs={'class': 'b-live-program.*?'})
+		items = common.parseDOM(section,name='li',attrs={'class': 'channel orf.*?'})
 
-		html = common.fetchPage({'link': self.__urlLive})
-		wrapper = common.parseDOM(html.get("content"),name='div',attrs={'class': 'base_list_wrapper mod_epg'})
-		items = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'})
-		items_class = common.parseDOM(wrapper[0],name='li',attrs={'class': 'base_list_item.program.*?'},ret="class")
-		i = 0
-		for item in items:
-			program = items_class[i].split(" ")[2].encode('UTF-8').upper()
-			i += 1
-			if channelnames[program]:
-				banner = common.parseDOM(item,name='img',ret="src")
-				banner = common.replaceHTMLCodes(banner[0]).encode('UTF-8')
+		for item in items:		
+			channel = common.parseDOM(item,name='img',attrs={'class': 'channel-logo'},ret="alt")
+			channel = common.replaceHTMLCodes(channel[0]).encode('UTF-8')
+			
+			article = common.parseDOM(item,name='article',attrs={'class': 'b-livestream-teaser.*?'})
+			if len(article):
+				figure = common.parseDOM(article,name='figure',attrs={'class':'teaser-img'},ret=False)
+				image = common.parseDOM(figure,name='img',attrs={},ret='data-src')
+				image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
 
-				time_str = common.parseDOM(item,name='span',attrs={'class': 'meta.meta_time'})
-				time_str = common.replaceHTMLCodes(time_str[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
+				time = common.parseDOM(article,name='h4',attrs={'class': 'time'},ret=False)
+				time = common.replaceHTMLCodes(time[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
+				time = common.stripTags(time).encode('UTF-8')
+				
+				title = common.parseDOM(article,name='h4',attrs={'class': 'livestream-title.*?'})
+				title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
 
-				child_list = common.parseDOM(item,name='li',attrs={'class': 'base_list_item.*?'})
-				for child_list_item in child_list:
-					contextMenuItems = []
-					data_sets = common.parseDOM(child_list_item,name='span',attrs={},ret="data-jsb")
-					child_restart = common.parseDOM(child_list_item , name='span',attrs={'class': 'is_restartable.*?'},ret="class")
+				link = common.parseDOM(item,name='a',attrs={'class': 'js-link-box'},ret="href")
+				link = common.replaceHTMLCodes(link[0]).encode('UTF-8')
+				
+				data = common.parseDOM(item,name='a',attrs={'class': 'js-link-box'},ret="data-jsb")
+				data = common.replaceHTMLCodes(data[0]).encode('UTF-8')
+				data = json.loads(data)
+				
+				online = common.parseDOM(article,name='span',attrs={'class': 'status-online'})
+				if len(online):
+					online = True
+				else:
+					online = False		
 					
-					child_list_title = common.parseDOM(child_list_item,name='h4')
-					child_list_title = common.replaceHTMLCodes(child_list_title[0]).encode('UTF-8')
-					
-					child_list_time = common.parseDOM(child_list_item,name='span',attrs={'class': 'meta.meta_time'})
-					child_list_time = common.replaceHTMLCodes(child_list_time[0]).encode('UTF-8').replace("Uhr","").replace(".",":").strip()
-					if child_list_time == time_str:
-						child_list_link = common.parseDOM(child_list_item,name='a',attrs={'class': 'base_list_item_inner'},ret="href")
-						if len(child_list_link):
-							child_list_link = common.replaceHTMLCodes(child_list_link[0])
-							self.buildLivestream(child_list_title,child_list_link,child_list_time,data_sets,child_restart,channelnames,program,banner)
-						else:
-							debugLog("Bundesland Heute found.","Info")
-							bundesland_list_link_containers = common.parseDOM(child_list_item,name='li',attrs={'class': 'federal_state.*?'})
-							if len(bundesland_list_link_containers):
-								for bundesland_list_link_container in bundesland_list_link_containers:
-									bundesland_list_link = common.parseDOM(bundesland_list_link_container,name='a',attrs={},ret='href')
-									bundesland_list_link = common.replaceHTMLCodes(bundesland_list_link[0])
-									bundesland_list_title_suffix = common.parseDOM(bundesland_list_link_container,name='a',attrs={})
-									bundesland_list_title = "%s [%s]" % (child_list_title, bundesland_list_title_suffix[0].encode('UTF-8').upper())
-									self.buildLivestream(bundesland_list_title,bundesland_list_link,child_list_time,False,child_restart,channelnames,program,banner)
+				restart = common.parseDOM(article,name='span',attrs={'class': 'is-restartable'})
+				if len(restart):
+					restart = True
+				else:
+					restart = False
+				
+				self.buildLivestream(title,link,time,restart,channel,image,online)
+				
+	def buildLivestream(self,title,link,time,restart,channel,banner,online):
+		html = common.fetchPage({'link': link})
+		container = common.parseDOM(html.get("content"),name='div',attrs={'class': "player_viewport.*?"})
+		data = common.parseDOM(container[0],name='div',attrs={},ret="data-jsb")
 
-	def buildLivestream(self,title,link,time,data,restart,channelnames,program,banner):
-		if not data:
-			html = common.fetchPage({'link': link})
-			container = common.parseDOM(html.get("content"),name='div',attrs={'class': "player_viewport.*?"})
-			data = common.parseDOM(container[0],name='div',attrs={},ret="data-jsb")
-	
-		if self.getBroadcastState(time):
+		if online:
 			state = (self.translation(30019)).encode("utf-8")
 		else:
 			state = (self.translation(30020)).encode("utf-8")
@@ -652,10 +661,10 @@ class htmlScraper(Scraper):
 		except RuntimeError:
 			inputstreamAdaptive = False
 		
-		if channelnames and program:
-			channel_id = "[%s]" % channelnames[program]
+		if channel:
+			channel = "[%s]" % channel
 		else:
-			channel_id = "LIVE"
+			channel = "LIVE"
 
 		
 		uhd_streaming_url = self.getLivestreamUrl(data,'uhdbrowser')
@@ -664,19 +673,19 @@ class htmlScraper(Scraper):
 			uhdContextMenuItems = []
 			if inputstreamAdaptive and restart:
 				uhdContextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), link)))
-				uhd_final_title = "[Restart]%s[UHD] - %s%s" % (channel_id,title,time_str)
+				uhd_final_title = "[Restart]%s[UHD] - %s%s" % (channel,title,time_str)
 			else:
-				uhd_final_title = "%s[UHD] - %s%s" % (channel_id,title,time_str)
-			self.html2ListItem(uhd_final_title ,banner,"",state,time,program,program, generateAddonVideoUrl(uhd_streaming_url),None,False, True, uhdContextMenuItems)
+				uhd_final_title = "%s[UHD] - %s%s" % (channel,title,time_str)
+			self.html2ListItem(uhd_final_title ,banner,"",state,time,channel,channel, generateAddonVideoUrl(uhd_streaming_url),None,False, True, uhdContextMenuItems)
 						
 		streaming_url = self.getLivestreamUrl(data,self.videoQuality)
 		contextMenuItems = []
 		if inputstreamAdaptive and restart:
 			contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), link)))
-			final_title = "[Restart]%s - %s%s" % (channel_id,title,time_str)
+			final_title = "[Restart]%s - %s%s" % (channel,title,time_str)
 		else:
-			final_title = "%s - %s%s" % (channel_id,title,time_str)
-		self.html2ListItem(final_title,banner,"",state,time,program,program, generateAddonVideoUrl(streaming_url),None,False, True,contextMenuItems)
+			final_title = "%s - %s%s" % (channel,title,time_str)
+		self.html2ListItem(final_title,banner,"",state,time,channel,channel, generateAddonVideoUrl(streaming_url),None,False, True,contextMenuItems)
 					
 	def liveStreamRestart(self, link):
 		try:
@@ -690,7 +699,6 @@ class htmlScraper(Scraper):
 		stream_info = self.getLivestreamInformation(html)
 
 		if bitmovinStreamId:
-
 			title	   = stream_info['title']
 			image	   = stream_info['image']
 			description = stream_info['description']
@@ -699,15 +707,18 @@ class htmlScraper(Scraper):
 			channel	 = stream_info['channel']
 
 			ApiKey = '2e9f11608ede41f1826488f1e23c4a8d'
-			response = urllib.request.urlopen('https://playerapi-restarttv.ors.at/livestreams/%s/sections/?state=active&X-Api-Key=%s' % (bitmovinStreamId, ApiKey)) # nosec
-			section = json.loads(response.read())[0]
+			response = urllib.request.urlopen('https://playerapi-restarttv.ors.at/livestreams/%s/sections/?state=active&X-Api-Key=%s' % (bitmovinStreamId, ApiKey)) 
+			response_raw = response.read().decode(response.headers.get_content_charset())
+			
+			section = json.loads(response_raw)
+			if len(section):
+				section = section[0]
+				streamingURL = 'https://playerapi-restarttv.ors.at/livestreams/%s/sections/%s/manifests/hls/?startTime=%s&X-Api-Key=%s' % (bitmovinStreamId, section.get('id'), section.get('metaData').get('timestamp'), ApiKey)
 
-			streamingURL = 'https://playerapi-restarttv.ors.at/livestreams/%s/sections/%s/manifests/hls/?startTime=%s&X-Api-Key=%s' % (bitmovinStreamId, section.get('id'), section.get('metaData').get('timestamp'), ApiKey)
-
-			listItem = createListItem(title, image, description, duration, date, channel , streamingURL, True, False, self.defaultbackdrop, self.pluginhandle)
-			listItem.setProperty('inputstreamaddon', 'inputstream.adaptive')
-			listItem.setProperty('inputstream.adaptive.manifest_type', 'hls')
-			self.xbmc.Player().play(streamingURL, listItem)
+				listItem = createListItem(title, image, description, duration, date, channel , streamingURL, True, False, self.defaultbackdrop, self.pluginhandle)
+				listItem.setProperty('inputstreamaddon', 'inputstream.adaptive')
+				listItem.setProperty('inputstream.adaptive.manifest_type', 'hls')
+				self.xbmc.Player().play(streamingURL, listItem)
 
 	@staticmethod
 	def getLivestreamUrl(data_sets,quality):
@@ -734,7 +745,9 @@ class htmlScraper(Scraper):
 					try:
 						data = common.replaceHTMLCodes(data)
 						data = json.loads(data)
+						
 						if 'restart_url' in data:
+							print(data)
 							bitmovin_id = data['restart_url'].replace("https://playerapi-restarttv.ors.at/livestreams/","").replace("/sections/","")
 							return bitmovin_id.split("?")[0]
 					except:
@@ -823,7 +836,47 @@ class htmlScraper(Scraper):
 
 	# Parses the Archive Detail Page
 	def getArchiveDetail(self,url):
-		self.getTeaserList(url)
+		url = urllib.parse.unquote(url)
+		html = common.fetchPage({'link': url})
+		html_content = html.get("content")
+
+		wrapper = common.parseDOM(html_content,name='main',attrs={'class':'main'})
+		items = common.parseDOM(wrapper,name='article',attrs={'class':'b-teaser.*?'})
+
+		for item in items:
+			subtitle = common.parseDOM(item,name='h4',attrs={'class': "profile"},ret=False)
+			subtitle = common.replaceHTMLCodes(subtitle[0]).encode('UTF-8')			
+			
+			title = common.parseDOM(item,name='h5',attrs={'class': "teaser-title.*?"},ret=False)
+			title = common.replaceHTMLCodes(title[0]).encode('UTF-8')		
+			
+			desc = common.parseDOM(item,name='p',attrs={'class': "description.*?"},ret=False)
+			desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
+			
+			figure = common.parseDOM(item,name='figure',attrs={'class':'teaser-img'},ret=False)
+			image = common.parseDOM(figure,name='img',attrs={},ret='src')
+			image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
+			
+			link = common.parseDOM(item,name='a',ret='href')
+			link = link[0].encode('UTF-8')
+			
+			channel = common.parseDOM(item,name='p',attrs={'class': "channel"},ret=False)
+			if len(channel):
+				channel = common.replaceHTMLCodes(channel[0]).encode('UTF-8')
+			else:
+				channel = ""
+				
+			date = common.parseDOM(item,name='span',attrs={'class':'date'},ret=False)
+			date = date[0].encode('UTF-8')
+				
+			time = common.parseDOM(item,name='span',attrs={'class':'time'},ret=False)
+			time = time[0].encode('UTF-8')
+
+			desc = self.formatDescription(title,channel,subtitle,desc,date,time)
+			
+			parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
+			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
+			self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
 
 	def getSearchHistory(self):
 		parameters = {'mode' : 'getSearchResults'}
