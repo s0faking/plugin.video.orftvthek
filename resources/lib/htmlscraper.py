@@ -82,19 +82,24 @@ class htmlScraper(Scraper):
 		else:
 			return title[2].replace("-"," ")
 
-	# Parses Basic Table Layout Page
-	def getTableResults(self,url):
+	# Parses Result Layout Page
+	def getResultList(self,url):
 		url = urllib.parse.unquote(url)
 		html = common.fetchPage({'link': url})
 		container = common.parseDOM(html.get("content"),name='main',attrs={'class': "main"},ret=False)
-		teasers = common.parseDOM(container,name='ul',attrs={'class': "b-teasers-list"},ret=False)
+		teasers = common.parseDOM(container,name='section',attrs={'class': "b-search-results"},ret=False)
+		teasers = common.parseDOM(container,name='section',attrs={'class': "b-search-results"},ret=False)
 		items = common.parseDOM(teasers,name='article',attrs={'class': "b-teaser"},ret=False)
-
+		print(url)
+		print(len(items))
 		for item in items:
-			title = common.parseDOM(item,name='h4',attrs={'class': "profile"},ret=False)
+			subtitle = common.parseDOM(item,name='h4',attrs={'class': "profile"},ret=False)
+			subtitle = common.replaceHTMLCodes(subtitle[0]).encode('UTF-8')			
+			
+			title = common.parseDOM(item,name='h5',attrs={'class': "teaser-title.*?"},ret=False)
 			title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
 			
-			desc = common.parseDOM(item,name='p',attrs={'class': "description"},ret=False)
+			desc = common.parseDOM(item,name='p',attrs={'class': "description.*?"},ret=False)
 			if len(desc):
 				desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
 			else:
@@ -115,15 +120,11 @@ class htmlScraper(Scraper):
 			image = common.parseDOM(figure,name='img',attrs={},ret='src')
 			image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
 			
-			link = common.parseDOM(item,name='a',attrs={'class':'teaser-link.*'},ret='href')
+			link = common.parseDOM(item,name='a',attrs={'class':'teaser-link.*?'},ret='href')
 			link = link[0].encode('UTF-8')
-			
-			desc = self.formatDescription(title,channel,"",desc,date,time)
-			
-			#Reformat Title
-			if date != "":
-				title = "%s - %s" % (title,date)
 
+			desc = self.formatDescription(title,channel,subtitle,desc,date,time)
+			
 			parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
 
 			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
@@ -173,7 +174,7 @@ class htmlScraper(Scraper):
 			parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
 
 			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
-			self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
+			self.html2ListItem(title,image,"",desc,"","","",url,None,True, False)
 	
 
 	def formatDescription(self,title,channel,subtitle,desc,date,time):
@@ -246,34 +247,55 @@ class htmlScraper(Scraper):
 
 
 	def openArchiv(self,url):
-		url = self.__urlBase + urllib.parse.unquote(url)
+		url = urllib.parse.unquote(url)
 		html = common.fetchPage({'link': url})
-		teasers = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'})
-		teasers_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'item_inner.clearfix'},ret="href")
+		container = common.parseDOM(html.get("content"),name='main',attrs={'class': "main"},ret=False)
+		teasers = common.parseDOM(container,name='div',attrs={'class': "b-schedule-list"},ret=False)
+		items = common.parseDOM(teasers,name='article',attrs={'class': "b-schedule-episode.*?"},ret=False)
+		
+		date = common.parseDOM(teasers,name='h2',attrs={'class':'day-title.*?'},ret=False)
+		if len(date):
+			date = date[0].encode('UTF-8')
+		else:
+			date = ""
 
-		i = 0
-		for teaser in teasers:
-			link = teasers_href[i]
-			i = i+1
+		for item in items:	
+			title = common.parseDOM(item,name='h4',attrs={'class': "item-title.*?"},ret=False)
+			title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+			
+			desc = common.parseDOM(item,name='div',attrs={'class': "item-description.*?"},ret=False)
+			if len(desc):
+				desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
+				desc = common.stripTags(desc)
+			else:
+				desc = ""
+			
+			channel = common.parseDOM(item,name='span',attrs={'class': "small-information.meta.meta-channel-name"},ret=False)
+			if len(channel):
+				channel = common.replaceHTMLCodes(channel[0]).encode('UTF-8')
+			else:
+				channel = ""
+			
+			time = common.parseDOM(item,name='span',attrs={'class':'meta.meta-time'},ret=False)
+			time = time[0].encode('UTF-8')
+			
+			title = "[%s] %s" % (time,title)
+			
+			subtitle = time
 
-			title = common.parseDOM(teaser,name='h4',attrs={'class': "item_title"},ret=False)
-			title = common.replaceHTMLCodes(title[0]).encode("utf-8")
+			figure = common.parseDOM(item,name='figure',attrs={'class':'episode-image'},ret=False)
+			image = common.parseDOM(figure,name='img',attrs={},ret='src')
+			image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
+			
+			link = common.parseDOM(item,name='a',attrs={'class':'episode-content'},ret='href')
+			link = link[0].encode('UTF-8')
 
-			time = common.parseDOM(teaser,name='span',attrs={'class': "meta.meta_time"},ret=False)
-			time = common.replaceHTMLCodes(time[0]).encode("utf-8")
+			desc = self.formatDescription(title,channel,subtitle,desc,date,time)
+			
+			parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
 
-			title = "["+time+"] "+title
-
-			description = common.parseDOM(teaser,name='div',attrs={'class': "item_description"},ret=False)
-			if len(description) > 0 :
-				description = common.replaceHTMLCodes(description[0])
-
-			banner = common.parseDOM(teaser.replace('>"', '"'), name='img', ret='src')
-			banner = common.replaceHTMLCodes(banner[1]).encode("utf-8")
-
-			parameters = {"link" : link, "banner" : banner, "mode" : "openSeries"}
 			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
-			self.html2ListItem(title,banner,"",description,"","","",url,None,True, False);
+			self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
 
 	# Parses the Frontpage Show Overview Carousel
 	def getCategories(self):
@@ -429,31 +451,23 @@ class htmlScraper(Scraper):
 	# Parses "Sendung verpasst?" Date Listing
 	def getSchedule(self):
 		html = common.fetchPage({'link': self.__urlSchedule})
-		articles = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'})
-		articles_href = common.parseDOM(html.get("content"),name='a',attrs={'class': 'day_wrapper'},ret="href")
+		container = common.parseDOM(html.get("content"),name='div',attrs={'class': 'b-select-box.*?'})
+		list_container = common.parseDOM(container,name='select',attrs={'class': 'select-box-list.*?'})
+		items = common.parseDOM(list_container,name='option',attrs={'class': 'select-box-item.*?'})
+		data_items = common.parseDOM(list_container,name='option',attrs={'class': 'select-box-item.*?'},ret="data-custom-properties")
 		i = 0
+		for item in items:
+			title = common.replaceHTMLCodes(item).encode('UTF-8')
+			link = common.replaceHTMLCodes(data_items[i]).encode('UTF-8')
+			link = "%s%s" % (self.__urlBase,link)
 
-		for article in articles:
-			link = articles_href[i]
-			i = i+1
-
-			day = common.parseDOM(article,name='strong',ret=False)
-			if len(day) > 0:
-				day = day[0].encode("utf-8")
-			else:
-				day = ''
-
-			date = common.parseDOM(article,name='small',ret=False)
-			if len(date) > 0:
-				date = date[0].encode("utf-8")
-			else:
-				date = ''
-
-			title = day + " - " + date
+			print("Titel: %s" % title)
+			print("Link: %s" % link)
 
 			parameters = {"link" : link, "mode" : "getScheduleDetail"}
 			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
-			self.html2ListItem(title,"","","","",date,"",url,None,True, False);
+			self.html2ListItem(title,"","","","","","",url,None,True, False);
+			i = i+1
 
 	def getArchiv(self):
 		html = common.fetchPage({'link': self.__urlArchive})
@@ -907,7 +921,7 @@ class htmlScraper(Scraper):
 				some_dict = cache.get("searches") + "|"+keyboard_in
 				cache.set("searches",some_dict);
 			searchurl = "%s?q=%s"%(self.__urlSearch,keyboard_in.replace(" ","+"))
-			self.getTableResults(searchurl)
+			self.getResultList(searchurl)
 		else:
 			parameters = {'mode' : 'getSearchHistory'}
 			u = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
