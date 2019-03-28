@@ -51,19 +51,21 @@ class htmlScraper(Scraper):
 
 
 	def getMostViewed(self):
-		self.getTeaserList(self.__urlMostViewed)
+		self.getTeaserList(self.__urlMostViewed,"b-teasers-list")
 
 
 	def getNewest(self):
-		self.getTeaserList(self.__urlNewest)
+		self.getTeaserList(self.__urlNewest,"b-teasers-list")
 
 
 	def getTips(self):
-		self.getTeaserList(self.__urlTips)
+		self.getTeaserList(self.__urlTips,"b-teasers-list")
 		
 	# Parses the Frontpage Carousel
 	def getHighlights(self):
 		self.getTeaserSlideshow(self.__urlBase)
+		self.getTeaserList(self.__urlBase,"stage-subteaser-list")
+		self.getLaneCategories()
 
 	# Extracts VideoURL from JSON String
 	def getVideoUrl(self,sources):
@@ -81,61 +83,13 @@ class htmlScraper(Scraper):
 			return title[3].replace("-"," ")
 		else:
 			return title[2].replace("-"," ")
-
-	# Parses Result Layout Page
-	def getResultList(self,url):
-		url = urllib.parse.unquote(url)
-		html = common.fetchPage({'link': url})
-		container = common.parseDOM(html.get("content"),name='main',attrs={'class': "main"},ret=False)
-		teasers = common.parseDOM(container,name='section',attrs={'class': "b-search-results"},ret=False)
-		teasers = common.parseDOM(container,name='section',attrs={'class': "b-search-results"},ret=False)
-		items = common.parseDOM(teasers,name='article',attrs={'class': "b-teaser"},ret=False)
-		print(url)
-		print(len(items))
-		for item in items:
-			subtitle = common.parseDOM(item,name='h4',attrs={'class': "profile"},ret=False)
-			subtitle = common.replaceHTMLCodes(subtitle[0]).encode('UTF-8')			
-			
-			title = common.parseDOM(item,name='h5',attrs={'class': "teaser-title.*?"},ret=False)
-			title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
-			
-			desc = common.parseDOM(item,name='p',attrs={'class': "description.*?"},ret=False)
-			if len(desc):
-				desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
-			else:
-				desc = ""
-			
-			channel = common.parseDOM(item,name='p',attrs={'class': "channel"},ret=False)
-			if len(channel):
-				channel = common.replaceHTMLCodes(channel[0]).encode('UTF-8')
-			else:
-				channel = ""
-			date = common.parseDOM(item,name='span',attrs={'class':'date'},ret=False)
-			date = date[0].encode('UTF-8')
-			
-			time = common.parseDOM(item,name='span',attrs={'class':'time'},ret=False)
-			time = time[0].encode('UTF-8')
-
-			figure = common.parseDOM(item,name='figure',attrs={'class':'teaser-img'},ret=False)
-			image = common.parseDOM(figure,name='img',attrs={},ret='src')
-			image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
-			
-			link = common.parseDOM(item,name='a',attrs={'class':'teaser-link.*?'},ret='href')
-			link = link[0].encode('UTF-8')
-
-			desc = self.formatDescription(title,channel,subtitle,desc,date,time)
-			
-			parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
-
-			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
-			self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
 			
 	# Parses teaser lists
-	def getTeaserList(self,url):
+	def getTeaserList(self,url,list_class,list_type="ul"):
 		url = urllib.parse.unquote(url)
 		html = common.fetchPage({'link': url})
 		container = common.parseDOM(html.get("content"),name='main',attrs={'class': "main"},ret=False)
-		teasers = common.parseDOM(container,name='ul',attrs={'class': "b-teasers-list"},ret=False)
+		teasers = common.parseDOM(container,name=list_type,attrs={'class': list_class},ret=False)
 		items = common.parseDOM(teasers,name='article',attrs={'class': "b-teaser"},ret=False)
 
 		for item in items:
@@ -174,7 +128,7 @@ class htmlScraper(Scraper):
 			parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
 
 			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
-			self.html2ListItem(title,image,"",desc,"","","",url,None,True, False)
+			self.html2ListItem(title,image,"",desc,"","","",url,None,True, False)			
 	
 
 	def formatDescription(self,title,channel,subtitle,desc,date,time):
@@ -189,6 +143,7 @@ class htmlScraper(Scraper):
 		
 		#Reformat
 		if len(subtitle):
+			subtitle = self.cleanMultiSpaceString(subtitle)
 			if subtitle == title:
 				subtitle = ""
 			else:
@@ -403,7 +358,6 @@ class htmlScraper(Scraper):
 
 			items = common.parseDOM(additional_html.get("content"),name='article',attrs={'class': "b-teaser"},ret=False)
 
-			#print(len(items))
 			for item in items:
 				subtitle = common.parseDOM(item,name='h4',attrs={'class': "profile"},ret=False)
 				subtitle = common.replaceHTMLCodes(subtitle[0]).encode('UTF-8')			
@@ -446,7 +400,111 @@ class htmlScraper(Scraper):
 				url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
 				self.html2ListItem(title,image,"", desc,"","","",url,None,True, False);
 		
+
+	# Parses Teaserblock Titles and returns links for every category
+	def getLaneCategories(self):
+		html = common.fetchPage({'link': self.__urlBase})
+		items = common.parseDOM(html.get("content"),name='div',attrs={'class': ".*?jsb_LaneLoad.*?"},ret='data-jsb')
 		
+		for item in items:
+			data = common.replaceHTMLCodes(item).encode('UTF-8')	
+			json_data = json.loads(data)
+			if "url" in json_data:
+				lane_url = "%s%s" % (self.__urlBase,json_data.get('url'))
+				self.getLaneItems(lane_url)
+		
+		
+	def getLaneTeasers(self,html):	
+		items = common.parseDOM(html.get("content"),name='article',attrs={'class': "b-topic-teaser"},ret=False)
+		
+		lane_title = common.parseDOM(html.get("content"),name='h3',attrs={'class': "title"},ret=False)
+		lane_title = common.replaceHTMLCodes(lane_title[0]).encode('UTF-8')
+		lane_title = common.stripTags(lane_title)
+
+		for item in items:
+			title = common.parseDOM(item,name='h5',attrs={'class': "teaser-title.*?"},ret=False)
+			title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+			title = "[%s] %s" % (lane_title,title)
+		
+			link = common.parseDOM(item,name='a',attrs={},ret='href')
+			link = link[0].encode('UTF-8')
+			
+			video_count = common.parseDOM(item,name='p',attrs={'class': "topic-video-count"},ret=False)
+			desc = common.replaceHTMLCodes(video_count[0]).encode('UTF-8')
+
+			figure = common.parseDOM(item,name='figure',attrs={'class':'teaser-img'},ret=False)
+			image = common.parseDOM(figure,name='img',attrs={},ret='src')
+			image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
+			
+			link = common.parseDOM(item,name='a',ret='href')
+			link = link[0].encode('UTF-8')
+			link = "%s%s" % (self.__urlBase,link)
+
+			desc = self.formatDescription(title,"","",desc,"","")
+			
+			parameters = {"link" : link, "banner" : image, "mode" : "getArchiveDetail"}
+
+			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
+			self.html2ListItem(title,image,"",desc,"","","",url,None,True, False);
+		
+	
+	# Parses Teaserblock Titles and returns links for every category
+	def getLaneItems(self,url):
+		category = False
+		html = common.fetchPage({'link': url})
+		items = common.parseDOM(html.get("content"),name='article',attrs={'class': "b-teaser"},ret=False)
+		
+		
+		
+		if len(items) < 1:
+			self.getLaneTeasers(html)
+		else:
+			lane_title = common.parseDOM(html.get("content"),name='h3',attrs={'class': "title"},ret=False)
+			lane_title = common.replaceHTMLCodes(lane_title[0]).encode('UTF-8')
+			lane_title = common.stripTags(lane_title)
+			for item in items:
+				subtitle = common.parseDOM(item,name='h4',attrs={'class': "profile"},ret=False)
+				subtitle = common.replaceHTMLCodes(subtitle[0]).encode('UTF-8')			
+					
+				title = common.parseDOM(item,name='h5',attrs={'class': "teaser-title.*?"},ret=False)
+				title = common.replaceHTMLCodes(title[0]).encode('UTF-8')
+				title = "[%s] %s" % (lane_title,title)
+					
+				desc = common.parseDOM(item,name='p',attrs={'class': "description.*?"},ret=False)
+				if len(desc):
+					desc = common.replaceHTMLCodes(desc[0]).encode('UTF-8')
+				else:
+					desc = ""
+					
+				channel = common.parseDOM(item,name='p',attrs={'class': "channel"},ret=False)
+				if len(channel):
+					channel = common.replaceHTMLCodes(channel[0]).encode('UTF-8')
+				else:
+					channel = ""
+				date = common.parseDOM(item,name='span',attrs={'class':'date'},ret=False)
+				date = date[0].encode('UTF-8')
+				
+				time = common.parseDOM(item,name='span',attrs={'class':'time'},ret=False)
+				time = time[0].encode('UTF-8')
+
+				figure = common.parseDOM(item,name='figure',attrs={'class':'teaser-img'},ret=False)
+				image = common.parseDOM(figure,name='img',attrs={},ret='src')
+				image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
+				
+				link = common.parseDOM(item,name='a',attrs={'class':'teaser-link.*?'},ret='href')
+				link = link[0].encode('UTF-8')
+					
+				date_prefix = self.translation(30009).encode("utf-8")
+				
+				if date != "":
+					title = "%s - %s" % (title,date)
+					
+				desc = self.formatDescription(title,channel,subtitle,desc,date,time)
+
+				parameters = {"link" : link, "banner" : image, "mode" : "openSeries"}
+				url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
+				self.html2ListItem(title,image,"", desc,"","","",url,None,True, False);
+				
 
 	# Parses "Sendung verpasst?" Date Listing
 	def getSchedule(self):
@@ -460,9 +518,6 @@ class htmlScraper(Scraper):
 			title = common.replaceHTMLCodes(item).encode('UTF-8')
 			link = common.replaceHTMLCodes(data_items[i]).encode('UTF-8')
 			link = "%s%s" % (self.__urlBase,link)
-
-			print("Titel: %s" % title)
-			print("Link: %s" % link)
 
 			parameters = {"link" : link, "mode" : "getScheduleDetail"}
 			url = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
@@ -531,6 +586,7 @@ class htmlScraper(Scraper):
 
 		html = common.fetchPage({'link': url})
 		data = common.parseDOM(html.get("content"),name='div',attrs={'class': "jsb_ jsb_VideoPlaylist"},ret='data-jsb')
+		html_data = common.parseDOM(html.get("content"),name='section',attrs={'class': "b-video-details.*?"},ret=False)
 		if len(data):
 			try:
 				data = data[0]
@@ -539,10 +595,32 @@ class htmlScraper(Scraper):
 				current_preview_img = data.get("selected_video")["preview_image_url"]
 				video_items = data.get("playlist")["videos"]
 				current_title = data.get("selected_video")["title"]
+				current_desc = ""
+				
+				current_channel = common.parseDOM(html_data,name='span',attrs={'class': "channel.*?"},ret='aria-label')
+				if len(current_channel):
+					current_channel = common.replaceHTMLCodes(current_channel[0]).encode('UTF-8')
+				else:
+					current_channel = ""
+				
+				current_date = common.parseDOM(html_data,name='span',attrs={'class':'date'},ret=False)
+				current_date = current_date[0].encode('UTF-8')
+			
+				current_time = common.parseDOM(html_data,name='span',attrs={'class':'time'},ret=False)
+				current_time = current_time[0].encode('UTF-8')
+				
+				current_subtitle = common.parseDOM(html_data,name='p',attrs={'class': "profile.*?"},ret=False)
+				if len(current_subtitle):
+					current_subtitle = common.stripTags(common.replaceHTMLCodes(current_subtitle[0])).encode('UTF-8')	
+				else:
+					current_subtitle = ""
+				
 				if data.get("selected_video")["description"]:
 					current_desc = data.get("selected_video")["description"].encode('UTF-8')
 				else:
-					current_desc = ""
+					if len(html_data):
+						html_desc = common.parseDOM(html_data,name='p',attrs={'class': "description-text.*?"},ret=False)
+						current_desc =  common.stripTags(common.replaceHTMLCodes(html_desc[0]).encode('UTF-8'))
 
 				if data.get("selected_video")["duration"]:
 					current_duration = float(data.get("selected_video")["duration"])
@@ -558,9 +636,13 @@ class htmlScraper(Scraper):
 				else:
 					current_subtitles = None
 				current_videourl = self.getVideoUrl(data.get("selected_video")["sources"]);
+				
+				current_desc = self.formatDescription(current_title,current_channel,current_subtitle,current_desc,current_date,current_time)
+				
 			except Exception as e:
+				print(e)
 				debugLog("Error Loading Episode from %s" % url,'Exception')
-				notifyUser((self.translation(30052)).encode("utf-8"))
+				#notifyUser((self.translation(30052)).encode("utf-8"))
 				current_subtitles = None
 
 			if len(video_items) > 1:
@@ -608,7 +690,14 @@ class htmlScraper(Scraper):
 			notifyUser((self.translation(30052)).encode("utf-8"))
 			sys.exit()
 
-
+	# Removes multiples spaces from a string
+	def cleanMultiSpaceString(self,str):
+		str = str.split(' ')
+		while '' in str:
+			str.remove('')
+		str = ' '.join(str)
+		return str.replace('\n', '').replace('\r', '')
+			
 	# Returns Live Stream Listing
 	def getLiveStreams(self):
 		html = common.fetchPage({'link': self.__urlBase})
@@ -761,7 +850,6 @@ class htmlScraper(Scraper):
 						data = json.loads(data)
 						
 						if 'restart_url' in data:
-							print(data)
 							bitmovin_id = data['restart_url'].replace("https://playerapi-restarttv.ors.at/livestreams/","").replace("/sections/","")
 							return bitmovin_id.split("?")[0]
 					except:
@@ -921,7 +1009,7 @@ class htmlScraper(Scraper):
 				some_dict = cache.get("searches") + "|"+keyboard_in
 				cache.set("searches",some_dict);
 			searchurl = "%s?q=%s"%(self.__urlSearch,keyboard_in.replace(" ","+"))
-			self.getResultList(searchurl)
+			self.getTeaserList(searchurl,'b-search-results','section')
 		else:
 			parameters = {'mode' : 'getSearchHistory'}
 			u = sys.argv[0] + '?' + urllib.parse.urlencode(parameters)
