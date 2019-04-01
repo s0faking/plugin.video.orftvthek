@@ -84,6 +84,8 @@ class serviceAPI(Scraper):
 	def getTips(self):
 		self.getTableResults(self.__urlTips)
 
+	def getFocus(self):
+		self.xbmc.log(msg='"In Focus" not available', level=xbmc.LOGDEBUG);
 
 	def getTableResults(self, urlAPI):
 		try:

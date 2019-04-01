@@ -226,3 +226,7 @@ msgstr ""
 msgctxt "#30056"
 msgid "Enable Progressive Streaming Method"
 msgstr ""
+
+msgctxt "#30057"
+msgid "In Focus"
+msgstr ""

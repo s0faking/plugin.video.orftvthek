@@ -94,12 +94,13 @@ def getMainMenu():
     addDirectory((translation(30003)).encode("utf-8"),topics_banner,defaultbackdrop, "","","getThemen",pluginhandle)
     addDirectory((translation(30004)).encode("utf-8"),live_banner,defaultbackdrop, "","","getLive",pluginhandle)
     addDirectory((translation(30005)).encode("utf-8"),tips_banner,defaultbackdrop, "","","getTipps",pluginhandle)
+    if not useServiceAPI:
+        addDirectory((translation(30057)).encode("utf-8"),tips_banner,defaultbackdrop, "","","getFocus",pluginhandle)
     addDirectory((translation(30006)).encode("utf-8"),most_popular_banner,defaultbackdrop, "","","getMostViewed",pluginhandle)
     addDirectory((translation(30018)).encode("utf-8"),schedule_banner,defaultbackdrop, "","","getSchedule",pluginhandle)
     if not useServiceAPI:
         addDirectory((translation(30049)).encode("utf-8"),schedule_banner,defaultbackdrop, "","","getArchiv",pluginhandle)
-    else:
-        addDirectory((translation(30027)).encode("utf-8"),trailer_banner,defaultbackdrop, "","","openTrailers",pluginhandle)
+    addDirectory((translation(30027)).encode("utf-8"),trailer_banner,defaultbackdrop, "","","openTrailers",pluginhandle)
     addDirectory((translation(30007)).encode("utf-8"),search_banner,defaultbackdrop, "","","getSearchHistory",pluginhandle)
     if Settings.blacklist():
         addDirectory((translation(30037)).encode("utf-8"),blacklist_banner,defaultbackdrop, "","","openBlacklist",pluginhandle)
@@ -154,6 +155,9 @@ elif mode == 'getLive':
     listCallback(False,pluginhandle)
 elif mode == 'getTipps':
     scraper.getTips()
+    listCallback(False,pluginhandle)
+elif mode == 'getFocus':
+    scraper.getFocus()
     listCallback(False,pluginhandle)
 elif mode == 'getNewShows':
     scraper.getNewest()
