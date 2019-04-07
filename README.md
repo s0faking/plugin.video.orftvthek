@@ -3,11 +3,6 @@ ORF TVthek KODI Addon
 ORF TVthek is an addon that gives you access to the ORF TVthek Video Platform.
 
 
-Requirements
-------------
-Tested on KODI Jarvis
-
-
 Supported platforms
 -------------------
 Windows, Linux , Android and OSX

@@ -35,6 +35,7 @@ class htmlScraper(Scraper):
 	__urlTips	   = __urlBase + '/tips'
 	__urlFocus	   = __urlBase + '/in-focus'
 	__urlTopics	 = __urlBase + '/topics'
+	__urlTopicLane	 = __urlBase + '/lane/topic/'
 	__urlArchive	= __urlBase + '/history'
 	__urlTrailer	= __urlBase + '/coming-soon'
 
@@ -771,7 +772,7 @@ class htmlScraper(Scraper):
 				if len(online):
 					online = True
 				else:
-					online = False		
+					online = False				
 						
 				restart = common.parseDOM(article,name='span',attrs={'class': 'is-restartable'})
 				if len(restart):
@@ -825,7 +826,7 @@ class htmlScraper(Scraper):
 			if uhd_streaming_url:
 				debugLog("Adding UHD Livestream","Info")
 				uhdContextMenuItems = []
-				if inputstreamAdaptive and restart:
+				if inputstreamAdaptive and restart and online:
 					uhdContextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), link)))
 					uhd_final_title = "[Restart]%s[UHD] - %s%s" % (channel,title,time_str)
 				else:
@@ -834,7 +835,7 @@ class htmlScraper(Scraper):
 							
 			streaming_url = self.getLivestreamUrl(data,self.videoQuality)
 			contextMenuItems = []
-			if inputstreamAdaptive and restart:
+			if inputstreamAdaptive and restart and online:
 				contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), link)))
 				final_title = "[Restart]%s - %s%s" % (channel,title,time_str)
 			else:
