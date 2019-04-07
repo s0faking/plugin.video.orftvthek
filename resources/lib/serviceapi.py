@@ -259,7 +259,7 @@ class serviceAPI(Scraper):
 
 	# lists schedule overview (date listing)
 	def getSchedule(self):
-		for x in xrange(9):
+		for x in range(9):
 			date  = datetime.datetime.now() - datetime.timedelta(days=x)
 			title = '%s' % (date.strftime('%A, %d.%m.%Y'))
 			parameters = {'mode' : 'openDate', 'link': date.strftime('%Y-%m-%d')}
