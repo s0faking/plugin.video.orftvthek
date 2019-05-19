@@ -211,9 +211,6 @@ elif mode == 'openTopic':
 elif mode == 'openEpisode':
     scraper.getEpisode(link,playlist)
     listCallback(False,pluginhandle)
-elif mode == 'liveStreamNotOnline':
-    scraper.getLiveNotOnline(link)
-    listCallback(False,pluginhandle)
 elif mode == 'liveStreamRestart':
     scraper.liveStreamRestart(link)
 elif mode == 'playlist':
