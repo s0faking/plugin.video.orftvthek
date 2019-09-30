@@ -25,7 +25,7 @@ from .Scraper import *
 
 class htmlScraper(Scraper):
 
-	__urlBase	   = 'http://tvthek.orf.at'
+	__urlBase	   = 'https://tvthek.orf.at'
 	__urlLive	   = __urlBase + '/live'
 	__urlMostViewed = __urlBase + '/most-viewed'
 	__urlNewest	 = __urlBase + '/newest'
@@ -739,7 +739,6 @@ class htmlScraper(Scraper):
 	# Returns Live Stream Listing
 	def getLiveStreams(self):
 		html = common.fetchPage({'link': self.__urlBase})
-		#html = common.fetchPage({'link': "https://office.lo-fi.at/tmp/"})
 		wrapper = common.parseDOM(html.get("content"),name='main',attrs={'class': 'main'})
 		section = common.parseDOM(wrapper,name='section',attrs={'class': 'b-live-program.*?'})
 		items = common.parseDOM(section,name='li',attrs={'class': 'channel orf.*?'})
