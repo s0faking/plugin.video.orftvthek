@@ -159,8 +159,7 @@ class htmlScraper(Scraper):
 			desc = ""
 			desc = self.formatDescription(title,"","",desc,"","")
 
-			figure = common.parseDOM(item,name='figure',attrs={'class':'teaser-img'},ret=False)
-			image = common.parseDOM(figure,name='img',attrs={},ret='src')
+			image = common.parseDOM(item,name='img',attrs={},ret='src')
 			image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
 
 			parameters = {"link" : link, "banner" : image, "mode" : "getArchiveDetail"}
@@ -277,8 +276,7 @@ class htmlScraper(Scraper):
 			
 			subtitle = time
 
-			figure = common.parseDOM(item,name='figure',attrs={'class':'episode-image'},ret=False)
-			image = common.parseDOM(figure,name='img',attrs={},ret='src')
+			image = common.parseDOM(item,name='img',attrs={},ret='src')
 			image = common.replaceHTMLCodes(image[0]).encode('UTF-8')
 			
 			link = common.parseDOM(item,name='a',attrs={'class':'episode-content'},ret='href')
