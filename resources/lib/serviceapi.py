@@ -39,7 +39,7 @@ class serviceAPI(Scraper):
 	serviceAPIHighlights = 'page/startpage'
 
 
-	def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop):
+	def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop, usePlayAllPlaylist):
 		self.translation = settings.getLocalizedString
 		self.xbmc = xbmc
 		self.videoQuality = quality
@@ -48,7 +48,8 @@ class serviceAPI(Scraper):
 		self.pluginhandle = pluginhandle
 		self.defaultbanner = defaultbanner
 		self.defaultbackdrop = defaultbackdrop
-		self.xbmc.log(msg='ServiceAPI  - Init done', level=xbmc.LOGDEBUG);
+		self.usePlayAllPlaylist = usePlayAllPlaylist
+		self.xbmc.log(msg='ServiceAPI  - Init done', level=xbmc.LOGDEBUG)
 
 
 	def getHighlights(self):
@@ -202,17 +203,24 @@ class serviceAPI(Scraper):
 		response = self.__makeRequest(self.serviceAPIEpisode % episodeID)
 		result = json.loads(response.read().decode('UTF-8'))
 
-		image       = self.JSONImage(result.get('_embedded').get('image'))
-		description = result.get('description').encode('UTF-8') if result.get('description') != None else result.get('description')
-		duration    = result.get('duration_seconds')
-		date        = time.strptime(result.get('date')[0:19], '%Y-%m-%dT%H:%M:%S')
-
 		if len(result.get('_embedded').get('segments')) == 1:
 			listItem = self.JSONSegment2ListItem(result.get('_embedded').get('segments')[0])
 			playlist.add(listItem[0], listItem[1])
 		else:
 			play_all_name = "[ "+(self.translation(30015)).encode("utf-8")+" ]"
-			createPlayAllItem(play_all_name,self.pluginhandle)
+			if self.usePlayAllPlaylist:
+				createPlayAllItem(play_all_name, self.pluginhandle)
+			else:
+				streamingURL = self.JSONStreamingURL(result.get('sources'))
+				description = result.get('description')
+				duration = result.get('duration_seconds')
+				date = time.strptime(result.get('date')[0:19], '%Y-%m-%dT%H:%M:%S')
+				subtitles = [x.get('src') for x in result.get('playlist').get('gapless_video').get('subtitles')]
+				listItem = createListItem(play_all_name, None, description, duration, time.strftime('%Y-%m-%d', date),
+										  '', streamingURL, True, False, self.defaultbackdrop, self.pluginhandle,
+										  subtitles)
+				playlist.add(streamingURL, listItem)
+
 			for segment in result.get('_embedded').get('segments'):
 				listItem = self.JSONSegment2ListItem(segment)
 				playlist.add(listItem[0], listItem[1])

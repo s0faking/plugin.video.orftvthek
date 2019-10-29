@@ -230,3 +230,7 @@ msgstr ""
 msgctxt "#30057"
 msgid "In Focus"
 msgstr ""
+
+msgctxt "#30058"
+msgid "Create a playlist for [Play All]"
+msgstr ""

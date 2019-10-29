@@ -38,3 +38,6 @@ def videoDelivery(delivery_list):
 
 def autoPlayPrompt():
 	return __addon__.getSetting("autoPlayPrompt") == "true"
+
+def playAllPlaylist():
+	return __addon__.getSetting('usePlayAllPlaylist') == 'true'

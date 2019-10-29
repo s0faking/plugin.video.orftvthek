@@ -216,3 +216,7 @@ msgstr "Progressive Streaming aktivieren"
 msgctxt "#30057"
 msgid "In Focus"
 msgstr "Im Fokus"
+
+msgctxt "#30058"
+msgid "Create a playlist for [Play All]"
+msgstr "Erstelle eine Playlist für [Alle Beiträge abspielen]"
