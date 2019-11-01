@@ -67,11 +67,12 @@ useServiceAPI = Settings.serviceAPI()
 videoQuality = Settings.videoQuality(video_quality_list)
 videoDelivery = Settings.videoDelivery(video_delivery_list)
 autoPlayPrompt = Settings.autoPlayPrompt()
+usePlayAllPlaylist = Settings.playAllPlaylist()
 
 #init scrapers
 if useServiceAPI:
     debugLog("Service API activated",'Info')
-    scraper = serviceAPI(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop)
+    scraper = serviceAPI(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop, usePlayAllPlaylist)
 else:
     debugLog("HTML Scraper activated",'Info')
     scraper = htmlScraper(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop)
