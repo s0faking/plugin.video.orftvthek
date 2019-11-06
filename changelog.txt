@@ -1,5 +1,5 @@
-0.9.3
-- fixed "missed a show" (new html markup)
+* 0.10.0
+- python2/3 compatibility in progress ....
 
 0.9.2
 - fixed frontpage (new html markup)
