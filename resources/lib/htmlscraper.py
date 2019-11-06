@@ -1,15 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import datetime
 from .common import *
-
-
-try:
-	import StorageServer
-except ImportError:
-	import storageserverdummy as StorageServer
 
 from .base import *
 from .Scraper import *
@@ -51,16 +43,16 @@ class htmlScraper(Scraper):
 	def getTips(self):
 		self.getTeaserList(self.__urlTips, "b-teasers-list")
 
-	def getFocus(self):
-		self.getLaneTopicOverview(self.__urlFocus)
-
-	def getTrailers(self):
-		self.getTeaserList(self.__urlTrailer, "b-teasers-list")
-
 	# Parses the Frontpage Carousel
 	def getHighlights(self):
 		self.getTeaserSlideshow(self.__urlBase)
 		self.getTeaserList(self.__urlBase, "stage-subteaser-list")
+
+	def getTrailers(self):
+		self.getTeaserList(self.__urlTrailer, "b-teasers-list")
+
+	def getFocus(self):
+		self.getLaneTopicOverview(self.__urlFocus)
 
 	# Extracts VideoURL from JSON String
 	def getVideoUrl(self, sources):
@@ -70,14 +62,6 @@ class htmlScraper(Scraper):
 					if source["quality"].lower() == self.videoQuality.lower():
 						return generateAddonVideoUrl(source["src"])
 		return False
-
-	# Converts Page URL to Title
-	def programUrlTitle(self, url):
-		title = url.replace(self.__urlBase, "").split("/")
-		if title[1] == 'index.php':
-			return title[3].replace("-", " ")
-		else:
-			return title[2].replace("-", " ")
 
 	# Parses teaser lists
 	def getTeaserList(self, url, list_class, list_type="ul"):
@@ -164,7 +148,7 @@ class htmlScraper(Scraper):
 
 		# Reformat
 		if len(subtitle):
-			subtitle = self.cleanMultiSpaceString(subtitle)
+			subtitle = re.sub("\s\s+", " ", str(subtitle))
 			if subtitle == title:
 				subtitle = ""
 			else:
@@ -190,7 +174,7 @@ class htmlScraper(Scraper):
 		else:
 			return "%s%s[CR]%s" % (channel, subtitle, desc)
 
-	# Parses a teaser slideshow
+	# Parses the frontpage teaser slider
 	def getTeaserSlideshow(self, url):
 		url = unqoute_url(url)
 		html = fetchPage({'link': url})
@@ -223,6 +207,7 @@ class htmlScraper(Scraper):
 			self.html2ListItem(title, image, "", "", "", "", "", url)
 			current += 1
 
+	# Scrapes the detail page for a schedule day selection (missed a show)
 	def openArchiv(self, url):
 		url = unqoute_url(url)
 		html = fetchPage({'link': url})
@@ -260,9 +245,12 @@ class htmlScraper(Scraper):
 
 			subtitle = time
 
-			figure = parseDOM(item, name='figure', attrs={'class': 'episode-image'}, ret=False)
-			image = parseDOM(figure, name='img', attrs={}, ret='src')
-			image = replaceHTMLCodes(image[0])
+			#figure = parseDOM(item, name='figure', attrs={'class': 'episode-image'}, ret=False)
+			image = parseDOM(item, name='img', attrs={}, ret='src')
+			if len(image):
+				image = replaceHTMLCodes(image[0])
+			else:
+				image = ""
 
 			link = parseDOM(item, name='a', attrs={'class': 'episode-content'}, ret='href')
 			link = link[0]
@@ -418,17 +406,6 @@ class htmlScraper(Scraper):
 				url = build_kodi_url(parameters)
 				self.html2ListItem(title, image, "", desc, "", "", "", url)
 
-	# Parses Teaserblock Titles and returns links for every category
-	def getLaneCategories(self):
-		html = fetchPage({'link': self.__urlBase})
-		items = parseDOM(html.get("content"), name='div', attrs={'class': ".*?jsb_LaneLoad.*?"}, ret='data-jsb')
-
-		for item in items:
-			data = replaceHTMLCodes(item)
-			json_data = json.loads(data)
-			if "url" in json_data:
-				lane_url = "%s%s" % (self.__urlBase, json_data.get('url'))
-				self.getLaneItems(lane_url)
 
 	def getLaneTeasers(self, html):
 		items = parseDOM(html.get("content"), name='article', attrs={'class': "b-topic-teaser"}, ret=False)
@@ -595,6 +572,7 @@ class htmlScraper(Scraper):
 		html = fetchPage({'link': url})
 		data = parseDOM(html.get("content"), name='div', attrs={'class': "jsb_ jsb_VideoPlaylist"}, ret='data-jsb')
 		html_data = parseDOM(html.get("content"), name='section', attrs={'class': "b-video-details.*?"}, ret=False)
+		current_duration = 0
 		if len(data):
 			try:
 				data = data[0]
@@ -635,8 +613,7 @@ class htmlScraper(Scraper):
 				if data.get("selected_video")["duration"]:
 					current_duration = float(data.get("selected_video")["duration"])
 					current_duration = int(current_duration / 1000)
-				else:
-					current_duration = 0
+
 
 				if "subtitles" in data.get("selected_video"):
 					current_subtitles = []
@@ -695,10 +672,6 @@ class htmlScraper(Scraper):
 		else:
 			notifyUser((self.translation(30052)))
 			sys.exit()
-
-	# Removes multiples spaces from a string
-	def cleanMultiSpaceString(self, str_val):
-		return re.sub("\s\s+", " ", str(str_val))
 
 	# Returns Live Stream Listing
 	def getLiveStreams(self):
@@ -908,20 +881,6 @@ class htmlScraper(Scraper):
 			except Exception as e:
 				debugLog("Error getting Livestream Infos")
 
-	# Helper for Livestream Listing - Returns if Stream is currently running
-	@staticmethod
-	def getBroadcastState(time):
-		time_probe = time.split(":")
-
-		current_hour = datetime.datetime.now().strftime('%H')
-		current_min = datetime.datetime.now().strftime('%M')
-		if time_probe[0] == current_hour and time_probe[1] >= current_min:
-			return False
-		elif time_probe[0] > current_hour:
-			return False
-		else:
-			return True
-
 	# Parses the Topic Overview Page
 	def getThemen(self):
 		html = fetchPage({'link': self.__urlTopics})
@@ -998,10 +957,8 @@ class htmlScraper(Scraper):
 		u = build_kodi_url(parameters)
 		createListItem((self.translation(30007)) + " ...", self.defaultbanner, "", "", "", '', u, False, True, self.defaultbackdrop, self.pluginhandle)
 
-		cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
-		cache.table_name = "searchhistory"
-		some_dict = cache.get("searches").split("|")
-		for str_val in reversed(some_dict):
+		history = searchHistoryGet()
+		for str_val in reversed(history):
 			if str_val.strip() != '':
 				parameters = {'mode': 'getSearchResults', 'link': str_val.replace(" ", "+")}
 				u = build_kodi_url(parameters)
@@ -1015,12 +972,9 @@ class htmlScraper(Scraper):
 		keyboard = self.xbmc.Keyboard(link)
 		keyboard.doModal()
 		if keyboard.isConfirmed():
-			cache = StorageServer.StorageServer("plugin.video.orftvthek", 999999)
-			cache.table_name = "searchhistory"
 			keyboard_in = self.removeUmlauts(keyboard.getText())
 			if keyboard_in != link:
-				some_dict = cache.get("searches") + "|" + keyboard_in
-				cache.set("searches", some_dict);
+				searchHistoryPush(keyboard_in)
 			searchurl = "%s?q=%s" % (self.__urlSearch, keyboard_in.replace(" ", "+"))
 			self.getTeaserList(searchurl, 'b-search-results', 'section')
 		else:

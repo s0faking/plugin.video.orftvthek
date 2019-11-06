@@ -135,7 +135,7 @@ def removeBlacklist(title):
             for item in tmp:
                 if item.encode('UTF-8') == title:
                     tmp.remove(item)
-            setBlacklist(tmp, bl_json_file)
+            saveJsonFile(tmp, bl_json_file)
 
 
 def printBlacklist(banner, backdrop, translation, pluginhandle):
@@ -143,7 +143,7 @@ def printBlacklist(banner, backdrop, translation, pluginhandle):
     bl_json_file = os.path.join(addonUserDataFolder, 'blacklist.json')
     if os.path.exists(bl_json_file):
         if os.path.getsize(bl_json_file) > 0:
-            data = getBlacklist(bl_json_file)
+            data = getJsonFile(bl_json_file)
             for item in data:
                 item = item.encode('UTF-8')
                 description = translation(30040).encode('UTF-8') % item
@@ -152,13 +152,13 @@ def printBlacklist(banner, backdrop, translation, pluginhandle):
                 createListItem(item, banner, description, None, None, None, url, True, False, backdrop, pluginhandle)
 
 
-def setBlacklist(data, file):
+def saveJsonFile(data, file):
     with open(file, 'w') as data_file:
         data_file.write(json.dumps(data, 'utf-8'))
     data_file.close()
 
 
-def getBlacklist(file):
+def getJsonFile(file):
     with open(file, 'r') as data_file:
         data = json.load(data_file, 'UTF-8')
     return data
@@ -175,24 +175,60 @@ def blacklistItem(title):
         if os.path.getsize(bl_json_file) > 0:
             # append value to JSON File
             if not checkBlacklist(title):
-                data = getBlacklist(bl_json_file)
+                data = getJsonFile(bl_json_file)
                 data.append(title)
-                setBlacklist(data, bl_json_file)
+                saveJsonFile(data, bl_json_file)
         # found empty file - writing first record
         else:
             data = []
             data.append(title)
-            setBlacklist(data, bl_json_file)
+            saveJsonFile(data, bl_json_file)
     # create json file
     else:
         if not os.path.exists(addonUserDataFolder):
             os.makedirs(addonUserDataFolder)
         data = []
         data.append(title)
-        setBlacklist(data, bl_json_file)
+        saveJsonFile(data, bl_json_file)
 
 
 def unblacklistItem(title):
     title = unqoute_url(title)
     title = title.replace("+", " ").strip()
     removeBlacklist(title)
+
+
+def searchHistoryPush(title):
+    addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek")
+    json_file = os.path.join(addonUserDataFolder, 'searchhistory.json')
+    title = unqoute_url(title)
+    title = title.replace("+", " ").strip()
+    # check if file exists
+    if os.path.exists(json_file):
+        # check if file already has an entry
+        if os.path.getsize(json_file) > 0:
+            # append value to JSON File
+            data = getJsonFile(json_file)
+            data.append(title)
+            saveJsonFile(data, json_file)
+        # found empty file - writing first record
+        else:
+            data = []
+            data.append(title)
+            saveJsonFile(data, json_file)
+    # create json file
+    else:
+        if not os.path.exists(addonUserDataFolder):
+            os.makedirs(addonUserDataFolder)
+        data = []
+        data.append(title)
+        saveJsonFile(data, json_file)
+
+def searchHistoryGet():
+    addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek")
+    json_file = os.path.join(addonUserDataFolder, 'searchhistory.json')
+    if os.path.exists(json_file):
+        if os.path.getsize(json_file) > 0:
+            data = getJsonFile(json_file)
+            return data
+    return []

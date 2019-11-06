@@ -544,4 +544,6 @@ def openFile(filepath, options=u"r"):
 
 
 def log(msg, level=False):
-    print(msg)
+    # print(msg)
+    # do nothing
+    i = 0
