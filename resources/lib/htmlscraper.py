@@ -553,19 +553,19 @@ class htmlScraper(Scraper):
 		if self.enableBlacklist:
 			if mode == 'openSeries' or mode == 'getSendungenDetail':
 				blacklist = True
-		debugLog("Adding List Item")
-		debugLog("Mode: %s" % mode)
-		debugLog("Videourl: %s" % videourl)
-		debugLog("Duration: %s" % duration)
-		debugLog("Banner: %s" % banner)
-		debugLog("Backdrop: %s" % backdrop)
+		#debugLog("Adding List Item")
+		#debugLog("Mode: %s" % mode)
+		#debugLog("Videourl: %s" % videourl)
+		#debugLog("Duration: %s" % duration)
+		#debugLog("Banner: %s" % banner)
+		#debugLog("Backdrop: %s" % backdrop)
 
 		return createListItem(title, banner, description, duration, date, channel, videourl, playable, folder, backdrop, self.pluginhandle, subtitles, blacklist, contextMenuItems)
 
 	# Parses a Video Page and extracts the Playlist/Description/...
 	def getLinks(self, url, banner, playlist):
 		url = str(unqoute_url(url))
-		debugLog("Loading Videos from %s" % url)
+		#debugLog("Loading Videos from %s" % url)
 		if banner is not None:
 			banner = unqoute_url(banner)
 

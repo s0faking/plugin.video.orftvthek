@@ -32,11 +32,13 @@ try:
     from urllib.request import urlopen as OpenRequest
     from urllib.request import Request as HTTPRequest
     from urllib.error import HTTPError
+    from html.parser import HTMLParser
 except ImportError:
     from urllib.parse import unquote, urlencode
     from urllib.error import HTTPError
     from urllib.request import urlopen as OpenRequest
     from urllib.request import Request as HTTPRequest
+    from HTMLParser import HTMLParser
 import re
 import io
 import inspect
@@ -150,7 +152,7 @@ def replaceHTMLCodes(txt):
     # Fix missing ; in &#<number>;
     txt = re.sub('(&#[0-9]+)([^;^0-9]+)', '\\1;\\2', makeUTF8(txt))
 
-    txt = html.unescape(txt)
+    txt = HTMLParser().unescape(txt)
     txt = txt.replace("&amp;", "&")
     log(repr(txt), 5)
     return txt

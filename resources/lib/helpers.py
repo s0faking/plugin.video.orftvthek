@@ -3,6 +3,7 @@
 
 import xbmc
 import xbmcaddon
+import collections
 import sys
 
 try:
@@ -26,8 +27,21 @@ def build_kodi_url(parameters):
 
 
 def encode_parameters(parameters):
-    return urlencode(parameters)
+    try:
+        return urlencode(parameters)
+    except:
+        parameters = {k: unicode(v).encode("utf-8") for k, v in parameters.iteritems()}
+        return urlencode(parameters)
 
+def convert(data):
+    if isinstance(data, basestring):
+        return str(data).decode('utf-8')
+    elif isinstance(data, collections.Mapping):
+        return dict(map(convert, data.iteritems()))
+    elif isinstance(data, collections.Iterable):
+        return type(data)(map(convert, data))
+    else:
+        return data
 
 def url_get_request(url, authorization=False):
     if authorization:
