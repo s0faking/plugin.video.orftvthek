@@ -19,7 +19,11 @@ except ImportError:
 
 
 def unqoute_url(url):
-    return unquote(url)
+    print(type(url))
+    try:
+        return unquote(url)
+    except:
+        return unquote(url.encode('utf-8'))
 
 
 def build_kodi_url(parameters):

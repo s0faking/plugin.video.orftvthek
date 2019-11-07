@@ -96,7 +96,7 @@ class htmlScraper(Scraper):
 			time = time[0]
 
 			figure = parseDOM(item, name='figure', attrs={'class': 'teaser-img'}, ret=False)
-			image = parseDOM(figure, name='img', attrs={}, ret='src')
+			image = parseDOM(figure, name='img', attrs={}, ret='data-src')
 			image = replaceHTMLCodes(image[0])
 
 			link = parseDOM(item, name='a', attrs={'class': 'teaser-link.*?'}, ret='href')
@@ -191,7 +191,8 @@ class htmlScraper(Scraper):
 			title = replaceHTMLCodes(title[0])
 
 			figure = parseDOM(item, name='figure', attrs={'class': 'stage-item-img'}, ret=False)
-			image = parseDOM(figure, name='img', attrs={}, ret='src')
+			image = parseDOM(figure, name='img', attrs={'class': "lazyload"}, ret='data-src')
+
 			image = replaceHTMLCodes(image[0])
 
 			link = items_href[current]
@@ -564,7 +565,7 @@ class htmlScraper(Scraper):
 
 	# Parses a Video Page and extracts the Playlist/Description/...
 	def getLinks(self, url, banner, playlist):
-		url = str(unqoute_url(url))
+		url = unqoute_url(url)
 		#debugLog("Loading Videos from %s" % url)
 		if banner is not None:
 			banner = unqoute_url(banner)

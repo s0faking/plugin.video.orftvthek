@@ -5,8 +5,7 @@ import os
 import re
 
 import simplejson as json
-import xbmcgui
-import xbmcplugin
+from kodi_six import xbmcplugin, xbmcgui
 
 from . import Settings
 from .helpers import *

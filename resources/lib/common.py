@@ -18,37 +18,33 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from __future__ import print_function
 from __future__ import unicode_literals
-from future import standard_library
-standard_library.install_aliases()
+
+from kodi_six.utils import py2_encode, py2_decode
 
 from builtins import str
 from builtins import range
 import sys
-import html
+
 try:
     from urllib.parse import unquote, urlencode
     from urllib.request import urlopen as OpenRequest
     from urllib.request import Request as HTTPRequest
     from urllib.error import HTTPError
     from html.parser import HTMLParser
+    from html import unescape
 except ImportError:
-    from urllib.parse import unquote, urlencode
-    from urllib.error import HTTPError
-    from urllib.request import urlopen as OpenRequest
-    from urllib.request import Request as HTTPRequest
+    from urllib import unquote, urlencode
+    from urllib2 import urlopen as OpenRequest
+    from urllib2 import Request as HTTPRequest
+    from urllib2 import HTTPError
     from HTMLParser import HTMLParser
+    parser = HTMLParser()
+    unescape = parser.unescape
+
 import re
 import io
-import inspect
 import json
-
-
-
-
-version = u"2.5.1"
-plugin = u"CommonFunctions-" + version
 
 USERAGENT = u"Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:16.0.1) Gecko/20121011 Firefox/16.0.1"
 
@@ -150,9 +146,9 @@ def replaceHTMLCodes(txt):
     log(repr(txt), 5)
 
     # Fix missing ; in &#<number>;
-    txt = re.sub('(&#[0-9]+)([^;^0-9]+)', '\\1;\\2', makeUTF8(txt))
+    txt = re.sub('(&#[0-9]+)([^;^0-9]+)', '\\1;\\2', txt)
 
-    txt = HTMLParser().unescape(txt)
+    txt = unescape(txt)
     txt = txt.replace("&amp;", "&")
     log(repr(txt), 5)
     return txt
@@ -241,13 +237,13 @@ def _getDOMAttributes(match, name, ret):
 
 def _getDOMElements(item, name, attrs):
     log("", 3)
-
     lst = []
     for key in attrs:
         lst2 = re.compile('(<' + name + '[^>]*?(?:' + key + '=[\'"]' + attrs[key] + '[\'"].*?>))', re.M | re.S).findall(item)
+        print(lst2)
         if len(lst2) == 0 and attrs[key].find(" ") == -1:  # Try matching without quotation marks
             lst2 = re.compile('(<' + name + '[^>]*?(?:' + key + '=' + attrs[key] + '.*?>))', re.M | re.S).findall(item)
-
+        print(lst2)
         if len(lst) == 0:
             log("Setting main list " + repr(lst2), 5)
             lst = lst2
@@ -273,7 +269,7 @@ def _getDOMElements(item, name, attrs):
 
 def parseDOM(html, name=u"", attrs={}, ret=False):
     log("Name: " + repr(name) + " - Attrs:" + repr(attrs) + " - Ret: " + repr(ret) + " - HTML: " + str(type(html)), 3)
-
+    ret = py2_decode(ret)
     if isinstance(name, str):
         try:
             name = name
@@ -282,16 +278,13 @@ def parseDOM(html, name=u"", attrs={}, ret=False):
 
     if isinstance(html, str):
         try:
-            print("STRING")
-            html = [html.decode("utf-8")] # Replace with chardet thingy
+            html = [py2_decode(html)]
         except:
             log("Couldn't decode html binary string. Data length: " + repr(len(html)))
             html = [html]
     elif isinstance(html, bytes):
-        print("BYTES")
         html = [html.decode('ascii')]
     elif str(type(html)) == "<type 'unicode'>":
-        print("UNICODE")
         html = [str(html)]
     elif not isinstance(html, list):
         log("Input isn't list or string/unicode.")
@@ -309,7 +302,8 @@ def parseDOM(html, name=u"", attrs={}, ret=False):
 
         lst = _getDOMElements(item, name, attrs)
 
-        if isinstance(ret, str):
+
+        if isinstance(ret, str) or type(ret) == "<type 'str'>":
             log("Getting attribute %s content for %s matches " % (ret, len(lst) ), 3)
             lst2 = []
             for match in lst:
@@ -328,92 +322,6 @@ def parseDOM(html, name=u"", attrs={}, ret=False):
 
     log("Done: " + repr(ret_lst), 3)
     return ret_lst
-
-
-def extractJS(data, function=False, variable=False, match=False, evaluate=False, values=False):
-    log("")
-    scripts = parseDOM(data, "script")
-    if len(scripts) == 0:
-        log("Couldn't find any script tags. Assuming javascript file was given.")
-        scripts = [data]
-
-    lst = []
-    log("Extracting", 4)
-    for script in scripts:
-        tmp_lst = []
-        if function:
-            tmp_lst = re.compile(function + '\(.*?\).*?;', re.M | re.S).findall(script)
-        elif variable:
-            tmp_lst = re.compile(variable + '[ ]+=.*?;', re.M | re.S).findall(script)
-        else:
-            tmp_lst = [script]
-        if len(tmp_lst) > 0:
-            log("Found: " + repr(tmp_lst), 4)
-            lst += tmp_lst
-        else:
-            log("Found nothing on: " + script, 4)
-
-    test = list(range(0, len(lst)))
-    test.reverse()
-    for i in test:
-        if match and lst[i].find(match) == -1:
-            log("Removing item: " + repr(lst[i]), 10)
-            del lst[i]
-        else:
-            log("Cleaning item: " + repr(lst[i]), 4)
-            if lst[i][0] == u"\n":
-                lst[i] == lst[i][1:]
-            if lst[i][len(lst) -1] == u"\n":
-                lst[i] == lst[i][:len(lst)- 2]
-            lst[i] = lst[i].strip()
-
-    if values or evaluate:
-        for i in range(0, len(lst)):
-            log("Getting values %s" % lst[i])
-            if function:
-                if evaluate:
-                    data = re.compile("(\(.*?\))", re.M | re.S).findall(lst[i])
-                else:
-                    data = re.compile("\((.*?)\)", re.M | re.S).findall(lst[i])
-            elif variable:
-                tlst = re.compile(variable +".*?=.*?;", re.M | re.S).findall(lst[i])
-                data = []
-                for tmp in tlst:
-                    cont_char = tmp[0]
-                    cont_char = tmp[tmp.find("=") + 1:].strip()
-                    cont_char = cont_char[0]
-                    if cont_char in "'\"":
-                        log("Using %s as quotation mark" % cont_char, 1)
-                        tmp = tmp[tmp.find(cont_char) + 1:tmp.rfind(cont_char)]
-                    else:
-                        log("No quotation mark found", 1)
-                        tmp = tmp[tmp.find("=") + 1: tmp.rfind(";")]
-
-                    tmp = tmp.strip()
-                    if len(tmp) > 0:
-                        data.append(tmp)
-            else:
-                log("ERROR: Don't know what to extract values from")
-
-            log("Values extracted: %s" % repr(data))
-            if len(data) > 0:
-                lst[i] = data[0]
-
-    if evaluate:
-        for i in range(0, len(lst)):
-            log("Evaluating %s" % lst[i])
-            data = lst[i].strip()
-            try:
-                try:
-                    lst[i] = json.loads(data)
-                except:
-                    log("Couldn't json.loads, trying eval")
-                    lst[i] = eval(data)
-            except:
-                log("Couldn't eval: %s from %s" % (repr(data), repr(lst[i])))
-
-    log("Done: " + str(len(lst)))
-    return lst
 
 def fetchPage(params={}):
     get = params.get
@@ -484,68 +392,5 @@ def fetchPage(params={}):
         ret_obj["status"] = 500
         return ret_obj
 
-
-def getCookieInfoAsHTML():
-    log("", 5)
-    if hasattr(sys.modules["__main__"], "cookiejar"):
-        cookiejar = sys.modules["__main__"].cookiejar
-
-        cookie = repr(cookiejar)
-        cookie = cookie.replace("<_LWPCookieJar.LWPCookieJar[", "")
-        cookie = cookie.replace("), Cookie(version=0,", "></cookie><cookie ")
-        cookie = cookie.replace(")]>", "></cookie>")
-        cookie = cookie.replace("Cookie(version=0,", "<cookie ")
-        cookie = cookie.replace(", ", " ")
-        log(repr(cookie), 5)
-        return cookie
-
-    log("Found no cookie", 5)
-    return ""
-
-
-# This function implements a horrible hack related to python 2.4's terrible unicode handling.
-def makeAscii(data):
-    log(repr(data), 5)
-
-    try:
-        return data.encode('ascii', "ignore")
-    except:
-        log("Hit except on : " + repr(data))
-        s = u""
-        for i in data:
-            try:
-                i.encode("ascii", "ignore")
-            except:
-                log("Can't convert character",5)
-                continue
-            else:
-                s += i
-
-        log(repr(s), 5)
-        return s
-
-
-def makeUTF8(data):
-    log(repr(data), 5)
-    return data
-
-
-def openFile(filepath, options=u"r"):
-    log(repr(filepath) + " - " + repr(options))
-    if options.find("b") == -1:  # Toggle binary mode on failure
-        alternate = options + u"b"
-    else:
-        alternate = options.replace(u"b", u"")
-
-    try:
-        log("Trying normal: %s" % options)
-        return io.open(filepath, options)
-    except:
-        log("Fallback to binary: %s" % alternate)
-        return io.open(filepath, alternate)
-
-
 def log(msg, level=False):
-    # print(msg)
-    # do nothing
-    i = 0
+    print(msg.encode('utf-8'))
