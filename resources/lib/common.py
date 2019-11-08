@@ -18,13 +18,10 @@
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from __future__ import unicode_literals
 
 from kodi_six.utils import py2_encode, py2_decode
-
-from builtins import str
-from builtins import range
-import sys
+from future.builtins import str
+from future.builtins import range
 
 try:
     from urllib.parse import unquote, urlencode
@@ -43,111 +40,13 @@ except ImportError:
     unescape = parser.unescape
 
 import re
-import io
-import json
 
 USERAGENT = u"Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:16.0.1) Gecko/20121011 Firefox/16.0.1"
-
-if hasattr(sys.modules["__main__"], "xbmc"):
-    xbmc = sys.modules["__main__"].xbmc
-else:
-    import xbmc
-
-if hasattr(sys.modules["__main__"], "xbmcgui"):
-    xbmcgui = sys.modules["__main__"].xbmcgui
-else:
-    import xbmcgui
-
-if hasattr(sys.modules["__main__"], "dbg"):
-    dbg = sys.modules["__main__"].dbg
-else:
-    dbg = False
-
-if hasattr(sys.modules["__main__"], "dbglevel"):
-    dbglevel = sys.modules["__main__"].dbglevel
-else:
-    dbglevel = 3
-
-# if hasattr(sys.modules["__main__"], "opener"):
-#    HTTPRequest.install_opener(sys.modules["__main__"].opener)
-
-
-# This function raises a keyboard for user input
-def getUserInput(title=u"Input", default=u"", hidden=False):
-    log("", 5)
-    result = None
-
-    # Fix for when this functions is called with default=None
-    if not default:
-        default = u""
-
-    keyboard = xbmc.Keyboard(default, title)
-    keyboard.setHiddenInput(hidden)
-    keyboard.doModal()
-
-    if keyboard.isConfirmed():
-        result = keyboard.getText()
-
-    log(repr(result), 5)
-    return result
-
-
-# This function raises a keyboard numpad for user input
-def getUserInputNumbers(title=u"Input", default=u""):
-    log("", 5)
-    result = None
-
-    # Fix for when this functions is called with default=None
-    if not default:
-        default = u""
-
-    keyboard = xbmcgui.Dialog()
-    result = keyboard.numeric(0, title, default)
-
-    log(repr(result), 5)
-    return str(result)
-
-
-def getXBMCVersion():
-    log("", 3)
-    version = xbmc.getInfoLabel( "System.BuildVersion" )
-    log(version, 3)
-    for key in ["-", " "]:
-        if version.find(key) -1:
-            version = version[:version.find(key)]
-    version = float(version)
-    log(repr(version))
-    return version
-
-def getParameters(parameterString):
-    log("", 5)
-    commands = {}
-    if getXBMCVersion() >= 12.0:
-        parameterString = unquote(parameterString)
-    splitCommands = parameterString[parameterString.find('?') + 1:].split('&')
-
-    for command in splitCommands:
-        if len(command) > 0:
-            splitCommand = command.split('=')
-            key = splitCommand[0]
-            try:
-                value = splitCommand[1].encode("utf-8")
-            except:
-                log("Error utf-8 encoding argument value: " + repr(splitCommand[1]))
-                value = splitCommand[1]
-
-            commands[key] = value
-
-    log(repr(commands), 5)
-    return commands
-
+DEBUG = False
 
 def replaceHTMLCodes(txt):
     log(repr(txt), 5)
-
-    # Fix missing ; in &#<number>;
     txt = re.sub('(&#[0-9]+)([^;^0-9]+)', '\\1;\\2', txt)
-
     txt = unescape(txt)
     txt = txt.replace("&amp;", "&")
     log(repr(txt), 5)
@@ -240,10 +139,8 @@ def _getDOMElements(item, name, attrs):
     lst = []
     for key in attrs:
         lst2 = re.compile('(<' + name + '[^>]*?(?:' + key + '=[\'"]' + attrs[key] + '[\'"].*?>))', re.M | re.S).findall(item)
-        print(lst2)
         if len(lst2) == 0 and attrs[key].find(" ") == -1:  # Try matching without quotation marks
             lst2 = re.compile('(<' + name + '[^>]*?(?:' + key + '=' + attrs[key] + '.*?>))', re.M | re.S).findall(item)
-        print(lst2)
         if len(lst) == 0:
             log("Setting main list " + repr(lst2), 5)
             lst = lst2
@@ -302,8 +199,7 @@ def parseDOM(html, name=u"", attrs={}, ret=False):
 
         lst = _getDOMElements(item, name, attrs)
 
-
-        if isinstance(ret, str) or type(ret) == "<type 'str'>":
+        if isinstance(ret, str):
             log("Getting attribute %s content for %s matches " % (ret, len(lst) ), 3)
             lst2 = []
             for match in lst:
@@ -393,4 +289,5 @@ def fetchPage(params={}):
         return ret_obj
 
 def log(msg, level=False):
-    print(msg.encode('utf-8'))
+    if DEBUG:
+        print(msg.encode('utf-8'))

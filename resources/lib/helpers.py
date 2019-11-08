@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from kodi_six.utils import py2_encode, py2_decode
+
 import xbmc
 import xbmcaddon
-import collections
 import sys
 
 try:
@@ -19,7 +20,6 @@ except ImportError:
 
 
 def unqoute_url(url):
-    print(type(url))
     try:
         return unquote(url)
     except:
@@ -36,16 +36,6 @@ def encode_parameters(parameters):
     except:
         parameters = {k: unicode(v).encode("utf-8") for k, v in parameters.iteritems()}
         return urlencode(parameters)
-
-def convert(data):
-    if isinstance(data, basestring):
-        return str(data).decode('utf-8')
-    elif isinstance(data, collections.Mapping):
-        return dict(map(convert, data.iteritems()))
-    elif isinstance(data, collections.Iterable):
-        return type(data)(map(convert, data))
-    else:
-        return data
 
 def url_get_request(url, authorization=False):
     if authorization:
@@ -68,7 +58,7 @@ def parameters_string_to_dict(parameters):
 
 
 def debugLog(message, loglevel=xbmc.LOGDEBUG):
-    output = "[ORF TVTHEK] " + message
+    output = "[ORF TVTHEK] " + py2_encode(message)
     xbmc.log(msg=output, level=loglevel)
 
 
@@ -76,5 +66,5 @@ def notifyUser(message):
     addon = xbmcaddon.Addon()
     name = addon.getAddonInfo('name')
     icon = addon.getAddonInfo('icon')
-    xbmc.executebuiltin('Notification(%s, %s, %s, %s)' % (name, message, "", icon))
+    xbmc.executebuiltin('Notification(%s, %s, %s, %s)' % (py2_encode(name), py2_encode(message), "", icon))
 

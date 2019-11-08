@@ -246,7 +246,6 @@ class htmlScraper(Scraper):
 
 			subtitle = time
 
-			#figure = parseDOM(item, name='figure', attrs={'class': 'episode-image'}, ret=False)
 			image = parseDOM(item, name='img', attrs={}, ret='src')
 			if len(image):
 				image = replaceHTMLCodes(image[0])
@@ -554,19 +553,20 @@ class htmlScraper(Scraper):
 		if self.enableBlacklist:
 			if mode == 'openSeries' or mode == 'getSendungenDetail':
 				blacklist = True
-		#debugLog("Adding List Item")
-		#debugLog("Mode: %s" % mode)
-		#debugLog("Videourl: %s" % videourl)
-		#debugLog("Duration: %s" % duration)
-		#debugLog("Banner: %s" % banner)
-		#debugLog("Backdrop: %s" % backdrop)
+		debugLog("Adding List Item")
+		debugLog("Mode: %s" % mode)
+		debugLog("Videourl: %s" % videourl)
+		debugLog("Duration: %s" % duration)
+		debugLog("Banner: %s" % banner)
+		debugLog("Backdrop: %s" % backdrop)
+		debugLog("Playable: %s" % playable)
 
 		return createListItem(title, banner, description, duration, date, channel, videourl, playable, folder, backdrop, self.pluginhandle, subtitles, blacklist, contextMenuItems)
 
 	# Parses a Video Page and extracts the Playlist/Description/...
 	def getLinks(self, url, banner, playlist):
 		url = unqoute_url(url)
-		#debugLog("Loading Videos from %s" % url)
+		debugLog("Loading Videos from %s" % url)
 		if banner is not None:
 			banner = unqoute_url(banner)
 
@@ -596,7 +596,8 @@ class htmlScraper(Scraper):
 				current_date = current_date[0]
 
 				current_time = parseDOM(html_data, name='span', attrs={'class': 'time'}, ret=False)
-				current_time = current_time[0]
+				if len(current_time):
+					current_time = current_time[0]
 
 				current_subtitle = parseDOM(html_data, name='p', attrs={'class': "profile.*?"}, ret=False)
 				if len(current_subtitle):
@@ -614,7 +615,6 @@ class htmlScraper(Scraper):
 				if data.get("selected_video")["duration"]:
 					current_duration = float(data.get("selected_video")["duration"])
 					current_duration = int(current_duration / 1000)
-
 
 				if "subtitles" in data.get("selected_video"):
 					current_subtitles = []
