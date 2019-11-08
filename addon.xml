@@ -2,8 +2,8 @@
 <addon id="plugin.video.orftvthek" name="ORF TVthek" version="0.10.0" provider-name="sofaking">
     <requires>
         <import addon="xbmc.python" version="2.14.0"/>
-        <import addon="script.module.future" version="0.16.0" />
-        <import addon="script.module.kodi-six" />
+        <import addon="script.module.future" version="0.16.0"/>
+        <import addon="script.module.kodi-six" version="0.0.5"/>
         <import addon="script.module.simplejson" version="2.0.10" optional="false"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">

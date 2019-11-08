@@ -34,7 +34,7 @@ def encode_parameters(parameters):
     try:
         return urlencode(parameters)
     except:
-        parameters = {k: unicode(v).encode("utf-8") for k, v in parameters.iteritems()}
+	parameters = {k: unicode(v).encode("utf-8") for k, v in list(parameters.items())}
         return urlencode(parameters)
 
 def url_get_request(url, authorization=False):

@@ -290,4 +290,4 @@ def fetchPage(params={}):
 
 def log(msg, level=False):
     if DEBUG:
-        print(msg.encode('utf-8'))
+        print((msg.encode('utf-8')))
