@@ -22,7 +22,7 @@ class htmlScraper(Scraper):
 	__urlArchive = __urlBase + '/history'
 	__urlTrailer = __urlBase + '/coming-soon'
 
-	def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop):
+	def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop, usePlayAllPlaylist):
 		self.translation = settings.getLocalizedString
 		self.xbmc = xbmc
 		self.videoQuality = quality
@@ -32,6 +32,7 @@ class htmlScraper(Scraper):
 		self.defaultbanner = defaultbanner
 		self.defaultbackdrop = defaultbackdrop
 		self.enableBlacklist = settings.getSetting("enableBlacklist") == "true"
+		self.usePlayAllPlaylist = usePlayAllPlaylist
 		debugLog('HTML Scraper - Init done')
 
 	def getMostViewed(self):
@@ -306,9 +307,8 @@ class htmlScraper(Scraper):
 				name_path = matches.group(1)
 				id_path = matches.group(2)
 				link = "%s/%s/%s/%s" % (self.__urlBase, "profile", name_path, id_path)
-				print("New Absolute link has been set to: %s" % link)
 			except IndexError:
-				print("Not a standard show link. Using default url: %s" % link)
+				debugLog("Not a standard show link. Using default url: %s" % link)
 
 			desc = self.formatDescription(title, channel, subtitle, desc, date, time)
 			debugLog("Link: %s" % link)
@@ -573,6 +573,68 @@ class htmlScraper(Scraper):
 
 		return createListItem(title, banner, description, duration, date, channel, videourl, playable, folder, backdrop, self.pluginhandle, subtitles, blacklist, contextMenuItems)
 
+	def getMainStreamInfos(self, html, data_json, banner):
+		stream_info = {}
+		try:
+			html_data = parseDOM(html.get("content"), name='section', attrs={'class': "b-video-details.*?"}, ret=False)
+			playlist_json = data_json.get('playlist')
+
+			current_channel = parseDOM(html_data, name='span', attrs={'class': "channel.*?"}, ret='aria-label')
+			if len(current_channel):
+				stream_info['channel'] = replaceHTMLCodes(current_channel[0])
+			else:
+				stream_info['channel'] = ""
+
+			current_date = parseDOM(html_data, name='span', attrs={'class': 'date'}, ret=False)
+			stream_info['date'] = current_date[0]
+
+			current_time = parseDOM(html_data, name='span', attrs={'class': 'time'}, ret=False)
+			if len(current_time):
+				stream_info['time'] = current_time[0]
+			else:
+				stream_info['time'] = ""
+
+			stream_info['second_headline'] = ""
+			current_subtitle = parseDOM(html_data, name='p', attrs={'class': "profile.*?"}, ret=False)
+			current_subheadline = parseDOM(current_subtitle, name='span', attrs={'class': "js-subheadline"}, ret=False)
+			if len(current_subheadline):
+				stream_info['second_headline'] = stripTags(replaceHTMLCodes(current_subheadline[0]))
+			else:
+				if len(current_subtitle):
+					stream_info['second_headline'] = stripTags(replaceHTMLCodes(current_subtitle[0]))
+
+			if len(html_data):
+				html_desc = parseDOM(html_data, name='p', attrs={'class': "description-text.*?"}, ret=False)
+				stream_info['description'] = stripTags(replaceHTMLCodes(html_desc[0]))
+
+			stream_info['main_title'] = playlist_json['title']
+			if "preview_image_url" in playlist_json:
+				stream_info['teaser_image'] = playlist_json['preview_image_url']
+			else:
+				stream_info['teaser_image'] = banner
+
+			stream_info['title'] = data_json.get("selected_video")["title"]
+			stream_info['full_description'] = self.formatDescription(stream_info['title'], stream_info['channel'], stream_info['second_headline'], stream_info['description'], stream_info['date'], stream_info['time'])
+
+			if data_json.get("selected_video")["description"]:
+				stream_info['description'] = data_json.get("selected_video")["description"]
+
+			if data_json.get("selected_video")["duration"]:
+				tmp_duration = float(data_json.get("selected_video")["duration"])
+				stream_info['duration'] = int(tmp_duration / 1000)
+
+			if "subtitles" in data_json.get("selected_video"):
+				main_subtitles = []
+				for sub in data_json.get("selected_video")["subtitles"]:
+					main_subtitles.append(sub.get(u'src'))
+				stream_info['subtitles'] = main_subtitles
+			else:
+				stream_info['subtitles'] = None
+			stream_info['main_videourl'] = self.getVideoUrl(data_json.get("selected_video")["sources"])
+		except:
+			debugLog("Error fetching stream infos from html")
+		return stream_info
+
 	# Parses a Video Page and extracts the Playlist/Description/...
 	def getLinks(self, url, banner, playlist):
 		url = unqoute_url(url)
@@ -580,70 +642,50 @@ class htmlScraper(Scraper):
 		if banner is not None:
 			banner = unqoute_url(banner)
 
+		stream_infos = {}
+		playlist_json = {}
+		video_items = []
 		html = fetchPage({'link': url})
 		data = parseDOM(html.get("content"), name='div', attrs={'class': "jsb_ jsb_VideoPlaylist"}, ret='data-jsb')
-		html_data = parseDOM(html.get("content"), name='section', attrs={'class': "b-video-details.*?"}, ret=False)
-		current_duration = 0
+
 		if len(data):
 			try:
 				data = data[0]
 				data = replaceHTMLCodes(data)
-				data = json.loads(data)
-				current_preview_img = data.get("selected_video")["preview_image_url"]
-				if not current_preview_img:
-					current_preview_img = banner
-				video_items = data.get("playlist")["videos"]
-				current_title = data.get("selected_video")["title"]
-				current_desc = ""
-
-				current_channel = parseDOM(html_data, name='span', attrs={'class': "channel.*?"}, ret='aria-label')
-				if len(current_channel):
-					current_channel = replaceHTMLCodes(current_channel[0])
-				else:
-					current_channel = ""
-
-				current_date = parseDOM(html_data, name='span', attrs={'class': 'date'}, ret=False)
-				current_date = current_date[0]
-
-				current_time = parseDOM(html_data, name='span', attrs={'class': 'time'}, ret=False)
-				if len(current_time):
-					current_time = current_time[0]
-
-				current_subtitle = parseDOM(html_data, name='p', attrs={'class': "profile.*?"}, ret=False)
-				if len(current_subtitle):
-					current_subtitle = stripTags(replaceHTMLCodes(current_subtitle[0]))
-				else:
-					current_subtitle = ""
-
-				if data.get("selected_video")["description"]:
-					current_desc = data.get("selected_video")["description"]
-				else:
-					if len(html_data):
-						html_desc = parseDOM(html_data, name='p', attrs={'class': "description-text.*?"}, ret=False)
-						current_desc = stripTags(replaceHTMLCodes(html_desc[0]))
-
-				if data.get("selected_video")["duration"]:
-					current_duration = float(data.get("selected_video")["duration"])
-					current_duration = int(current_duration / 1000)
-
-				if "subtitles" in data.get("selected_video"):
-					current_subtitles = []
-					for sub in data.get("selected_video")["subtitles"]:
-						current_subtitles.append(sub.get(u'src'))
-				else:
-					current_subtitles = None
-				current_videourl = self.getVideoUrl(data.get("selected_video")["sources"]);
-
-				current_desc = self.formatDescription(current_title, current_channel, current_subtitle, current_desc, current_date, current_time)
-
+				data_json = json.loads(data)
+				playlist_json = data_json.get('playlist')
+				stream_infos = self.getMainStreamInfos(html, data_json, banner)
+				video_items = playlist_json["videos"]
 			except Exception as e:
 				debugLog("Error Loading Episode from %s" % url)
-				current_subtitles = None
 
+			# Add the gapless video if available
+			try:
+				if "is_gapless" in playlist_json:
+					gapless_subtitles = []
+					gapless_name = '-- %s --' % self.translation(30059)
+					if playlist_json['is_gapless']:
+						gapless_videourl = self.getVideoUrl(playlist_json['gapless_video']['sources'])
+						if "subtitles" in playlist_json['gapless_video']:
+							for sub in playlist_json['gapless_video']["subtitles"]:
+								gapless_subtitles.append(sub.get(u'src'))
+						else:
+							global_subtitles = None
+						if "duration_in_seconds" in playlist_json:
+							gapless_duration = playlist_json["duration_in_seconds"]
+						else:
+							gapless_duration = ""
+						liz = self.html2ListItem(gapless_name, stream_infos['teaser_image'], "", stream_infos['full_description'], gapless_duration, '', '', gapless_videourl, gapless_subtitles, False, True)
+			except IndexError as e:
+				debugLog("No gapless video added for %s" % url)
+
+
+			# Multiple chapters available
 			if len(video_items) > 1:
-				play_all_name = '[%s] ' % self.translation(30015)
+				play_all_name = '-- %s --' % self.translation(30060)
 				debugLog("Found Video Playlist with %d Items" % len(video_items))
-				createPlayAllItem(play_all_name, self.pluginhandle)
+				if self.usePlayAllPlaylist:
+					createPlayAllItem(play_all_name, self.pluginhandle, stream_infos)
 				for video_item in video_items:
 					try:
 						title = video_item["title"]
@@ -676,9 +718,9 @@ class htmlScraper(Scraper):
 						continue
 				return playlist
 			else:
-				debugLog("No Playlist Items found for %s. Setting up single video view." % current_title)
-				liz = self.html2ListItem(current_title, current_preview_img, "", current_desc, current_duration, '', '', current_videourl, current_subtitles, False, True)
-				playlist.add(current_videourl, liz)
+				debugLog("No Playlist Items found for %s. Setting up single video view." % stream_infos['title'])
+				liz = self.html2ListItem(stream_infos['title'], stream_infos['teaser_image'], "", stream_infos['full_description'], stream_infos['duration'], '', '', stream_infos['main_videourl'], stream_infos['subtitles'], False, True)
+				playlist.add(stream_infos['main_videourl'], liz)
 				return playlist
 		else:
 			notifyUser((self.translation(30052)))

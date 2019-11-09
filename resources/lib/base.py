@@ -34,12 +34,17 @@ def buildLink(link):
         return link
 
 
-def createPlayAllItem(name, pluginhandle):
+def createPlayAllItem(name, pluginhandle, stream_info=False):
     play_all_parameters = {"mode": "playlist"}
     play_all_url = build_kodi_url(play_all_parameters)
     play_all_item = xbmcgui.ListItem(name)
-    play_all_item.setInfo(type="Video", infoLabels={"Title": name, "Plot": ""})
-    xbmcplugin.addDirectoryItem(pluginhandle, play_all_url, play_all_item, isFolder=False, totalItems=-1)
+    if stream_info:
+        description = stream_info['description']
+        play_all_item.setArt({'thumb': stream_info['teaser_image'], 'poster': stream_info['teaser_image']})
+    else:
+        description = ""
+    play_all_item.setInfo(type="Video", infoLabels={"Title": name, "Plot": description})
+    xbmcplugin.addDirectoryItem(pluginhandle, play_all_url, play_all_item, isFolder=True, totalItems=-1)
 
 
 def createListItem(title, banner, description, duration, date, channel, videourl, playable, folder, backdrop, pluginhandle, subtitles=None, blacklist=False, contextMenuItems=None):

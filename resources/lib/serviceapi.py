@@ -195,19 +195,22 @@ class serviceAPI(Scraper):
             listItem = self.JSONSegment2ListItem(result.get('_embedded').get('segments')[0])
             playlist.add(listItem[0], listItem[1])
         else:
-            play_all_name = "[ " + (self.translation(30015)).encode("utf-8") + " ]"
+            gapless_name = '-- %s --' % self.translation(30059)
+            streamingURL = self.JSONStreamingURL(result.get('sources'))
+            description = result.get('description')
+            duration = result.get('duration_seconds')
+            teaser_image = result.get('playlist').get('preview_image_url')
+            date = time.strptime(result.get('date')[0:19], '%Y-%m-%dT%H:%M:%S')
+            subtitles = [x.get('src') for x in result.get('playlist').get('gapless_video').get('subtitles')]
+            createListItem(gapless_name, teaser_image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, True, False, self.defaultbackdrop, self.pluginhandle, subtitles)
+
             if self.usePlayAllPlaylist:
-                createPlayAllItem(play_all_name, self.pluginhandle)
-            else:
-                streamingURL = self.JSONStreamingURL(result.get('sources'))
-                description = result.get('description')
-                duration = result.get('duration_seconds')
-                date = time.strptime(result.get('date')[0:19], '%Y-%m-%dT%H:%M:%S')
-                subtitles = [x.get('src') for x in result.get('playlist').get('gapless_video').get('subtitles')]
-                listItem = createListItem(play_all_name, None, description, duration, time.strftime('%Y-%m-%d', date),
-                                          '', streamingURL, True, False, self.defaultbackdrop, self.pluginhandle,
-                                          subtitles)
-                playlist.add(streamingURL, listItem)
+                play_all_name = '-- %s --' % self.translation(30060)
+                stream_infos = {
+                    'teaser_image': teaser_image,
+                    'description': description
+                }
+                createPlayAllItem(play_all_name, self.pluginhandle, stream_infos)
 
             for segment in result.get('_embedded').get('segments'):
                 listItem = self.JSONSegment2ListItem(segment)

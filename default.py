@@ -57,7 +57,7 @@ if useServiceAPI:
     scraper = serviceAPI(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop, usePlayAllPlaylist)
 else:
     debugLog("HTML Scraper activated")
-    scraper = htmlScraper(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop)
+    scraper = htmlScraper(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop, usePlayAllPlaylist)
 
 # parameters
 params = parameters_string_to_dict(sys.argv[2])
@@ -113,9 +113,11 @@ if mode == 'openSeries':
     if autoPlayPrompt and playlist is not None:
         listCallback(False, pluginhandle)
         ok = xbmcgui.Dialog().yesno((translation(30047)).encode("utf-8"), (translation(30048)).encode("utf-8"))
+        listCallback(False, pluginhandle)
         if ok:
             debugLog("Starting Playlist for %s" % unqoute_url(link))
             tvthekplayer.play(playlist)
+
     else:
         debugLog("Running Listcallback from no autoplay openseries")
         listCallback(False, pluginhandle)

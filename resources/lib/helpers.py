@@ -59,7 +59,7 @@ def parameters_string_to_dict(parameters):
 
 def debugLog(message, loglevel=xbmc.LOGDEBUG):
     output = "[ORF TVTHEK] " + py2_encode(message)
-    xbmc.log(msg=output, level=loglevel)
+    #xbmc.log(msg=output, level=loglevel)
 
 
 def notifyUser(message):
