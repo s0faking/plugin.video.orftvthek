@@ -300,8 +300,18 @@ class htmlScraper(Scraper):
 			link = parseDOM(item, name='a', attrs={'class': 'teaser-link.*?'}, ret='href')
 			link = link[0]
 
-			desc = self.formatDescription(title, channel, subtitle, desc, date, time)
+			try:
+				regex = r"https://tvthek.orf.at/profile/(.*)/(.*)/(.*)/(.*)"
+				matches = re.search(regex, link)
+				name_path = matches.group(1)
+				id_path = matches.group(2)
+				link = "%s/%s/%s/%s" % (self.__urlBase, "profile", name_path, id_path)
+				print("New Absolute link has been set to: %s" % link)
+			except IndexError:
+				print("Not a standard show link. Using default url: %s" % link)
 
+			desc = self.formatDescription(title, channel, subtitle, desc, date, time)
+			debugLog("Link: %s" % link)
 			parameters = {"link": link, "banner": image, "mode": "getSendungenDetail"}
 			url = build_kodi_url(parameters)
 			self.html2ListItem(title, image, "", desc, "", "", "", url)
