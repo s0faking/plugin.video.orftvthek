@@ -85,8 +85,9 @@ def getMainMenu():
     if not useServiceAPI:
         addDirectory((translation(30049)).encode("utf-8"), archive_banner, defaultbackdrop, "", "", "getArchiv", pluginhandle)
     addDirectory((translation(30027)).encode("utf-8"), trailer_banner, defaultbackdrop, "", "", "openTrailers", pluginhandle)
-    addDirectory((translation(30007)).encode("utf-8"), search_banner, defaultbackdrop, "", "", "getSearchHistory", pluginhandle)
-    if Settings.blacklist():
+    if not useServiceAPI:
+        addDirectory((translation(30007)).encode("utf-8"), search_banner, defaultbackdrop, "", "", "getSearchHistory", pluginhandle)
+    if Settings.blacklist() and not useServiceAPI:
         addDirectory((translation(30037)).encode("utf-8"), blacklist_banner, defaultbackdrop, "", "", "openBlacklist", pluginhandle)
     listCallback(False, pluginhandle)
 
@@ -117,13 +118,12 @@ if mode == 'openSeries':
         if ok:
             debugLog("Starting Playlist for %s" % unqoute_url(link))
             tvthekplayer.play(playlist)
-
     else:
         debugLog("Running Listcallback from no autoplay openseries")
         listCallback(False, pluginhandle)
 elif mode == 'unblacklistShow':
     heading = translation(30040).encode('UTF-8') % unqoute_url(link).replace('+', ' ').strip()
-    if xbmcgui.Dialog().yesno(heading, heading):
+    if isBlacklisted(link) and xbmcgui.Dialog().yesno(heading, heading):
         unblacklistItem(link)
         xbmc.executebuiltin('Container.Refresh')
 elif mode == 'blacklistShow':

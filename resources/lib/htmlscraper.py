@@ -416,7 +416,6 @@ class htmlScraper(Scraper):
 				url = build_kodi_url(parameters)
 				self.html2ListItem(title, image, "", desc, "", "", "", url)
 
-
 	def getLaneTeasers(self, html):
 		items = parseDOM(html.get("content"), name='article', attrs={'class': "b-topic-teaser"}, ret=False)
 
@@ -1025,7 +1024,7 @@ class htmlScraper(Scraper):
 		keyboard = self.xbmc.Keyboard(link)
 		keyboard.doModal()
 		if keyboard.isConfirmed():
-			keyboard_in = self.removeUmlauts(keyboard.getText())
+			keyboard_in = keyboard.getText()
 			if keyboard_in != link:
 				searchHistoryPush(keyboard_in)
 			searchurl = "%s?q=%s" % (self.__urlSearch, keyboard_in.replace(" ", "+"))

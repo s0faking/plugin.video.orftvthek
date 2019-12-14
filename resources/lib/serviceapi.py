@@ -201,8 +201,9 @@ class serviceAPI(Scraper):
             duration = result.get('duration_seconds')
             teaser_image = result.get('playlist').get('preview_image_url')
             date = time.strptime(result.get('date')[0:19], '%Y-%m-%dT%H:%M:%S')
-            subtitles = [x.get('src') for x in result.get('playlist').get('gapless_video').get('subtitles')]
-            createListItem(gapless_name, teaser_image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, True, False, self.defaultbackdrop, self.pluginhandle, subtitles)
+            if result.get('playlist').get('is_gapless'):
+                subtitles = [x.get('src') for x in result.get('playlist').get('gapless_video').get('subtitles')]
+                createListItem(gapless_name, teaser_image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, True, False, self.defaultbackdrop, self.pluginhandle, subtitles)
 
             if self.usePlayAllPlaylist:
                 play_all_name = '-- %s --' % self.translation(30060)
@@ -283,6 +284,7 @@ class serviceAPI(Scraper):
                 inputstreamAdaptive = False
 
             foundProgram = []
+            showFullSchedule = xbmcaddon.Addon().getSetting('showLiveStreamSchedule') == 'true'
 
             for result in json.loads(response.read().decode('UTF-8')).get('_embedded').get('items'):
                 description = result.get('description')
@@ -292,7 +294,7 @@ class serviceAPI(Scraper):
                 duration = max(time.mktime(livestreamEnd) - max(time.mktime(livestreamStart), time.mktime(time.localtime())), 1)
                 contextMenuItems = []
 
-                if programName not in foundProgram:
+                if programName not in foundProgram or showFullSchedule:
                     foundProgram.append(programName)
 
                     link = self.JSONStreamingURL(result.get('sources'))

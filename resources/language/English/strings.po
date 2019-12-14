@@ -232,7 +232,7 @@ msgid "In Focus"
 msgstr ""
 
 msgctxt "#30058"
-msgid "Show -- Play Chapters --"
+msgid "Show 'Play Chapters'"
 msgstr ""
 
 msgctxt "#30059"
@@ -241,4 +241,8 @@ msgstr ""
 
 msgctxt "#30060"
 msgid "Play Chapters"
+msgstr ""
+
+msgctxt "#30061"
+msgid "Show Full Livestream Schedule"
 msgstr ""

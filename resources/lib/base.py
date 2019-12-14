@@ -6,7 +6,7 @@ import re
 
 import simplejson as json
 from kodi_six import xbmcplugin, xbmcgui
-
+from kodi_six.utils import py2_encode, py2_decode
 from . import Settings
 from .helpers import *
 
@@ -121,10 +121,10 @@ def checkBlacklist(title):
     bl_json_file = os.path.join(addonUserDataFolder, 'blacklist.json')
     if os.path.exists(bl_json_file):
         if os.path.getsize(bl_json_file) > 0:
-            data = getBlacklist(bl_json_file)
+            data = getJsonFile(bl_json_file)
             tmp = data
             for item in tmp:
-                if item.encode('UTF-8') == title:
+                if py2_decode(item) == py2_decode(title):
                     return True
     return False
 
@@ -134,7 +134,7 @@ def removeBlacklist(title):
     bl_json_file = os.path.join(addonUserDataFolder, 'blacklist.json')
     if os.path.exists(bl_json_file):
         if os.path.getsize(bl_json_file) > 0:
-            data = getBlacklist(bl_json_file)
+            data = getJsonFile(bl_json_file)
             tmp = data
             for item in tmp:
                 if item.encode('UTF-8') == title:
@@ -153,7 +153,7 @@ def printBlacklist(banner, backdrop, translation, pluginhandle):
                 description = translation(30040).encode('UTF-8') % item
                 parameters = {'link': item, 'mode': 'unblacklistShow'}
                 url = build_kodi_url(parameters)
-                createListItem(item, banner, description, None, None, None, url, True, False, backdrop, pluginhandle)
+                createListItem(item, banner, description, None, None, None, url, False, False, backdrop, pluginhandle)
 
 
 def saveJsonFile(data, file):
@@ -200,6 +200,12 @@ def unblacklistItem(title):
     title = unqoute_url(title)
     title = title.replace("+", " ").strip()
     removeBlacklist(title)
+
+
+def isBlacklisted(title):
+    title = unqoute_url(title)
+    title = py2_decode(title.replace("+", " ").strip())
+    return checkBlacklist(title)
 
 
 def searchHistoryPush(title):

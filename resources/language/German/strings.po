@@ -218,8 +218,8 @@ msgid "In Focus"
 msgstr "Im Fokus"
 
 msgctxt "#30058"
-msgid "Show -- Play Chapters --"
-msgstr "'-- Kapitel abspielen --' anzeigen"
+msgid "Show 'Play Chapters'"
+msgstr "'Kapitel abspielen' anzeigen"
 
 msgctxt "#30059"
 msgid "Play Full Video"
@@ -228,3 +228,7 @@ msgstr "Ganzes Video abspielen"
 msgctxt "#30060"
 msgid "Play Chapters"
 msgstr "Kapitel abspielen"
+
+msgctxt "#30061"
+msgid "Show Full Livestream Schedule"
+msgstr "Livestream Programm anzeigen"
