@@ -4,15 +4,17 @@
 from kodi_six.utils import py2_encode, py2_decode
 
 import xbmc
+import xbmcgui
 import xbmcaddon
 import sys
 
-try:
+PY3 = sys.version_info.major >=3
+if PY3:
     from urllib.parse import unquote, urlencode
     from urllib.request import urlopen as OpenRequest
     from urllib.request import Request as HTTPRequest
     from urllib.error import HTTPError
-except ImportError:
+else:
     from urllib import unquote, urlencode
     from urllib2 import HTTPError
     from urllib2 import urlopen as OpenRequest
@@ -37,6 +39,7 @@ def encode_parameters(parameters):
         parameters = {k: unicode(v).encode("utf-8") for k, v in list(parameters.items())}
         return urlencode(parameters)
 
+
 def url_get_request(url, authorization=False):
     if authorization:
         request = HTTPRequest(url)
@@ -60,11 +63,3 @@ def parameters_string_to_dict(parameters):
 def debugLog(message, loglevel=xbmc.LOGDEBUG):
     output = "[ORF TVTHEK] " + py2_encode(message)
     #xbmc.log(msg=output, level=loglevel)
-
-
-def notifyUser(message):
-    addon = xbmcaddon.Addon()
-    name = addon.getAddonInfo('name')
-    icon = addon.getAddonInfo('icon')
-    xbmc.executebuiltin('Notification(%s, %s, %s, %s)' % (py2_encode(name), py2_encode(message), "", icon))
-

@@ -722,7 +722,7 @@ class htmlScraper(Scraper):
 				playlist.add(stream_infos['main_videourl'], liz)
 				return playlist
 		else:
-			notifyUser((self.translation(30052)))
+			showDialog((self.translation(30052)))
 			sys.exit()
 
 	# Returns Live Stream Listing

@@ -16,7 +16,7 @@
         <summary lang="en">ORF TVthek</summary>
         <description lang="de">ORF TVthek - Ermöglicht Ihnen den Zugriff auf die ORF TVthek Video Platform</description>
         <description lang="en">ORF TVthek - This plugin provides access to the Austrian "ORF TVthek"</description>
-        <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+        <license>GPL-2.0-only</license>
         <forum>https://forum.kodi.tv/showthread.php?tid=159835</forum>
         <email>sofaking@gettingmoney.at</email>
         <website>https://tvthek.orf.at</website>

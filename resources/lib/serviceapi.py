@@ -3,10 +3,12 @@
 
 import datetime
 import time
+import sys
 
-try:
+PY3 = sys.version_info.major >=3
+if PY3:
     from urllib.error import HTTPError
-except ImportError:
+else:
     from urllib2 import HTTPError
 
 from .base import *

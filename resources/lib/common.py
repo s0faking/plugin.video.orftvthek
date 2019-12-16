@@ -22,15 +22,17 @@
 from kodi_six.utils import py2_encode, py2_decode
 from future.builtins import str
 from future.builtins import range
+import sys
 
-try:
+PY3 = sys.version_info.major >=3
+if PY3:
     from urllib.parse import unquote, urlencode
     from urllib.request import urlopen as OpenRequest
     from urllib.request import Request as HTTPRequest
     from urllib.error import HTTPError
     from html.parser import HTMLParser
     from html import unescape
-except ImportError:
+else:
     from urllib import unquote, urlencode
     from urllib2 import urlopen as OpenRequest
     from urllib2 import Request as HTTPRequest
