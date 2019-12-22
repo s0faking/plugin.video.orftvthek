@@ -1,12 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from kodi_six.utils import py2_encode, py2_decode
 import datetime
 from .common import *
 
 from .base import *
 from .Scraper import *
-
 
 
 class htmlScraper(Scraper):
