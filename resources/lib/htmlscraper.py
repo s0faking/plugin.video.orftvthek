@@ -60,7 +60,7 @@ class htmlScraper(Scraper):
 		for source in sources:
 			if source["protocol"].lower() == self.videoProtocol.lower():
 				if source["delivery"].lower() == self.videoDelivery.lower():
-					if source["quality"].lower() == self.videoQuality.lower():
+					if source["quality"].lower()[0:1] == self.videoQuality.lower()[0:1]:
 						return generateAddonVideoUrl(source["src"])
 		return False
 
