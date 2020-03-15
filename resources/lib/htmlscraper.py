@@ -737,7 +737,7 @@ class htmlScraper(Scraper):
 			channel = parseDOM(item, name='img', attrs={'class': 'channel-logo'}, ret="alt")
 			channel = replaceHTMLCodes(channel[0])
 
-			bundesland_article = parseDOM(item, name='li', attrs={'class': '.*?is-bundesland-heute.is-live*?'}, ret='data-jsb')
+			bundesland_article = parseDOM(item, name='li', attrs={'class': '.*?is-bundesland-heute.*?'}, ret='data-jsb')
 			article = parseDOM(item, name='article', attrs={'class': 'b-livestream-teaser is-live.*?'})
 			if not len(bundesland_article) and len(article):
 				figure = parseDOM(article, name='figure', attrs={'class': 'teaser-img'}, ret=False)
