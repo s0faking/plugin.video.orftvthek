@@ -737,7 +737,7 @@ class htmlScraper(Scraper):
 			channel = parseDOM(item, name='img', attrs={'class': 'channel-logo'}, ret="alt")
 			channel = replaceHTMLCodes(channel[0])
 
-			bundesland_article = parseDOM(item, name='li', attrs={'class': '.*?is-bundesland-heute.*?'}, ret='data-jsb')
+			bundesland_article = parseDOM(item, name='li', attrs={'class': '.*?is-bundesland-heute.is-live*?'}, ret='data-jsb')
 			article = parseDOM(item, name='article', attrs={'class': 'b-livestream-teaser.*?'})
 			if not len(bundesland_article) and len(article):
 				figure = parseDOM(article, name='figure', attrs={'class': 'teaser-img'}, ret=False)
@@ -770,10 +770,9 @@ class htmlScraper(Scraper):
 			elif len(bundesland_article):
 				bundesland_data = replaceHTMLCodes(bundesland_article[0])
 				bundesland_data = json.loads(bundesland_data)
-
 				for bundesland_item_key in bundesland_data:
 					bundesland_item = bundesland_data.get(bundesland_item_key)
-                    if bundesland_item:
+                    if bundesland_item and bundesland_item is not True and len(bundesland_item):
     					bundesland_title = bundesland_item.get('title')
     					bundesland_image = bundesland_item.get('img')
     					bundesland_link = bundesland_item.get('url')
