@@ -51,8 +51,6 @@ def createListItem(title, banner, description, duration, date, channel, videourl
     contextMenuItems = contextMenuItems or []
 
     liz = xbmcgui.ListItem(title)
-    liz.setIconImage(banner)
-    liz.setThumbnailImage(banner)
     liz.setInfo(type="Video", infoLabels={"Title": title})
     liz.setInfo(type="Video", infoLabels={"Tvshowtitle": title})
     liz.setInfo(type="Video", infoLabels={"Sorttitle": title})
@@ -62,7 +60,7 @@ def createListItem(title, banner, description, duration, date, channel, videourl
     liz.setInfo(type="Video", infoLabels={"Studio": channel})
     liz.setProperty('fanart_image', backdrop)
     liz.setProperty('IsPlayable', str(playable and not folder))
-    liz.setArt({'thumb': banner, 'poster': banner, 'fanart': backdrop})
+    liz.setArt({'thumb': banner, 'poster': banner, 'fanart': backdrop, "icon": banner})
 
     if not folder:
         liz.setInfo(type="Video", infoLabels={"mediatype": 'video'})
