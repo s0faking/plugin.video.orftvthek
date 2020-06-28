@@ -1,7 +1,46 @@
+* 0.10.3
+- fixed broken livestream when "bundesland heute" videos are available
+
+* 0.10.2
+- tvthek added new quality strings. caused error on full hd setting
+
+* 0.10.1
+- fixed kodi crash when using the playlist listitem
+
+* 0.10.0
+- python2/3 compatible
+- added 'play full video' for htmlscraper
+- show listitems are absolute now and can be added to favourites
+- minor fixes for serviceapi & htmlscraper 
+
+0.9.2
+- fixed frontpage (new html markup)
+- removed 'im fokus' & 'orf tipps'
+- changed url to https for the htmlscraper
+
+0.9.1
+- optimized live stream option for serviceapi (Issue #83)
+- removed scheduled livestream because it results in an endless loop of dialog boxes (serviceapi)
+
+0.9.0
+- fixed htmlscraper (new orf tvthek website structure)
+- "Im Fokus" added for the htmlscraper
+- "TV Programm" added for the htmlscraper
+- New icons/backdrops according to the new CI
+
+0.8.8
+- removed stream method option because its not available with the htmlscraper. Progressive streaming can still be used with the serviceAPI. 
+
+0.8.7
+- another fix for the restart option
+
+0.8.6
+- fixed restart option
+
 0.8.5
 - added UHD livestream option
 - added Adaptive quality settings
-- removed "play all" item for htmlscraper (issue #66)
+- fixed "play all" item (issue #66)
 - fixed "Bundesland Heute" livestream listing for the htmlscraper
 
 0.8.4
@@ -21,7 +60,6 @@
 - Restart Option working (inputstream.adaptive needed)
 - minor changes and optimizations for the serviceAPI Scraper
 - code cleanup
-
 
 0.7.2
 - Fixed Livestream issue by passing UA
