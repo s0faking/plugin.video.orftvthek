@@ -21,5 +21,9 @@
         <email>sofaking@gettingmoney.at</email>
         <website>https://tvthek.orf.at</website>
         <source>https://github.com/s0faking/plugin.video.orftvthek</source>
+        <assets>
+            <icon>resources/icon.png</icon>
+            <fanart>resources/fanart.jpg</fanart>
+        </assets>
     </extension>
 </addon>
