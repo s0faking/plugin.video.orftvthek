@@ -5,7 +5,7 @@ import os
 import re
 
 import simplejson as json
-from kodi_six import xbmcplugin, xbmcgui
+from kodi_six import xbmcplugin, xbmcgui, xbmcvfs
 from kodi_six.utils import py2_encode, py2_decode
 from . import Settings
 from .helpers import *
@@ -115,7 +115,7 @@ def createListItem(title, banner, description, duration, date, channel, videourl
 
 
 def checkBlacklist(title):
-    addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek")
+    addonUserDataFolder = xbmcvfs.translatePath("special://profile/addon_data/plugin.video.orftvthek")
     bl_json_file = os.path.join(addonUserDataFolder, 'blacklist.json')
     if os.path.exists(bl_json_file):
         if os.path.getsize(bl_json_file) > 0:
@@ -128,7 +128,7 @@ def checkBlacklist(title):
 
 
 def removeBlacklist(title):
-    addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek")
+    addonUserDataFolder = xbmcvfs.translatePath("special://profile/addon_data/plugin.video.orftvthek")
     bl_json_file = os.path.join(addonUserDataFolder, 'blacklist.json')
     if os.path.exists(bl_json_file):
         if os.path.getsize(bl_json_file) > 0:
@@ -141,7 +141,7 @@ def removeBlacklist(title):
 
 
 def printBlacklist(banner, backdrop, translation, pluginhandle):
-    addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek")
+    addonUserDataFolder = xbmcvfs.translatePath("special://profile/addon_data/plugin.video.orftvthek")
     bl_json_file = os.path.join(addonUserDataFolder, 'blacklist.json')
     if os.path.exists(bl_json_file):
         if os.path.getsize(bl_json_file) > 0:
@@ -167,7 +167,7 @@ def getJsonFile(file):
 
 
 def blacklistItem(title):
-    addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek")
+    addonUserDataFolder = xbmcvfs.translatePath("special://profile/addon_data/plugin.video.orftvthek")
     bl_json_file = os.path.join(addonUserDataFolder, 'blacklist.json')
     title = unqoute_url(title)
     title = title.replace("+", " ").strip()
@@ -207,7 +207,7 @@ def isBlacklisted(title):
 
 
 def searchHistoryPush(title):
-    addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek")
+    addonUserDataFolder = xbmcvfs.translatePath("special://profile/addon_data/plugin.video.orftvthek")
     json_file = os.path.join(addonUserDataFolder, 'searchhistory.json')
     title = unqoute_url(title)
     title = title.replace("+", " ").strip()
@@ -233,7 +233,7 @@ def searchHistoryPush(title):
         saveJsonFile(data, json_file)
 
 def searchHistoryGet():
-    addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/plugin.video.orftvthek")
+    addonUserDataFolder = xbmcvfs.translatePath("special://profile/addon_data/plugin.video.orftvthek")
     json_file = os.path.join(addonUserDataFolder, 'searchhistory.json')
     if os.path.exists(json_file):
         if os.path.getsize(json_file) > 0:

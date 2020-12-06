@@ -12,10 +12,10 @@
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
         <language>de en</language>
-        <summary lang="de">ORF TVthek</summary>
-        <summary lang="en">ORF TVthek</summary>
-        <description lang="de">ORF TVthek - Ermöglicht Ihnen den Zugriff auf die ORF TVthek Video Platform</description>
-        <description lang="en">ORF TVthek - This plugin provides access to the Austrian "ORF TVthek"</description>
+        <summary lang="de_DE">ORF TVthek</summary>
+        <summary lang="en_GB">ORF TVthek</summary>
+        <description lang="de_DE">ORF TVthek - Ermöglicht Ihnen den Zugriff auf die ORF TVthek Video Platform</description>
+        <description lang="en_GB">ORF TVthek - This plugin provides access to the Austrian "ORF TVthek"</description>
         <license>GPL-2.0-only</license>
         <forum>https://forum.kodi.tv/showthread.php?tid=159835</forum>
         <email>sofaking@gettingmoney.at</email>
@@ -25,5 +25,8 @@
             <icon>resources/icon.png</icon>
             <fanart>resources/fanart.jpg</fanart>
         </assets>
+        <news>v0.11.0 (06/12/2020)
+            [new] compatible with kodi matrix
+        </news>
     </extension>
 </addon>
