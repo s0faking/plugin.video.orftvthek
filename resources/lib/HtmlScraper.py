@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import datetime
-from .common import *
+from .Common import *
 
-from .base import *
+from .Base import *
 from .Scraper import *
 
 
@@ -813,7 +813,7 @@ class htmlScraper(Scraper):
 				if inputstreamAdaptive and restart and online:
 					uhdContextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (
 						xbmcaddon.Addon().getAddonInfo('id'), link)))
-					uhd_final_title = "[Restart]%s[UHD] - %s%s" % (channel, title, time_str)
+					uhd_final_title = "[%s] %s [UHD] - %s%s" % (self.translation(30063), channel, title, time_str)
 				else:
 					uhd_final_title = "%s[UHD] - %s%s" % (channel, title, time_str)
 				self.html2ListItem(uhd_final_title, banner, "", state, time, channel, channel, generateAddonVideoUrl(uhd_streaming_url), None, False, True, uhdContextMenuItems)
@@ -821,9 +821,9 @@ class htmlScraper(Scraper):
 			streaming_url = self.getLivestreamUrl(data, self.videoQuality)
 			contextMenuItems = []
 			if inputstreamAdaptive and restart and online:
-				contextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (
+				contextMenuItems.append((self.translation(30063), 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (
 					xbmcaddon.Addon().getAddonInfo('id'), link)))
-				final_title = "[Restart]%s - %s%s" % (channel, title, time_str)
+				final_title = "[%s] %s - %s%s" % (self.translation(30063), channel, title, time_str)
 			else:
 				final_title = "%s - %s%s" % (channel, title, time_str)
 			self.html2ListItem(final_title, banner, "", state, time, channel, channel, generateAddonVideoUrl(streaming_url), None, False, True, contextMenuItems)

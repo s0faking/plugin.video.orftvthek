@@ -8,7 +8,7 @@ import simplejson as json
 from kodi_six import xbmcplugin, xbmcgui, xbmcvfs
 from kodi_six.utils import py2_encode, py2_decode
 from . import Settings
-from .helpers import *
+from .Helpers import *
 
 
 def showDialog(title, description):
@@ -37,7 +37,7 @@ def buildLink(link):
 def createPlayAllItem(name, pluginhandle, stream_info=False):
     play_all_parameters = {"mode": "playlist"}
     play_all_url = build_kodi_url(play_all_parameters)
-    play_all_item = xbmcgui.ListItem(name)
+    play_all_item = xbmcgui.ListItem(label=name, offscreen=True)
     if stream_info:
         description = stream_info['description']
         play_all_item.setArt({'thumb': stream_info['teaser_image'], 'poster': stream_info['teaser_image']})
@@ -50,7 +50,7 @@ def createPlayAllItem(name, pluginhandle, stream_info=False):
 def createListItem(title, banner, description, duration, date, channel, videourl, playable, folder, backdrop, pluginhandle, subtitles=None, blacklist=False, contextMenuItems=None):
     contextMenuItems = contextMenuItems or []
 
-    liz = xbmcgui.ListItem(title)
+    liz = xbmcgui.ListItem(label=title, label2=channel, offscreen=True)
     liz.setInfo(type="Video", infoLabels={"Title": title})
     liz.setInfo(type="Video", infoLabels={"Tvshowtitle": title})
     liz.setInfo(type="Video", infoLabels={"Sorttitle": title})
