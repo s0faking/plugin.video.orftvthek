@@ -300,8 +300,9 @@ class serviceAPI(Scraper):
                     foundProgram.append(programName)
 
                     link = self.JSONStreamingURL(result.get('sources'))
+                    print(result.get('id'))
                     if inputstreamAdaptive and result.get('restart'):
-                        contextMenuItems.append(self.translation(30063), 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), result.get('id')))
+                        contextMenuItems.append((self.translation(30063), 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), result.get('id'))))
 
                     title = "[%s] %s %s (%s)" % (programName, self.translation(30063) if inputstreamAdaptive and result.get('restart') else '', result.get('title'), time.strftime('%H:%M', livestreamStart))
 
