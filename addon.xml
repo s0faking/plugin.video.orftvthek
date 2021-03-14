@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.orftvthek" name="ORF TVthek" version="0.11.0" provider-name="sofaking">
+<addon id="plugin.video.orftvthek" name="ORF TVthek" version="0.11.1" provider-name="sofaking">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.future" version="0.16.0"/>
@@ -25,8 +25,8 @@
             <icon>resources/icon.png</icon>
             <fanart>resources/fanart.jpg</fanart>
         </assets>
-        <news>v0.11.0 (06/12/2020)
-            [new] compatible with kodi matrix
+        <news>v0.11.1 (14/03/2021)
+            [fix] fixed broken livestreams with serviceapi
         </news>
     </extension>
 </addon>
