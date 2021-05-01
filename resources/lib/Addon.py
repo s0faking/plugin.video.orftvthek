@@ -215,7 +215,6 @@ def run():
         if is_helper.check_inputstream():
             debugLog("Video Url: %s" % stream_url)
             debugLog("DRM License Url: %s" % lic_url)
-            debugLog(is_helper.inputstream_addon)
             play_item = xbmcgui.ListItem(path=stream_url, offscreen=True)
             play_item.setContentLookup(False)
             play_item.setMimeType(input_stream_mime)
