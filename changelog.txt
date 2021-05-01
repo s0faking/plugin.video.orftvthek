@@ -1,3 +1,6 @@
+* 0.12.0
+- added drm livestream playback
+
 * 0.11.1
 - fixed broken livestreams for serviceapi (kodi matrix only)
 
