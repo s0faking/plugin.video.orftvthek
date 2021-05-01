@@ -218,7 +218,7 @@ def run():
             play_item = xbmcgui.ListItem(path=stream_url, offscreen=True)
             play_item.setContentLookup(False)
             play_item.setMimeType(input_stream_mime)
-            play_item.setProperty('inputstream', is_helper.inputstream_addon)
+            play_item.setProperty('inputstreamaddon', is_helper.inputstream_addon)
             play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
             play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
             play_item.setProperty('inputstream.adaptive.license_key', lic_url + '||R{SSM}|')
