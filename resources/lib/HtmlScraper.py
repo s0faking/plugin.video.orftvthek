@@ -831,7 +831,7 @@ class htmlScraper(Scraper):
 
                 if not drm_lic_url:
                     self.html2ListItem(final_title, banner, "", state, time, channel, channel, generateAddonVideoUrl(streaming_url), None, False, True, contextMenuItems)
-                else:
+                elif inputstreamAdaptive:
                     drm_video_url = generateDRMVideoUrl(streaming_url, drm_lic_url)
                     self.html2ListItem(final_title, banner, "", state, time, channel, channel, drm_video_url, None, False,
                                        True, contextMenuItems)

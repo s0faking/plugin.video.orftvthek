@@ -300,7 +300,6 @@ class serviceAPI(Scraper):
                     foundProgram.append(programName)
 
                     link = self.JSONStreamingURL(result.get('sources'))
-                    print(result.get('id'))
                     if inputstreamAdaptive and result.get('restart'):
                         contextMenuItems.append((self.translation(30063), 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), result.get('id'))))
 
