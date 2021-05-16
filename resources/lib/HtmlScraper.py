@@ -22,6 +22,8 @@ class htmlScraper(Scraper):
     __urlArchive = __urlBase + '/history'
     __urlTrailer = __urlBase + '/coming-soon'
 
+    __videoQualities = ["Q1A", "Q4A", "Q6A", "Q8C", "QXB", "QXA"]
+
     def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop, usePlayAllPlaylist):
         self.translation = settings.getLocalizedString
         self.xbmc = xbmc
@@ -34,6 +36,7 @@ class htmlScraper(Scraper):
         self.enableBlacklist = settings.getSetting("enableBlacklist") == "true"
         self.usePlayAllPlaylist = usePlayAllPlaylist
         debugLog('HTML Scraper - Init done')
+
 
     def getMostViewed(self):
         self.getTeaserList(self.__urlMostViewed, "b-teasers-list")
@@ -737,6 +740,7 @@ class htmlScraper(Scraper):
             channel = parseDOM(item, name='img', attrs={'class': 'channel-logo'}, ret="alt")
             channel = replaceHTMLCodes(channel[0])
 
+            debugLog("Processing %s Livestream" % channel)
             bundesland_article = parseDOM(item, name='li', attrs={'class': '.*?is-bundesland-heute.*?'}, ret='data-jsb')
             article = parseDOM(item, name='article', attrs={'class': 'b-livestream-teaser is-live.*?'})
             if not len(bundesland_article) and len(article):
@@ -778,9 +782,12 @@ class htmlScraper(Scraper):
                         bundesland_link = bundesland_item.get('url')
 
                         self.buildLivestream(bundesland_title, bundesland_link, "", True, channel, bundesland_image, True)
+            else:
+                debugLog("Channel %s was skipped" % channel)
 
     def buildLivestream(self, title, link, time, restart, channel, banner, online):
         html = fetchPage({'link': link})
+        debugLog("Loading Livestream Page %s for Channel %s" % (link, channel))
         container = parseDOM(html.get("content"), name='div', attrs={'class': "player_viewport.*?"})
         if len(container):
             data = parseDOM(container[0], name='div', attrs={}, ret="data-jsb")
@@ -806,7 +813,7 @@ class htmlScraper(Scraper):
             else:
                 channel = "LIVE"
 
-            uhd_streaming_url = self.getLivestreamUrl(data, 'uhdbrowser')
+            uhd_streaming_url = self.getLivestreamUrl(data, 'uhdbrowser', True)
             if uhd_streaming_url:
                 debugLog("Adding UHD Livestream")
                 uhdContextMenuItems = []
@@ -819,6 +826,7 @@ class htmlScraper(Scraper):
                 self.html2ListItem(uhd_final_title, banner, "", state, time, channel, channel, generateAddonVideoUrl(uhd_streaming_url), None, False, True, uhdContextMenuItems)
 
             streaming_url = self.getLivestreamUrl(data, self.videoQuality)
+            debugLog("Streaming Url: %s" % streaming_url)
             drm_lic_url = self.getLivestreamDRM(data)
             if streaming_url:
                 contextMenuItems = []
@@ -843,7 +851,7 @@ class htmlScraper(Scraper):
             try:
                 data = replaceHTMLCodes(data)
                 data = json.loads(data)
-                if 'drm' in data and 'widevine' in data['drm']:
+                if 'drm' in data  and data['drm'] and 'widevine' in data['drm']:
                     return data['drm']['widevine']['LA_URL']
             except Exception as e:
                 debugLog("Error getting Livestream DRM Keys")
@@ -885,8 +893,8 @@ class htmlScraper(Scraper):
                 listItem.setProperty('inputstream.adaptive.manifest_type', 'hls')
                 self.xbmc.Player().play(streamingURL, listItem)
 
-    @staticmethod
-    def getLivestreamUrl(data_sets, quality):
+    def getLivestreamUrl(self, data_sets, preferred_quality, strict=False):
+        fallback = {}
         for data in data_sets:
             try:
                 data = replaceHTMLCodes(data)
@@ -895,12 +903,21 @@ class htmlScraper(Scraper):
                     if 'videos' in data['playlist']:
                         for video_items in data['playlist']['videos']:
                             for video_sources in video_items['sources']:
-                                if video_sources['quality'].lower() == quality.lower() and video_sources[
+                                if video_sources['quality'].lower() == preferred_quality.lower() and video_sources[
                                         'protocol'].lower() == "http" and video_sources['delivery'].lower() == 'hls':
                                     return video_sources['src']
-                                elif video_sources['quality'].lower()[0:3] == quality.lower() and video_sources[
+                                elif video_sources['quality'].lower()[0:3] == preferred_quality.lower() and video_sources[
                                     'protocol'].lower() == "http" and video_sources['delivery'].lower() == 'dash':
                                     return video_sources['src']
+                                elif video_sources['quality'] and video_sources['src'] and video_sources['quality'][0:3] in self.__videoQualities:
+                                    debugLog("Adding Video Url %s (%s)" % (video_sources['src'], video_sources['delivery']))
+                                    fallback[video_sources['quality'].lower()[0:3]] = video_sources['src']
+                        if not strict:
+                            for quality in reversed(self.__videoQualities):
+                                debugLog("Looking for Fallback Quality %s" % quality)
+                                if quality.lower() in fallback:
+                                    debugLog("Returning Fallback Stream %s" % quality)
+                                    return fallback[quality.lower()]
             except Exception as e:
                 debugLog("Error getting Livestream")
 
