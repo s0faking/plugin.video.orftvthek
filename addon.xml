@@ -26,7 +26,8 @@
             <icon>resources/icon.png</icon>
             <fanart>resources/fanart.jpg</fanart>
         </assets>
-        <news>v0.12.2 (16/05/2021)
+        <news>v0.12.2 (09/06/2021)
+            [fix] drm license url fix (livestreams)
             [fix] better quality selection handling for livestreams
         </news>
     </extension>
