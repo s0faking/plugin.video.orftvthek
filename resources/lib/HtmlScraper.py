@@ -843,8 +843,12 @@ class htmlScraper(Scraper):
             try:
                 data = replaceHTMLCodes(data)
                 data = json.loads(data)
-                if 'drm' in data and 'widevine' in data['drm']:
-                    return data['drm']['widevine']['LA_URL']
+                if 'drm' in data and 'widevineUrl' in data['drm']:
+                    debugLog("Widevine Url found %s" % data['drm']['widevineUrl'])
+                    widevineUrl = data['drm']['widevineUrl']
+                    token = data['drm']['token']
+                    brand = data['drm']['brandGuid']
+                    return "%s?BrandGuid=%s&userToken=%s" % (widevineUrl, brand, token)
             except Exception as e:
                 debugLog("Error getting Livestream DRM Keys")
 
