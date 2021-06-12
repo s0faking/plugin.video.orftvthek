@@ -915,11 +915,12 @@ class htmlScraper(Scraper):
                     if 'videos' in data['playlist']:
                         for video_items in data['playlist']['videos']:
                             for video_sources in video_items['sources']:
+
                                 if video_sources['quality'].lower() == preferred_quality.lower() and video_sources[
                                         'protocol'].lower() == "http" and video_sources['delivery'].lower() == 'hls':
                                     return video_sources['src']
                                 elif video_sources['quality'].lower()[0:3] == preferred_quality.lower() and video_sources[
-                                    'protocol'].lower() == "http" and video_sources['delivery'].lower() == 'mpd':
+                                    'protocol'].lower() == "http" and video_sources['delivery'].lower() == 'dash':
                                     return video_sources['src']
                                 elif video_sources['quality'] and video_sources['src'] and video_sources['quality'][0:3] in self.__videoQualities:
                                     debugLog("Adding Video Url %s (%s)" % (video_sources['src'], video_sources['delivery']))
