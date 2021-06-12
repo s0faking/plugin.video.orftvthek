@@ -22,6 +22,8 @@ class htmlScraper(Scraper):
     __urlArchive = __urlBase + '/history'
     __urlTrailer = __urlBase + '/coming-soon'
 
+    __videoQualities = ["Q1A", "Q4A", "Q6A", "Q8C", "QXB", "QXA"]
+
     def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop, usePlayAllPlaylist):
         self.translation = settings.getLocalizedString
         self.xbmc = xbmc
