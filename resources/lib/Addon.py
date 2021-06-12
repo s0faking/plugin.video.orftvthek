@@ -198,7 +198,32 @@ def run():
         scraper.getEpisode(link, playlist)
         listCallback(False, pluginhandle)
     elif mode == 'liveStreamRestart':
-        scraper.liveStreamRestart(link)
+        try:
+            import inputstreamhelper
+            is_helper = inputstreamhelper.Helper(input_stream_protocol, drm=input_stream_drm_version)
+            if is_helper.check_inputstream():
+                link = unqoute_url(link)
+                debugLog("Restart Source Link: %s" % link)
+                if params.get('lic_url'):
+                    lic_url = unqoute_url(params.get('lic_url'))
+                    debugLog("Playing DRM protected Restart Stream")
+                    debugLog("Restart License URL: %s" % lic_url)
+                    streaming_url, play_item = scraper.liveStreamRestart(link, 'dash')
+                    play_item.setContentLookup(False)
+                    play_item.setMimeType(input_stream_mime)
+                    play_item.setProperty('inputstream', is_helper.inputstream_addon)
+                    play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
+                    play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
+                    play_item.setProperty('inputstream.adaptive.license_key', lic_url + '||R{SSM}|')
+                else:
+                    streaming_url, play_item = scraper.liveStreamRestart(link, 'hls')
+                    debugLog("Playing Non-DRM protected Restart Stream")
+                    play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
+                    play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
+                debugLog("Restart Stream Url: %s" % streaming_url)
+                xbmc.Player().play(streaming_url, play_item)
+        except:
+            debugLog("Inputstream Helper not installed. Cant play DRM livestream Restart content.")
     elif mode == 'playlist':
         startPlaylist(tvthekplayer, playlist)
     elif mode == 'play':
