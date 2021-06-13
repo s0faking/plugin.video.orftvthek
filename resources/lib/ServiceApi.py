@@ -314,7 +314,7 @@ class serviceAPI(Scraper):
             showFullSchedule = xbmcaddon.Addon().getSetting('showLiveStreamSchedule') == 'true'
 
             for result in json.loads(response.read().decode('UTF-8')).get('_embedded').get('items'):
-
+                drm_lic_url = self.JSONLicenseDrmURL(result)
                 description = result.get('description')
                 programName = result.get('_embedded').get('channel').get('name')
                 livestreamStart = time.strptime(result.get('start')[0:19], '%Y-%m-%dT%H:%M:%S')
@@ -331,7 +331,7 @@ class serviceAPI(Scraper):
                         link = self.JSONStreamingURL(result.get('sources'))
 
                     if inputstreamAdaptive and result.get('restart'):
-                        drm_lic_url = self.JSONLicenseDrmURL(result)
+
                         restart_parameters = {"mode": "liveStreamRestart", "link": result.get('id'), "lic_url": drm_lic_url}
                         restart_url = build_kodi_url(restart_parameters)
                         contextMenuItems.append((self.translation(30063), 'RunPlugin(%s)' % restart_url))
@@ -339,6 +339,11 @@ class serviceAPI(Scraper):
                     title = "[%s] %s %s (%s)" % (programName, self.translation(30063) if inputstreamAdaptive and result.get('restart') else '', result.get('title'), time.strftime('%H:%M', livestreamStart))
 
                     banner = self.JSONImage(result.get('_embedded').get('image'))
+
+                    for stream in result.get('sources').get('dash'):
+                        if stream.get('is_uhd') and stream.get('quality_key').lower() == 'uhdbrowser':
+                            uhd_video_url = generateDRMVideoUrl(stream.get('src'), drm_lic_url)
+                            createListItem("[UHD] %s" % title, banner, description, duration,time.strftime('%Y-%m-%d', livestreamStart), programName, uhd_video_url, True, False, self.defaultbackdrop, self.pluginhandle)
 
                     createListItem(title, banner, description, duration, time.strftime('%Y-%m-%d', livestreamStart), programName, link, True, False, self.defaultbackdrop, self.pluginhandle,
                                    contextMenuItems=contextMenuItems)
