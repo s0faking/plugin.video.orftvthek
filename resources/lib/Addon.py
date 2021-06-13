@@ -204,6 +204,7 @@ def run():
             if is_helper.check_inputstream():
                 link = unqoute_url(link)
                 debugLog("Restart Source Link: %s" % link)
+                headers = "User-Agent=%s" % Settings.userAgent()
                 if params.get('lic_url'):
                     lic_url = unqoute_url(params.get('lic_url'))
                     debugLog("Playing DRM protected Restart Stream")
@@ -211,6 +212,7 @@ def run():
                     streaming_url, play_item = scraper.liveStreamRestart(link, 'dash')
                     play_item.setContentLookup(False)
                     play_item.setMimeType(input_stream_mime)
+                    play_item.setProperty('inputstream.adaptive.stream_headers', headers)
                     play_item.setProperty('inputstream', is_helper.inputstream_addon)
                     play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
                     play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
@@ -219,6 +221,7 @@ def run():
                     streaming_url, play_item = scraper.liveStreamRestart(link, 'hls')
                     debugLog("Playing Non-DRM protected Restart Stream")
                     play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
+                    play_item.setProperty('inputstream.adaptive.stream_headers', headers)
                     play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
                 debugLog("Restart Stream Url: %s" % streaming_url)
                 xbmc.Player().play(streaming_url, play_item)
@@ -228,7 +231,6 @@ def run():
         startPlaylist(tvthekplayer, playlist)
     elif mode == 'play':
         link = "%s|User-Agent=%s" % (link, Settings.userAgent())
-        debugLog(link)
         play_item = xbmcgui.ListItem(path=link, offscreen=True)
         xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
         listCallback(False, pluginhandle)
@@ -237,13 +239,17 @@ def run():
             import inputstreamhelper
             stream_url = unqoute_url(params.get('link'))
             lic_url = unqoute_url(params.get('lic_url'))
+
             is_helper = inputstreamhelper.Helper(input_stream_protocol, drm=input_stream_drm_version)
             if is_helper.check_inputstream():
                 debugLog("Video Url: %s" % stream_url)
                 debugLog("DRM License Url: %s" % lic_url)
                 play_item = xbmcgui.ListItem(path=stream_url, offscreen=True)
+                headers = "User-Agent=%s" % Settings.userAgent()
+
                 play_item.setContentLookup(False)
                 play_item.setMimeType(input_stream_mime)
+                play_item.setProperty('inputstream.adaptive.stream_headers', headers)
                 play_item.setProperty('inputstream', is_helper.inputstream_addon)
                 play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
                 play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
