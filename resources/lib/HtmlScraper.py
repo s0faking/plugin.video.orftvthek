@@ -820,14 +820,18 @@ class htmlScraper(Scraper):
 
             streaming_url = self.getLivestreamUrl(data, self.videoQuality)
             drm_lic_url = self.getLivestreamDRM(data)
-            uhd_streaming_url = self.getLivestreamUrl(data, 'uhdbrowser', True)
+            uhd_streaming_url = self.getLivestreamUrl(data, 'UHD', True)
+
+            final_title = "[%s] %s - %s%s" % (self.translation(30063), channel, title, time_str)
+
             debugLog("DRM License: %s" % drm_lic_url)
             if uhd_streaming_url:
-                debugLog("Adding UHD Livestream")
+                debugLog("Adding UHD Livestream from %s" % uhd_streaming_url)
                 uhdContextMenuItems = []
                 if inputstreamAdaptive and restart and online:
-                    uhdContextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s&lic_url=%s)' % (
-                            xbmcaddon.Addon().getAddonInfo('id'), link, drm_lic_url)))
+                    uhd_restart_parameters = {"mode": "liveStreamRestart", "link": link, "lic_url": drm_lic_url}
+                    uhd_restart_url = build_kodi_url(uhd_restart_parameters)
+                    uhdContextMenuItems.append(('Restart', 'RunPlugin(%s)' % uhd_restart_url))
                     uhd_final_title = "[%s] %s [UHD] - %s%s" % (self.translation(30063), channel, title, time_str)
                 else:
                     uhd_final_title = "%s[UHD] - %s%s" % (channel, title, time_str)
@@ -836,7 +840,7 @@ class htmlScraper(Scraper):
                     self.html2ListItem(uhd_final_title, banner, "", state, time, channel, channel, generateAddonVideoUrl(uhd_streaming_url), None, False, True, uhdContextMenuItems)
                 elif inputstreamAdaptive:
                     drm_video_url = generateDRMVideoUrl(uhd_streaming_url, drm_lic_url)
-                    self.html2ListItem(final_title, banner, "", state, time, channel, channel, drm_video_url, None, False, True, contextMenuItems)
+                    self.html2ListItem(uhd_final_title, banner, "", state, time, channel, channel, drm_video_url, None, False, True, uhdContextMenuItems)
 
             if streaming_url:
                 contextMenuItems = []
@@ -845,7 +849,7 @@ class htmlScraper(Scraper):
                     restart_parameters = {"mode": "liveStreamRestart", "link": link, "lic_url": drm_lic_url}
                     restart_url = build_kodi_url(restart_parameters)
                     contextMenuItems.append((self.translation(30063), 'RunPlugin(%s)' % restart_url))
-                    final_title = "[%s] %s - %s%s" % (self.translation(30063), channel, title, time_str)
+
                 else:
                     final_title = "%s - %s%s" % (channel, title, time_str)
 
@@ -922,6 +926,7 @@ class htmlScraper(Scraper):
                     if 'videos' in data['playlist']:
                         for video_items in data['playlist']['videos']:
                             for video_sources in video_items['sources']:
+
                                 if video_sources['quality'].lower() == preferred_quality.lower() and video_sources[
                                         'protocol'].lower() == "http" and video_sources['delivery'].lower() == 'hls':
                                     return video_sources['src']
