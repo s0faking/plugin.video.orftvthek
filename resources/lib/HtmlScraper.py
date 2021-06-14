@@ -741,6 +741,11 @@ class htmlScraper(Scraper):
         section = parseDOM(wrapper, name='section', attrs={'class': 'b-live-program.*?'})
         items = parseDOM(section, name='li', attrs={'class': 'channel orf.*?'})
 
+        try:
+            xbmcaddon.Addon('inputstream.adaptive')
+        except RuntimeError:
+            self.html2ListItem(" -- %s -- " % (self.translation(30067)).encode("utf-8"), self.defaultbanner, "", "", "", "", "Info", "addons://user/kodi.inputstream", None, True, False)
+
         for item in items:
             channel = parseDOM(item, name='img', attrs={'class': 'channel-logo'}, ret="alt")
             channel = replaceHTMLCodes(channel[0])
