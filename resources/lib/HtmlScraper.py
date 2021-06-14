@@ -58,12 +58,14 @@ class htmlScraper(Scraper):
         self.getLaneTopicOverview(self.__urlFocus)
 
     # Extracts VideoURL from JSON String
-    def getVideoUrl(self, sources):
+    def getVideoUrl(self, sources, drm_license=None):
         for source in sources:
-            if source["protocol"].lower() == self.videoProtocol.lower():
-                if source["delivery"].lower() == self.videoDelivery.lower():
-                    if source["quality"].lower() == self.videoQuality.lower():
-                        return generateAddonVideoUrl(source["src"])
+            if drm_license and source['quality'].lower()[0:3] == self.videoQuality.lower() and source['delivery'].lower() == 'dash':
+                debugLog("Found DRM Video Url %s" % source["src"])
+                return generateDRMVideoUrl(source["src"], drm_license)
+            elif source["protocol"].lower() == self.videoProtocol.lower() and source["delivery"].lower() == self.videoDelivery.lower() and source["quality"].lower() == self.videoQuality.lower():
+                debugLog("Found Simple Video Url %s" % source["src"])
+                return generateAddonVideoUrl(source["src"])
         return False
 
     # Parses teaser lists
@@ -558,7 +560,7 @@ class htmlScraper(Scraper):
         params = parameters_string_to_dict(videourl)
         mode = params.get('mode')
         if not mode:
-            mode = "player"
+            mode = "play"
 
         blacklist = False
         if self.enableBlacklist:
@@ -579,6 +581,7 @@ class htmlScraper(Scraper):
         try:
             html_data = parseDOM(html.get("content"), name='section', attrs={'class': "b-video-details.*?"}, ret=False)
             playlist_json = data_json.get('playlist')
+            drm_license_url = self.getDRMLicense(data_json)
 
             current_channel = parseDOM(html_data, name='span', attrs={'class': "channel.*?"}, ret='aria-label')
             if len(current_channel):
@@ -631,7 +634,7 @@ class htmlScraper(Scraper):
                 stream_info['subtitles'] = main_subtitles
             else:
                 stream_info['subtitles'] = None
-            stream_info['main_videourl'] = self.getVideoUrl(data_json.get("selected_video")["sources"])
+            stream_info['main_videourl'] = self.getVideoUrl(data_json.get("selected_video")["sources"], drm_license_url)
         except:
             debugLog("Error fetching stream infos from html")
         return stream_info
@@ -662,11 +665,12 @@ class htmlScraper(Scraper):
 
             # Add the gapless video if available
             try:
+                drm_license_url = self.getDRMLicense(data_json)
                 if "is_gapless" in playlist_json:
                     gapless_subtitles = []
                     gapless_name = '-- %s --' % self.translation(30059)
                     if playlist_json['is_gapless']:
-                        gapless_videourl = self.getVideoUrl(playlist_json['gapless_video']['sources'])
+                        gapless_videourl = self.getVideoUrl(playlist_json['gapless_video']['sources'], drm_license_url)
                         if gapless_videourl:
                             if "subtitles" in playlist_json['gapless_video']:
                                 for sub in playlist_json['gapless_video']["subtitles"]:
@@ -712,10 +716,11 @@ class htmlScraper(Scraper):
                                 subtitles.append(sub.get(u'src'))
                         else:
                             subtitles = None
-                        videourl = self.getVideoUrl(sources)
+                        videourl = self.getVideoUrl(sources, drm_license_url)
                         liz = self.html2ListItem(title, preview_img, "", desc, duration, '', '', videourl, subtitles, False, True)
                         playlist.add(videourl, liz)
                     except Exception as e:
+                        debugLog("Error on getLinks")
                         debugLog(str(e), self.xbmc.LOGERROR)
                         continue
                 return playlist
@@ -739,6 +744,7 @@ class htmlScraper(Scraper):
             channel = parseDOM(item, name='img', attrs={'class': 'channel-logo'}, ret="alt")
             channel = replaceHTMLCodes(channel[0])
 
+            debugLog("Processing %s Livestream" % channel)
             bundesland_article = parseDOM(item, name='li', attrs={'class': '.*?is-bundesland-heute.*?'}, ret='data-jsb')
             article = parseDOM(item, name='article', attrs={'class': 'b-livestream-teaser is-live.*?'})
             if not len(bundesland_article) and len(article):
@@ -780,9 +786,12 @@ class htmlScraper(Scraper):
                         bundesland_link = bundesland_item.get('url')
 
                         self.buildLivestream(bundesland_title, bundesland_link, "", True, channel, bundesland_image, True)
+            else:
+                debugLog("Channel %s was skipped" % channel)
 
     def buildLivestream(self, title, link, time, restart, channel, banner, online):
         html = fetchPage({'link': link})
+        debugLog("Loading Livestream Page %s for Channel %s" % (link, channel))
         container = parseDOM(html.get("content"), name='div', attrs={'class': "player_viewport.*?"})
         if len(container):
             data = parseDOM(container[0], name='div', attrs={}, ret="data-jsb")
@@ -810,13 +819,18 @@ class htmlScraper(Scraper):
 
             streaming_url = self.getLivestreamUrl(data, self.videoQuality)
             drm_lic_url = self.getLivestreamDRM(data)
-            uhd_streaming_url = self.getLivestreamUrl(data, 'uhdbrowser', True)
+            uhd_streaming_url = self.getLivestreamUrl(data, 'UHD', True)
+
+            final_title = "[%s] %s - %s%s" % (self.translation(30063), channel, title, time_str)
+
             debugLog("DRM License: %s" % drm_lic_url)
             if uhd_streaming_url:
-                debugLog("Adding UHD Livestream")
+                debugLog("Adding UHD Livestream from %s" % uhd_streaming_url)
                 uhdContextMenuItems = []
                 if inputstreamAdaptive and restart and online:
-                    uhdContextMenuItems.append(('Restart', 'RunPlugin(plugin://%s/?mode=liveStreamRestart&link=%s&lic_url=%s)' % (xbmcaddon.Addon().getAddonInfo('id'), link, drm_lic_url)))
+                    uhd_restart_parameters = {"mode": "liveStreamRestart", "link": link, "lic_url": drm_lic_url}
+                    uhd_restart_url = build_kodi_url(uhd_restart_parameters)
+                    uhdContextMenuItems.append(('Restart', 'RunPlugin(%s)' % uhd_restart_url))
                     uhd_final_title = "[%s] %s [UHD] - %s%s" % (self.translation(30063), channel, title, time_str)
                 else:
                     uhd_final_title = "%s[UHD] - %s%s" % (channel, title, time_str)
@@ -825,7 +839,7 @@ class htmlScraper(Scraper):
                     self.html2ListItem(uhd_final_title, banner, "", state, time, channel, channel, generateAddonVideoUrl(uhd_streaming_url), None, False, True, uhdContextMenuItems)
                 elif inputstreamAdaptive:
                     drm_video_url = generateDRMVideoUrl(uhd_streaming_url, drm_lic_url)
-                    self.html2ListItem(final_title, banner, "", state, time, channel, channel, drm_video_url, None, False, True, contextMenuItems)
+                    self.html2ListItem(uhd_final_title, banner, "", state, time, channel, channel, drm_video_url, None, False, True, uhdContextMenuItems)
 
             if streaming_url:
                 contextMenuItems = []
@@ -834,7 +848,7 @@ class htmlScraper(Scraper):
                     restart_parameters = {"mode": "liveStreamRestart", "link": link, "lic_url": drm_lic_url}
                     restart_url = build_kodi_url(restart_parameters)
                     contextMenuItems.append((self.translation(30063), 'RunPlugin(%s)' % restart_url))
-                    final_title = "[%s] %s - %s%s" % (self.translation(30063), channel, title, time_str)
+
                 else:
                     final_title = "%s - %s%s" % (channel, title, time_str)
 
@@ -842,20 +856,28 @@ class htmlScraper(Scraper):
                     self.html2ListItem(final_title, banner, "", state, time, channel, channel, generateAddonVideoUrl(streaming_url), None, False, True, contextMenuItems)
                 elif inputstreamAdaptive:
                     drm_video_url = generateDRMVideoUrl(streaming_url, drm_lic_url)
-                    self.html2ListItem(final_title, banner, "", state, time, channel, channel, drm_video_url, None, False, True, contextMenuItems)
+                    self.html2ListItem(final_title, banner, "", state, time, channel, channel, drm_video_url, None, False,
+                                       True, contextMenuItems)
 
-    @staticmethod
-    def getLivestreamDRM(data_sets):
+    def getDRMLicense(self, data):
+        try:
+            if 'drm' in data and 'widevineUrl' in data['drm']:
+                debugLog("Widevine Url found %s" % data['drm']['widevineUrl'])
+                widevineUrl = data['drm']['widevineUrl']
+                token = data['drm']['token']
+                brand = data['drm']['brandGuid']
+                return "%s?BrandGuid=%s&userToken=%s" % (widevineUrl, brand, token)
+        except:
+            debugLog("No License Url found")
+
+    def getLivestreamDRM(self, data_sets):
         for data in data_sets:
             try:
                 data = replaceHTMLCodes(data)
                 data = json.loads(data)
-                if 'drm' in data and 'widevineUrl' in data['drm']:
-                    debugLog("Widevine Url found %s" % data['drm']['widevineUrl'])
-                    widevineUrl = data['drm']['widevineUrl']
-                    token = data['drm']['token']
-                    brand = data['drm']['brandGuid']
-                    return "%s?BrandGuid=%s&userToken=%s" % (widevineUrl, brand, token)
+                drm_lic = self.getDRMLicense(data)
+                if drm_lic:
+                    return drm_lic
             except Exception as e:
                 debugLog("Error getting Livestream DRM Keys")
 
@@ -903,6 +925,7 @@ class htmlScraper(Scraper):
                     if 'videos' in data['playlist']:
                         for video_items in data['playlist']['videos']:
                             for video_sources in video_items['sources']:
+
                                 if video_sources['quality'].lower() == preferred_quality.lower() and video_sources[
                                         'protocol'].lower() == "http" and video_sources['delivery'].lower() == 'hls':
                                     return video_sources['src']

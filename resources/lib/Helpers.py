@@ -62,4 +62,4 @@ def parameters_string_to_dict(parameters):
 
 def debugLog(message, loglevel=xbmc.LOGDEBUG):
     output = py2_encode(message)
-    xbmc.log(msg=output, level=loglevel)
+    xbmc.log("[plugin.video.orftvthek] %s" % output, level=loglevel)

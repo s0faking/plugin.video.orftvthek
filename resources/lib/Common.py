@@ -288,5 +288,7 @@ def fetchPage(params={}):
         return ret_obj
 
 def log(msg):
-    output = py2_encode(msg)
-    xbmc.log(output, xbmc.LOGDEBUG)
+    debug = False
+    if debug:
+        output = py2_encode(msg)
+        xbmc.log(output, xbmc.LOGDEBUG)
