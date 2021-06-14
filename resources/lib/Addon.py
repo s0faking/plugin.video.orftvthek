@@ -225,8 +225,10 @@ def run():
                     play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
                 debugLog("Restart Stream Url: %s" % streaming_url)
                 xbmc.Player().play(streaming_url, play_item)
+            else:
+                userNotification("Inputstream Adaptive not installed. Cant play DRM content.")
         except:
-            debugLog("Inputstream Helper not installed. Cant play DRM livestream Restart content.")
+            userNotification("Inputstream Helper not installed. Cant play DRM content.")
     elif mode == 'playlist':
         startPlaylist(tvthekplayer, playlist)
     elif mode == 'play':
@@ -255,9 +257,11 @@ def run():
                 play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
                 play_item.setProperty('inputstream.adaptive.license_key', lic_url + '||R{SSM}|')
                 xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
-                listCallback(False, pluginhandle)
+            else:
+                userNotification("Inputstream Adaptive not installed. Cant play DRM content.")
+            listCallback(False, pluginhandle)
         except:
-            debugLog("Inputstream Helper not installed. Cant play DRM livestream content.")
+            userNotification("Inputstream Helper not installed. Cant play DRM content.")
     elif sys.argv[2] == '':
         getMainMenu()
     else:
