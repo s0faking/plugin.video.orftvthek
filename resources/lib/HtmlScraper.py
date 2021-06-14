@@ -744,7 +744,7 @@ class htmlScraper(Scraper):
         try:
             xbmcaddon.Addon('inputstream.adaptive')
         except RuntimeError:
-            self.html2ListItem(" -- %s -- " % (self.translation(30067)).encode("utf-8"), self.defaultbanner, "", "", "", "", "Info", "addons://user/kodi.inputstream", None, True, False)
+            self.html2ListItem("[COLOR red][I] -- %s -- [/I][/COLOR]" % self.translation(30067), self.defaultbanner, "", "", "", "", "Info", "addons://user/kodi.inputstream", None, True, False)
 
         for item in items:
             channel = parseDOM(item, name='img', attrs={'class': 'channel-logo'}, ret="alt")
