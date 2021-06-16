@@ -1,4 +1,5 @@
 * 0.12.2
+- bumped python version to 2.26.0 (leia)
 - drm for restart
 - drm livestream license url
 - better quality selection handling for livestreams
