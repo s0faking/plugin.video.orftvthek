@@ -5,7 +5,7 @@
         <import addon="script.module.future" version="0.17.1"/>
         <import addon="script.module.kodi-six" version="0.0.7"/>
         <import addon="script.module.simplejson" version="3.16.1"/>
-        <import addon="script.module.inputstreamhelper" optional="true"/>
+        <import addon="script.module.inputstreamhelper" version="0.5.5" optional="true"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>video</provides>
