@@ -37,7 +37,7 @@ class serviceAPI(Scraper):
     serviceAPITrailers = 'page/preview?limit=100'
     serviceAPIHighlights = 'page/startpage'
 
-    httpauth = 'cHNfYW5kcm9pZF92Mzo2YTYzZDRkYTI5YzcyMWQ0YTk4NmZkZDMxZWRjOWU0MQ=='
+    httpauth = 'cHNfYW5kcm9pZF92M19uZXc6MDY1MmU0NjZkMTk5MGQxZmRmNDBkYTA4ZTc5MzNlMDY=='
 
     def __init__(self, xbmc, settings, pluginhandle, quality, protocol, delivery, defaultbanner, defaultbackdrop, usePlayAllPlaylist):
         self.translation = settings.getLocalizedString
