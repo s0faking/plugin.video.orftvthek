@@ -4,6 +4,7 @@
 import datetime
 import time
 import sys
+import re
 
 PY3 = sys.version_info.major >=3
 if PY3:
@@ -369,14 +370,26 @@ class serviceAPI(Scraper):
             description = result.get('description')
             duration = result.get('duration_seconds')
             date = time.strptime(result.get('start')[0:19], '%Y-%m-%dT%H:%M:%S')
-
-            ApiKey = '2e9f11608ede41f1826488f1e23c4a8d'
-            debugLog("Restart Url: %s" % result.get('channel_restart_url_android'))
-            bitmovinStreamId = result.get('channel_restart_url_android')
-            if bitmovinStreamId:
-                bitmovinStreamId = bitmovinStreamId.replace("https://playerapi-restarttv.ors.at/livestreams/", "").replace("/sections/", "")
-                bitmovinStreamId = bitmovinStreamId.split("?")[0]
-            response = url_get_request('https://playerapi-restarttv.ors.at/livestreams/%s/sections/?state=active&X-Api-Key=%s' % (bitmovinStreamId, ApiKey))  # nosec
+            restart_urls = None
+            restart_url = None
+            try:
+                restart_urls = result['_embedded']['channel']['restart_urls']
+            except AttributeError:
+                pass
+            else:
+                for x in ('android', 'default'):
+                    if x in restart_urls:
+                        restart_url = restart_urls[x]
+                        if restart_url:
+                            break
+            if not restart_url:
+                raise Exception("restart url not found in livestream/%s result" % (link, ))
+            m = re.search(r"/livestreams/([^/]+)/sections/[^\?]*\?(?:.+&|)?X-Api-Key=([^&]+)", restart_url)
+            if m:
+                bitmovinStreamId, ApiKey = m.groups()
+            else:
+                raise Exception("unable to parse restart url: %s" % ( restart_url, ))
+            response = url_get_request(restart_url)  # nosec
             response_raw = response.read().decode('UTF-8')
             section = json.loads(response_raw)[0]
             section_id = section.get('id')
