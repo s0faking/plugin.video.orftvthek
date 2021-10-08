@@ -4,7 +4,6 @@
 import socket
 import traceback
 import xbmcplugin
-import inputstreamhelper
 
 from resources.lib.ServiceApi import *
 from resources.lib.HtmlScraper import *
