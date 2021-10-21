@@ -226,9 +226,10 @@ def run():
                     play_item.setProperty('inputstream.adaptive.stream_headers', headers)
                     play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
                 debugLog("Restart Stream Url: %s; play_item: %s" % (streaming_url, play_item))
-                xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
-                listCallback(False, pluginhandle)
-                #xbmc.Player().play(streaming_url, play_item)
+                #This works on matrix. On Kodi <19 the stream wont play
+                #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
+                #listCallback(False, pluginhandle)
+                xbmc.Player().play(streaming_url, play_item)
         except Exception as e:
             debugLog("Exception: %s" % ( e, ), xbmc.LOGDEBUG)
             debugLog("TB: %s" % ( traceback.format_exc(), ), xbmc.LOGDEBUG)
