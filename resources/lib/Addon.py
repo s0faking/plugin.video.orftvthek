@@ -19,9 +19,9 @@ basepath = settings.getAddonInfo('path')
 translation = settings.getLocalizedString
 
 # hardcoded
-video_delivery_list = ["HLS", "Progressive"]
-video_quality_list = ["Q1A", "Q4A", "Q6A", "Q8C", "QXB"]
 videoProtocol = "http"
+videoQuality = "QXB"
+videoDelivery = "HLS"
 
 input_stream_protocol = 'mpd'
 input_stream_drm_version = 'com.widevine.alpha'
@@ -48,8 +48,6 @@ defaultbackdrop = os.path.join(media_path, "fanart_v2.jpg")
 
 # load settings
 useServiceAPI = Settings.serviceAPI()
-videoQuality = Settings.videoQuality(video_quality_list)
-videoDelivery = Settings.videoDelivery(video_delivery_list)
 autoPlayPrompt = Settings.autoPlayPrompt()
 usePlayAllPlaylist = Settings.playAllPlaylist()
 
