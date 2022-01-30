@@ -203,7 +203,7 @@ def run():
             if is_helper.check_inputstream():
                 link = unqoute_url(link)
                 debugLog("Restart Source Link: %s" % link)
-                headers = "User-Agent=%s&Content-Type=text/xml&SOAPAction=http://schemas.microsoft.com/DRM/2007/03/protocols/AcquireLicense" % Settings.userAgent()
+                headers = "User-Agent=%s&Content-Type=text/xml" % Settings.userAgent()
 
                 if params.get('lic_url'):
                     lic_url = unqoute_url(params.get('lic_url'))
@@ -249,7 +249,7 @@ def run():
                 debugLog("Video Url: %s" % stream_url)
                 debugLog("DRM License Url: %s" % lic_url)
                 play_item = xbmcgui.ListItem(path=stream_url, offscreen=True)
-                headers = "User-Agent=%s&Content-Type=text/xml&SOAPAction=http://schemas.microsoft.com/DRM/2007/03/protocols/AcquireLicense" % Settings.userAgent()
+                headers = "User-Agent=%s&Content-Type=text/xml" % Settings.userAgent()
 
                 play_item.setContentLookup(False)
                 play_item.setMimeType(input_stream_mime)
