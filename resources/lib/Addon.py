@@ -203,7 +203,8 @@ def run():
             if is_helper.check_inputstream():
                 link = unqoute_url(link)
                 debugLog("Restart Source Link: %s" % link)
-                headers = "User-Agent=%s" % Settings.userAgent()
+                headers = "User-Agent=%s&Content-Type=text/xml&SOAPAction=http://schemas.microsoft.com/DRM/2007/03/protocols/AcquireLicense" % Settings.userAgent()
+
                 if params.get('lic_url'):
                     lic_url = unqoute_url(params.get('lic_url'))
                     debugLog("Playing DRM protected Restart Stream")
@@ -215,7 +216,7 @@ def run():
                     play_item.setProperty('inputstream', is_helper.inputstream_addon)
                     play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
                     play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
-                    play_item.setProperty('inputstream.adaptive.license_key', lic_url + '||R{SSM}|')
+                    play_item.setProperty('inputstream.adaptive.license_key', lic_url + '|' + headers +'|R{SSM}|')
                 else:
                     streaming_url, play_item = scraper.liveStreamRestart(link, 'hls')
                     debugLog("Playing Non-DRM protected Restart Stream")
@@ -248,7 +249,7 @@ def run():
                 debugLog("Video Url: %s" % stream_url)
                 debugLog("DRM License Url: %s" % lic_url)
                 play_item = xbmcgui.ListItem(path=stream_url, offscreen=True)
-                headers = "User-Agent=%s" % Settings.userAgent()
+                headers = "User-Agent=%s&Content-Type=text/xml&SOAPAction=http://schemas.microsoft.com/DRM/2007/03/protocols/AcquireLicense" % Settings.userAgent()
 
                 play_item.setContentLookup(False)
                 play_item.setMimeType(input_stream_mime)
@@ -256,7 +257,7 @@ def run():
                 play_item.setProperty('inputstream', is_helper.inputstream_addon)
                 play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
                 play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
-                play_item.setProperty('inputstream.adaptive.license_key', lic_url + '||R{SSM}|')
+                play_item.setProperty('inputstream.adaptive.license_key', lic_url + '|' + headers + '|R{SSM}|')
                 xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
             else:
                 userNotification((translation(30066)).encode("utf-8"))
