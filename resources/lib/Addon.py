@@ -204,19 +204,19 @@ def run():
                 link = unqoute_url(link)
                 debugLog("Restart Source Link: %s" % link)
                 headers = "User-Agent=%s&Content-Type=text/xml" % Settings.userAgent()
+
                 if params.get('lic_url'):
                     lic_url = unqoute_url(params.get('lic_url'))
                     debugLog("Playing DRM protected Restart Stream")
                     debugLog("Restart License URL: %s" % lic_url)
                     streaming_url, play_item = scraper.liveStreamRestart(link, 'dash')
-                    play_item = xbmcgui.ListItem(path=streaming_url, offscreen=True)
                     play_item.setContentLookup(False)
                     play_item.setMimeType(input_stream_mime)
                     play_item.setProperty('inputstream.adaptive.stream_headers', headers)
                     play_item.setProperty('inputstream', is_helper.inputstream_addon)
                     play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
                     play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
-                    play_item.setProperty('inputstream.adaptive.license_key', lic_url + '|' + headers + '|R{SSM}|')
+                    play_item.setProperty('inputstream.adaptive.license_key', lic_url + '|' + headers +'|R{SSM}|')
                 else:
                     streaming_url, play_item = scraper.liveStreamRestart(link, 'hls')
                     debugLog("Playing Non-DRM protected Restart Stream")
@@ -224,13 +224,12 @@ def run():
                     play_item.setProperty('inputstream.adaptive.stream_headers', headers)
                     play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
                 debugLog("Restart Stream Url: %s; play_item: %s" % (streaming_url, play_item))
-                #This works on matrix. On Kodi <19 the stream wont play
-                #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
-                #listCallback(False, pluginhandle)
                 xbmc.Player().play(streaming_url, play_item)
+            else:
+                userNotification((translation(30066)).encode("utf-8"))
         except Exception as e:
-            debugLog("Exception: %s" % ( e, ), xbmc.LOGDEBUG)
-            debugLog("TB: %s" % ( traceback.format_exc(), ), xbmc.LOGDEBUG)
+            debugLog("Exception: %s" % ( e, ), xbmc.LOGINFO)
+            debugLog("TB: %s" % ( traceback.format_exc(), ), xbmc.LOGINFO)
             userNotification((translation(30067)).encode("utf-8"))
     elif mode == 'playlist':
         startPlaylist(tvthekplayer, playlist)
@@ -244,23 +243,25 @@ def run():
             import inputstreamhelper
             stream_url = unqoute_url(params.get('link'))
             lic_url = unqoute_url(params.get('lic_url'))
-            headers = "User-Agent=%s&Content-Type=text/xml" % Settings.userAgent()
+
             is_helper = inputstreamhelper.Helper(input_stream_protocol, drm=input_stream_drm_version)
             if is_helper.check_inputstream():
                 debugLog("Video Url: %s" % stream_url)
                 debugLog("DRM License Url: %s" % lic_url)
                 play_item = xbmcgui.ListItem(path=stream_url, offscreen=True)
+                headers = "User-Agent=%s&Content-Type=text/xml" % Settings.userAgent()
+
                 play_item.setContentLookup(False)
                 play_item.setMimeType(input_stream_mime)
                 play_item.setProperty('inputstream.adaptive.stream_headers', headers)
-                play_item.setProperty('inputstreamaddon', is_helper.inputstream_addon)
+                play_item.setProperty('inputstream', is_helper.inputstream_addon)
                 play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
                 play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
                 play_item.setProperty('inputstream.adaptive.license_key', lic_url + '|' + headers + '|R{SSM}|')
                 xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
-                listCallback(False, pluginhandle)
             else:
                 userNotification((translation(30066)).encode("utf-8"))
+            listCallback(False, pluginhandle)
         except:
             userNotification((translation(30067)).encode("utf-8"))
     elif sys.argv[2] == '':

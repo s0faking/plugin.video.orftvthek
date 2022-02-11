@@ -37,6 +37,7 @@ class htmlScraper(Scraper):
         self.usePlayAllPlaylist = usePlayAllPlaylist
         debugLog('HTML Scraper - Init done')
 
+
     def getMostViewed(self):
         self.getTeaserList(self.__urlMostViewed, "b-teasers-list")
 
@@ -739,6 +740,11 @@ class htmlScraper(Scraper):
         wrapper = parseDOM(html.get("content"), name='main', attrs={'class': 'main'})
         section = parseDOM(wrapper, name='section', attrs={'class': 'b-live-program.*?'})
         items = parseDOM(section, name='li', attrs={'class': 'channel orf.*?'})
+
+        try:
+            xbmcaddon.Addon('inputstream.adaptive')
+        except RuntimeError:
+            self.html2ListItem("[COLOR red][I] -- %s -- [/I][/COLOR]" % self.translation(30067), self.defaultbanner, "", "", "", "", "Info", "addons://user/kodi.inputstream", None, True, False)
 
         if items:
             debugLog("Found %d Livestream Channels" % len(items))
