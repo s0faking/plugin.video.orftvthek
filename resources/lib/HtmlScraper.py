@@ -841,7 +841,7 @@ class htmlScraper(Scraper):
                 debugLog("Channel %s was skipped" % channel)
         self.getLiveSpecials()
 
-    def buildLivestream(self, title, link, time, restart, channel, banner, online):
+    def buildLivestream(self, title, link, time, restart, channel, banner, online, description=""):
         html = fetchPage({'link': link})
         debugLog("Loading Livestream Page %s for Channel %s" % (link, channel))
         container = parseDOM(html.get("content"), name='div', attrs={'class': "player_viewport.*?"})
