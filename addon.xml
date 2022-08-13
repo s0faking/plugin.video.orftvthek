@@ -26,8 +26,9 @@
             <icon>resources/icon.png</icon>
             <fanart>resources/fanart.jpg</fanart>
         </assets>
-        <news>v0.12.4 (30/01/2022)
+        <news>v0.12.5 (13/08/2022)
             [fix] fixed drm content (license server error 500)
+            [feature] Added livestream specials for the htmlscraper
         </news>
     </extension>
 </addon>
