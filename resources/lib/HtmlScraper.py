@@ -853,6 +853,11 @@ class htmlScraper(Scraper):
             else:
                 state = (self.translation(30020))
 
+            if description:
+                description = "%s \n\n %s" % (description, state)
+            else:
+                description = state
+
             if time:
                 time_str = " (%s)" % time
             else:
@@ -888,10 +893,10 @@ class htmlScraper(Scraper):
                     uhd_final_title = "%s[UHD] - %s%s" % (channel, title, time_str)
 
                 if not drm_lic_url:
-                    self.html2ListItem(uhd_final_title, banner, "", "", time, channel, channel, generateAddonVideoUrl(uhd_streaming_url), None, False, True, uhdContextMenuItems)
+                    self.html2ListItem(uhd_final_title, banner, "", description, time, channel, channel, generateAddonVideoUrl(uhd_streaming_url), None, False, True, uhdContextMenuItems)
                 elif inputstreamAdaptive:
                     drm_video_url = generateDRMVideoUrl(uhd_streaming_url, drm_lic_url)
-                    self.html2ListItem(uhd_final_title, banner, "", "", time, channel, channel, drm_video_url, None, False, True, uhdContextMenuItems)
+                    self.html2ListItem(uhd_final_title, banner, "", description, time, channel, channel, drm_video_url, None, False, True, uhdContextMenuItems)
 
             if streaming_url:
                 contextMenuItems = []
@@ -905,10 +910,10 @@ class htmlScraper(Scraper):
                     final_title = "%s - %s%s" % (channel, title, time_str)
 
                 if not drm_lic_url:
-                    self.html2ListItem(final_title, banner, "", "", time, channel, channel, generateAddonVideoUrl(streaming_url), None, False, True, contextMenuItems)
+                    self.html2ListItem(final_title, banner, "", description, time, channel, channel, generateAddonVideoUrl(streaming_url), None, False, True, contextMenuItems)
                 elif inputstreamAdaptive:
                     drm_video_url = generateDRMVideoUrl(streaming_url, drm_lic_url)
-                    self.html2ListItem(final_title, banner, "", "", time, channel, channel, drm_video_url, None, False,
+                    self.html2ListItem(final_title, banner, "", description, time, channel, channel, drm_video_url, None, False,
                                        True, contextMenuItems)
 
     def getDRMLicense(self, data):
