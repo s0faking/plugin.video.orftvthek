@@ -244,7 +244,7 @@ def run():
             import inputstreamhelper
             stream_url = unqoute_url(params.get('link'))
             lic_url = unqoute_url(params.get('lic_url'))
-            headers = "User-Agent=%s&Content-Type=text/xml" % Settings.userAgent()
+            headers = "User-Agent=%s&Content-Type=application/octet-stream" % Settings.userAgent()
             is_helper = inputstreamhelper.Helper(input_stream_protocol, drm=input_stream_drm_version)
             if is_helper.check_inputstream():
                 debugLog("Video Url: %s" % stream_url)
