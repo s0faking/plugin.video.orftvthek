@@ -858,7 +858,7 @@ class htmlScraper(Scraper):
                 state = (self.translation(30019))
             else:
                 state = (self.translation(30020))
-                
+
             if description:
                 description = "%s \n\n %s" % (description, state)
             else:
@@ -881,6 +881,8 @@ class htmlScraper(Scraper):
                 channel = "LIVE"
 
             streaming_url = self.getLivestreamUrl(data, self.videoQuality)
+            # Remove Get Parameters because InputStream Adaptive cant handle it.
+            streaming_url = streaming_url[:streaming_url.find('?')]
             drm_lic_url = self.getLivestreamDRM(data)
             uhd_streaming_url = self.getLivestreamUrl(data, 'UHD', True)
 
