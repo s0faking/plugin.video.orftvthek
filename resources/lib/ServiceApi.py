@@ -154,7 +154,7 @@ class serviceAPI(Scraper):
                     return generateDRMVideoUrl(streamingUrl.get('src'), license_url)
                 source = streamingUrl.get('src')
                 # Remove Get Parameters because InputStream Adaptive cant handle it.
-                source = source[:source.find('?')]
+                streaming_url = re.sub(r"\?[\S]+", '', streaming_url, 0)
             if source is not None:
                 return generateDRMVideoUrl(source, license_url)
             else:

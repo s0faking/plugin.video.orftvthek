@@ -882,7 +882,7 @@ class htmlScraper(Scraper):
 
             streaming_url = self.getLivestreamUrl(data, self.videoQuality)
             # Remove Get Parameters because InputStream Adaptive cant handle it.
-            streaming_url = streaming_url[:streaming_url.find('?')]
+            streaming_url = re.sub(r"\?[\S]+", '', streaming_url, 0)
             drm_lic_url = self.getLivestreamDRM(data)
             uhd_streaming_url = self.getLivestreamUrl(data, 'UHD', True)
 
