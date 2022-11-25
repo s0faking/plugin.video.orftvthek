@@ -344,7 +344,7 @@ class serviceAPI(Scraper):
                     banner = self.JSONImage(result.get('_embedded').get('image'))
 
                     for stream in result.get('sources').get('dash'):
-                        if stream.get('is_uhd') and stream.get('quality_key').lower() == 'uhdbrowser':
+                        if stream.get('is_uhd') and stream.get('quality_key').lower() == 'uhdsmarttv':
                             uhd_video_url = generateDRMVideoUrl(stream.get('src'), drm_lic_url)
                             createListItem("[UHD] %s" % title, banner, description, duration,time.strftime('%Y-%m-%d', livestreamStart), programName, uhd_video_url, True, False, self.defaultbackdrop, self.pluginhandle)
 
