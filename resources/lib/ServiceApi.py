@@ -154,7 +154,7 @@ class serviceAPI(Scraper):
                     return generateDRMVideoUrl(streamingUrl.get('src'), license_url)
                 source = streamingUrl.get('src')
                 # Remove Get Parameters because InputStream Adaptive cant handle it.
-                streaming_url = re.sub(r"\?[\S]+", '', streaming_url, 0)
+                source = re.sub(r"\?[\S]+", '', source, 0)
             if source is not None:
                 return generateDRMVideoUrl(source, license_url)
             else:
@@ -344,9 +344,12 @@ class serviceAPI(Scraper):
                     banner = self.JSONImage(result.get('_embedded').get('image'))
 
                     for stream in result.get('sources').get('dash'):
-                        if stream.get('is_uhd') and stream.get('quality_key').lower() == 'uhdsmarttv':
+                        if stream.get('is_uhd') and stream.get('quality_key').lower() == 'uhdbrowser':
                             uhd_video_url = generateDRMVideoUrl(stream.get('src'), drm_lic_url)
                             createListItem("[UHD] %s" % title, banner, description, duration,time.strftime('%Y-%m-%d', livestreamStart), programName, uhd_video_url, True, False, self.defaultbackdrop, self.pluginhandle)
+                        if stream.get('is_uhd') and stream.get('quality_key').lower() == 'uhdsmarttv':
+                            uhd_video_url = generateDRMVideoUrl(stream.get('src'), drm_lic_url)
+                            createListItem("[UHD 50fps] %s" % title, banner, description, duration,time.strftime('%Y-%m-%d', livestreamStart), programName, uhd_video_url, True, False, self.defaultbackdrop, self.pluginhandle)
 
                     createListItem(title, banner, description, duration, time.strftime('%Y-%m-%d', livestreamStart), programName, link, True, False, self.defaultbackdrop, self.pluginhandle,
                                    contextMenuItems=contextMenuItems)
