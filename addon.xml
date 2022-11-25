@@ -26,8 +26,9 @@
             <icon>resources/icon.png</icon>
             <fanart>resources/fanart.jpg</fanart>
         </assets>
-        <news>v0.12.7 (05/11/2022)
+        <news>v0.12.7 (25/11/2022)
             [fix] fixed url parameters for drm live streams
+            [feature] added UHD 50fps option for livestreams
         </news>
     </extension>
 </addon>

@@ -1,5 +1,6 @@
 * 0.12.7
  - fixed url parameters for drm livestreams
+ - added UHD 50fps option for livestreams
 
 * 0.12.6
  - fixed drm content for restart (license server error 500)
