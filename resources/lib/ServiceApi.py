@@ -20,6 +20,7 @@ class serviceAPI(Scraper):
     __urlBase = 'https://api-tvthek.orf.at/api/v3/'
     __urlBaseV4 = 'https://api-tvthek.orf.at/api/v4.2/'
     __urlLive = 'livestreams/24hours?limit=20'
+    __urlLiveChannels = 'livestreams'
     __urlMostViewed = 'page/startpage'
     __urlNewest = 'page/startpage/newest'
     __urlSearch = __urlBase + 'search/%s?limit=1000'
@@ -51,6 +52,33 @@ class serviceAPI(Scraper):
         self.defaultbackdrop = defaultbackdrop
         self.usePlayAllPlaylist = usePlayAllPlaylist
         debugLog('ServiceAPI  - Init done', xbmc.LOGDEBUG)
+
+    def getLivestreamByChannel(self, channel):
+        response = self.__makeRequestV4(self.__urlLiveChannels)
+        response_raw = response.read().decode('UTF-8')
+        channels = json.loads(response_raw)
+
+        for result in channels:
+            if result == channel:
+                live_link = channels[result].get('items')[0].get('_links').get('self').get('href')
+                response = url_get_request(live_link, self.httpauth)
+                response_raw = response.read().decode('UTF-8')
+                live_json = json.loads(response_raw)
+                print("##################")
+                print(live_json)
+                print("##################")
+                if live_json.get('is_drm_protected'):
+                    video_url = self.JSONStreamingDrmURL(live_json)
+                    license_url = self.JSONLicenseDrmURL(live_json)
+                    print(video_url)
+                    print(license_url)
+                    print("########################################")
+                    return {'url': video_url,'license': license_url}
+                else:
+                    video_url = self.JSONStreamingURL(live_json.get('sources'))
+                    print(video_url)
+                    print("########################################")
+                    return {'url': video_url}
 
     def getHighlights(self):
         try:
@@ -130,8 +158,10 @@ class serviceAPI(Scraper):
 
         for streamingUrl in jsonVideos.get('hls'):
             if streamingUrl.get('quality_key') == self.videoQuality:
-                return generateAddonVideoUrl(streamingUrl.get('src'))
-            source = streamingUrl.get('src')
+                # Remove Get Parameters because InputStream Adaptive cant handle it.
+                source = re.sub(r"\?[\S]+", '', streamingUrl.get('src'), 0)
+                return generateAddonVideoUrl(source)
+            source = re.sub(r"\?[\S]+", '', streamingUrl.get('src'), 0)
         if source is not None:
             return generateAddonVideoUrl(source)
         else:

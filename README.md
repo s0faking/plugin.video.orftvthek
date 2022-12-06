@@ -26,6 +26,26 @@ Known Issues
 * you tell me
 
 
+Simple IPTV Integration
+-----------------
+
+Playlist Content
+```
+#EXTINF:-1 tvg-name="ORF 1" tvg-id="ORF 1" group-title="ORF",orf1
+plugin://plugin.video.orftvthek/?channel=orf1&mode=pvr
+
+#EXTINF:-1 tvg-name="ORF 2" tvg-id="ORF 2" group-title="ORF",orf2
+plugin://plugin.video.orftvthek/?channel=orf2&mode=pvr
+
+#EXTINF:-1 tvg-name="ORF 3" tvg-id="ORF 3" group-title="ORF",orf3
+plugin://plugin.video.orftvthek/?channel=orf3&mode=pvr
+
+#EXTINF:-1 tvg-name="ORF Sport+" tvg-id="ORF Sport+" group-title="ORF",orfs
+plugin://plugin.video.orftvthek/?channel=orfs&mode=pvr
+
+```
+
+
 Legal
 -----
 This addon provides access to videos on the ORF TVthek Website but is not endorsed, certified or otherwise approved in any way by ORF.

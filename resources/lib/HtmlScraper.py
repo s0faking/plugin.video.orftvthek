@@ -37,6 +37,8 @@ class htmlScraper(Scraper):
         self.usePlayAllPlaylist = usePlayAllPlaylist
         debugLog('HTML Scraper - Init done')
 
+    def getLivestreamByChannel(self, channel):
+        return []
 
     def getMostViewed(self):
         self.getTeaserList(self.__urlMostViewed, "b-teasers-list")
