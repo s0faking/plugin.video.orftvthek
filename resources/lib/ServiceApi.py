@@ -30,6 +30,17 @@ class serviceAPI(Scraper):
     __urlChannel = 'channel/'
     __urlDRMLic = 'https://drm.ors.at/acquire-license/widevine'
     __brandIdDRM = '13f2e056-53fe-4469-ba6d-999970dbe549'
+    __bundeslandMap = {
+        'orf2b': 'Burgenland',
+        'orf2stmk': 'Steiermark',
+        'orf2w': 'Wien',
+        'orf2ooe': 'Oberösterreich',
+        'orf2k': 'Kärnten',
+        'orf2n': 'Niederösterreich',
+        'orf2s': 'Salzburg',
+        'orf2v': 'Vorarlberg',
+        'orf2t': 'Tirol',
+    }
 
     serviceAPIEpisode = 'episode/%s'
     serviceAPIDate = 'schedule/%s?limit=1000'
@@ -58,27 +69,33 @@ class serviceAPI(Scraper):
         response_raw = response.read().decode('UTF-8')
         channels = json.loads(response_raw)
 
+        live_link = False
         for result in channels:
-            if result == channel:
+            if channel in self.__bundeslandMap:
+                channel_items =  channels[result].get('items')
+                for channel_item in channel_items:
+                    if channel_item.get('title') == "%s heute" % self.__bundeslandMap[channel]:
+                        live_link = channel_item.get('_links').get('self').get('href')
+            if result == channel or channel in self.__bundeslandMap and result == channel[0:4] and not live_link:
                 live_link = channels[result].get('items')[0].get('_links').get('self').get('href')
-                response = url_get_request(live_link, self.httpauth)
-                response_raw = response.read().decode('UTF-8')
-                live_json = json.loads(response_raw)
-                print("##################")
-                print(live_json)
-                print("##################")
-                if live_json.get('is_drm_protected'):
-                    video_url = self.JSONStreamingDrmURL(live_json)
-                    license_url = self.JSONLicenseDrmURL(live_json)
-                    print(video_url)
-                    print(license_url)
-                    print("########################################")
-                    return {'url': video_url,'license': license_url}
-                else:
-                    video_url = self.JSONStreamingURL(live_json.get('sources'))
-                    print(video_url)
-                    print("########################################")
-                    return {'url': video_url}
+
+        if live_link:
+            response = url_get_request(live_link, self.httpauth)
+            response_raw = response.read().decode('UTF-8')
+            live_json = json.loads(response_raw)
+            if live_json.get('is_drm_protected'):
+                video_url = self.JSONStreamingDrmURL(live_json)
+                uhd_25_video_url = self.JSONStreamingDrmURL(live_json, 'uhdbrowser')
+                if uhd_25_video_url:
+                    video_url = uhd_25_video_url;
+                uhd_50_video_url = self.JSONStreamingDrmURL(live_json, 'uhdsmarttv')
+                if uhd_50_video_url:
+                    video_url = uhd_50_video_url
+                license_url = self.JSONLicenseDrmURL(live_json)
+                return {'title': live_json.get('title'), 'description': live_json.get('share_subject'), 'url': video_url,'license': license_url}
+            else:
+                video_url = self.JSONStreamingURL(live_json.get('sources'))
+                return {'title': live_json.get('title'), 'description': live_json.get('share_subject'), 'url': video_url}
 
     def getHighlights(self):
         try:
@@ -175,10 +192,17 @@ class serviceAPI(Scraper):
             debugLog("DRM License Url %s" % license_url)
             return license_url
 
-    def JSONStreamingDrmURL(self, jsonData):
+    def JSONStreamingDrmURL(self, jsonData, uhd_profile = False):
         if jsonData.get('drm_token') is not None:
             license_url = self.JSONLicenseDrmURL(jsonData)
             jsonVideos = jsonData.get('sources')
+
+            if uhd_profile:
+                for streamingUrl in jsonVideos.get('dash'):
+                    if streamingUrl.get('is_uhd') and streamingUrl.get('quality_key').lower() == uhd_profile:
+                        source = re.sub(r"\?[\S]+", '', streamingUrl.get('src'), 0)
+                        return generateDRMVideoUrl(source, license_url)
+
             for streamingUrl in jsonVideos.get('dash'):
                 if streamingUrl.get('quality_key').lower()[0:3] == self.videoQuality:
                     return generateDRMVideoUrl(streamingUrl.get('src'), license_url)
@@ -373,13 +397,13 @@ class serviceAPI(Scraper):
 
                     banner = self.JSONImage(result.get('_embedded').get('image'))
 
-                    for stream in result.get('sources').get('dash'):
-                        if stream.get('is_uhd') and stream.get('quality_key').lower() == 'uhdbrowser':
-                            uhd_video_url = generateDRMVideoUrl(stream.get('src'), drm_lic_url)
-                            createListItem("[UHD] %s" % title, banner, description, duration,time.strftime('%Y-%m-%d', livestreamStart), programName, uhd_video_url, True, False, self.defaultbackdrop, self.pluginhandle)
-                        if stream.get('is_uhd') and stream.get('quality_key').lower() == 'uhdsmarttv':
-                            uhd_video_url = generateDRMVideoUrl(stream.get('src'), drm_lic_url)
-                            createListItem("[UHD 50fps] %s" % title, banner, description, duration,time.strftime('%Y-%m-%d', livestreamStart), programName, uhd_video_url, True, False, self.defaultbackdrop, self.pluginhandle)
+                    uhd_25_video_url = self.JSONStreamingDrmURL(result, 'uhdbrowser')
+                    if uhd_25_video_url:
+                        createListItem("[UHD] %s" % title, banner, description, duration,time.strftime('%Y-%m-%d', livestreamStart), programName, uhd_25_video_url, True, False, self.defaultbackdrop, self.pluginhandle)
+
+                    uhd_50_video_url = self.JSONStreamingDrmURL(result, 'uhdsmarttv')
+                    if uhd_50_video_url:
+                        createListItem("[UHD 50fps] %s" % title, banner, description, duration,time.strftime('%Y-%m-%d', livestreamStart), programName, uhd_50_video_url, True, False, self.defaultbackdrop, self.pluginhandle)
 
                     createListItem(title, banner, description, duration, time.strftime('%Y-%m-%d', livestreamStart), programName, link, True, False, self.defaultbackdrop, self.pluginhandle,
                                    contextMenuItems=contextMenuItems)

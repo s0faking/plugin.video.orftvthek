@@ -1,3 +1,6 @@
+* 0.12.8
+ - added direct uri for simple iptv (livestreams) #108
+
 * 0.12.7
  - fixed url parameters for drm livestreams
  - added UHD 50fps option for livestreams
