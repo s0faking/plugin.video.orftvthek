@@ -369,7 +369,6 @@ class serviceAPI(Scraper):
     # Returns Live Stream Listing
     def getLiveStreams(self):
         showFullSchedule = xbmcaddon.Addon().getSetting('showLiveStreamSchedule') == 'true'
-
         try:
             xbmcaddon.Addon('inputstream.adaptive')
             inputstreamAdaptive = True
@@ -406,7 +405,7 @@ class serviceAPI(Scraper):
         # Render current streams first.
         for channel in channels:
             for upcoming in channelresults[channel]['items']:
-                if not 'upcoming' in channels[channel] or 'upcoming' in channels[channel] and  upcoming.get('start') == channels[channel]['upcoming'].get('start'):
+                if not 'upcoming' in channels[channel] or ('upcoming' in channels[channel] and  upcoming.get('start')[0:17] == channels[channel]['upcoming'].get('start')[0:17]):
                     if not 'upcoming' in channels[channel]:
                         channels[channel]['upcoming'] = upcoming
                     description = upcoming.get('description')
