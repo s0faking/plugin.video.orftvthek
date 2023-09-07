@@ -30,12 +30,6 @@ class serviceAPI(Scraper):
     __urlChannel = 'channel/'
     __urlDRMLic = 'https://drm.ors.at/acquire-license/widevine'
     __brandIdDRM = '13f2e056-53fe-4469-ba6d-999970dbe549'
-    __channelMap = {
-        'orf1': 'ORF 1',
-        'orf2': 'ORF 2',
-        'orf3': 'ORF III',
-        'orfs': 'ORF Sport+',
-    }
     __bundeslandMap = {
         'orf2b': 'Burgenland',
         'orf2stmk': 'Steiermark',
