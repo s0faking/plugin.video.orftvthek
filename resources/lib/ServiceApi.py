@@ -109,11 +109,9 @@ class serviceAPI(Scraper):
             response = self.__makeRequest(self.serviceAPIHighlights)
             responseCode = response.getcode()
         except HTTPError as error:
-            print(error)
             responseCode = error.getcode()
 
         if responseCode == 200:
-            print(response)
             for result in json.loads(response.read().decode('UTF-8')).get('highlight_teasers'):
                 if result.get('target').get('model') == 'Segment':
                     self.JSONSegment2ListItem(result.get('target'))
