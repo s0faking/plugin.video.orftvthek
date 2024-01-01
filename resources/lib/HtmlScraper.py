@@ -865,11 +865,17 @@ class htmlScraper(Scraper):
             article_links = parseDOM(item, name='a', attrs={'class': 'js-link-box'}, ret='href')
             for article_index, article in enumerate(articles):
                 livestream = parseDOM(article, name='article', attrs={'class': 'b-livestream-teaser is-live'}, ret=False)
-                bundesland_choices = parseDOM(article, name='div', attrs={'class': 'choices__list choices__list--dropdown'}, ret=False)
+                bundesland_choices = parseDOM(article, name='div', attrs={'class': 'b-select-box js-select-box federal-state-select'}, ret=False)
                 if livestream and not bundesland_choices:
                     figure = parseDOM(livestream, name='figure', attrs={'class': 'teaser-img'}, ret=False)
                     image = parseDOM(figure, name='img', attrs={}, ret='data-src')
-                    image = replaceHTMLCodes(image[0])
+                    if not image:
+                        image = parseDOM(figure, name='img', attrs={}, ret='src')
+                    
+                    if image:
+                        image = replaceHTMLCodes(image[0])
+                    else: 
+                        image = ""
 
                     time = parseDOM(livestream, name='h4', attrs={'class': 'time'}, ret=False)
                     time = replaceHTMLCodes(time[0])
