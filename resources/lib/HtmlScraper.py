@@ -844,10 +844,9 @@ class htmlScraper(Scraper):
 
     # Returns Live Stream Listing
     def getLiveStreams(self):
-        html = fetchPage({'link': self.__urlBase})
-        wrapper = parseDOM(html.get("content"), name='main', attrs={'class': 'main'})
-        section = parseDOM(wrapper, name='section', attrs={'class': 'b-live-program.*?'})
-        items = parseDOM(section, name='li', attrs={'class': 'channel orf.*?'})
+        html = fetchPage({'link': self.__urlLive})
+        wrapper = parseDOM(html.get("content"), name='div', attrs={'class': 'all-livestream-container'})
+        items = parseDOM(wrapper, name='div', attrs={'class': 'b-lane.*?'})
 
         try:
             xbmcaddon.Addon('inputstream.adaptive')
@@ -861,50 +860,46 @@ class htmlScraper(Scraper):
             channel = replaceHTMLCodes(channel[0])
 
             debugLog("Processing %s Livestream" % channel)
-            bundesland_article = parseDOM(item, name='li', attrs={'class': '.*?is-bundesland-heute.*?'}, ret='data-jsb')
-            article = parseDOM(item, name='article', attrs={'class': 'b-livestream-teaser.*?'})
-            if not len(bundesland_article) and len(article):
-                figure = parseDOM(article, name='figure', attrs={'class': 'teaser-img'}, ret=False)
-                image = parseDOM(figure, name='img', attrs={}, ret='data-src')
-                image = replaceHTMLCodes(image[0])
+            articles = parseDOM(item, name='li', attrs={'class': 'lane-item.*?'})
+            articles_data = parseDOM(item, name='li', attrs={'class': 'lane-item.*?'}, ret='data-jsb')
+            article_links = parseDOM(item, name='a', attrs={'class': 'js-link-box'}, ret='href')
+            for article_index, article in enumerate(articles):
+                livestream = parseDOM(article, name='article', attrs={'class': 'b-livestream-teaser is-live'}, ret=False)
+                bundesland_choices = parseDOM(article, name='div', attrs={'class': 'choices__list choices__list--dropdown'}, ret=False)
+                if livestream and not bundesland_choices:
+                    figure = parseDOM(livestream, name='figure', attrs={'class': 'teaser-img'}, ret=False)
+                    image = parseDOM(figure, name='img', attrs={}, ret='data-src')
+                    image = replaceHTMLCodes(image[0])
 
-                time = parseDOM(article, name='h4', attrs={'class': 'time'}, ret=False)
-                time = replaceHTMLCodes(time[0])
-                time = stripTags(time)
+                    time = parseDOM(livestream, name='h4', attrs={'class': 'time'}, ret=False)
+                    time = replaceHTMLCodes(time[0])
+                    time = stripTags(time)
 
-                title = parseDOM(article, name='h4', attrs={'class': 'livestream-title.*?'})
-                title = replaceHTMLCodes(title[0])
+                    title = parseDOM(livestream, name='h4', attrs={'class': 'livestream-title.*?'})
+                    title = replaceHTMLCodes(title[0])
+                    title = stripTags(title)
 
-                link = parseDOM(item, name='a', attrs={'class': 'js-link-box'}, ret="href")
-                link = replaceHTMLCodes(link[0])
+                    link = article_links[article_index]
+                    link = replaceHTMLCodes(link)
 
-                online = parseDOM(article, name='span', attrs={'class': 'status-online'})
-                if len(online):
-                    online = True
-                else:
-                    online = False
+                    restart = parseDOM(article, name='span', attrs={'class': 'is-restartable'})
+                    if len(restart):
+                        restart = True
+                    else:
+                        restart = False
 
-                restart = parseDOM(article, name='span', attrs={'class': 'is-restartable'})
-                if len(restart):
-                    restart = True
-                else:
-                    restart = False
-
-                self.buildLivestream(title, link, time, restart, channel, image, online)
-            elif len(bundesland_article):
-                bundesland_data = replaceHTMLCodes(bundesland_article[0])
-                bundesland_data = json.loads(bundesland_data)
-                for bundesland_item_key in bundesland_data:
-                    bundesland_item = bundesland_data.get(bundesland_item_key)
-                    if bundesland_item and bundesland_item is not True and len(bundesland_item):
-                        bundesland_title = bundesland_item.get('title')
-                        bundesland_image = bundesland_item.get('img')
-                        bundesland_link = bundesland_item.get('url')
-
+                    self.buildLivestream(title, link, time, restart, channel, image, True)
+                elif livestream and bundesland_choices:
+                    data = articles_data[article_index]
+                    bundesland_data = replaceHTMLCodes(data)
+                    bundesland_data = json.loads(bundesland_data)
+                    for bundesland_stream in bundesland_data:
+                        bundesland_title = bundesland_data[bundesland_stream]['title']
+                        bundesland_link = bundesland_data[bundesland_stream]['url']
+                        bundesland_image = bundesland_data[bundesland_stream]['img']
                         self.buildLivestream(bundesland_title, bundesland_link, "", True, channel, bundesland_image, True)
-            else:
-                debugLog("Channel %s was skipped" % channel)
         self.getLiveSpecials()
+
 
     def buildLivestream(self, title, link, time, restart, channel, banner, online, description = ""):
         html = fetchPage({'link': link})

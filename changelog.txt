@@ -1,3 +1,6 @@
+* 0.12.10
+ - fixed livestream multistream not available #133
+
 * 0.12.9
  - fixed livestream endpoint changes serviceapi
 
