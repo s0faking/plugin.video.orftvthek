@@ -794,8 +794,7 @@ class htmlScraper(Scraper):
             sys.exit()
 
     # Returns Livestream Specials
-    def getLiveSpecials(self):
-        html = fetchPage({'link': self.__urlLive})
+    def getLiveSpecials(self, html):
         wrapper = parseDOM(html.get("content"), name='main', attrs={'class': 'main'})
         section = parseDOM(wrapper, name='div', attrs={'class': 'b-special-livestreams-container.*?'})
         items = parseDOM(section, name='div', attrs={'class': 'b-intro-teaser.*?'})
@@ -861,20 +860,15 @@ class htmlScraper(Scraper):
 
             debugLog("Processing %s Livestream" % channel)
             articles = parseDOM(item, name='li', attrs={'class': 'lane-item.*?'})
-            articles_data = parseDOM(item, name='li', attrs={'class': 'lane-item.*?'}, ret='data-jsb')
             article_links = parseDOM(item, name='a', attrs={'class': 'js-link-box'}, ret='href')
             for article_index, article in enumerate(articles):
                 livestream = parseDOM(article, name='article', attrs={'class': 'b-livestream-teaser is-live'}, ret=False)
-                bundesland_choices = parseDOM(article, name='div', attrs={'class': 'b-select-box js-select-box federal-state-select'}, ret=False)
-                if livestream and not bundesland_choices:
+                if livestream:
                     figure = parseDOM(livestream, name='figure', attrs={'class': 'teaser-img'}, ret=False)
                     image = parseDOM(figure, name='img', attrs={}, ret='data-src')
-                    if not image:
-                        image = parseDOM(figure, name='img', attrs={}, ret='src')
-                    
-                    if image:
+                    if len(image) > 0:
                         image = replaceHTMLCodes(image[0])
-                    else: 
+                    else:
                         image = ""
 
                     time = parseDOM(livestream, name='h4', attrs={'class': 'time'}, ret=False)
@@ -894,17 +888,30 @@ class htmlScraper(Scraper):
                     else:
                         restart = False
 
-                    self.buildLivestream(title, link, time, restart, channel, image, True)
-                elif livestream and bundesland_choices:
+                    if link.strip() != "" and link != "#":
+                        self.buildLivestream(title, link, time, restart, channel, image, True)
+        self.getLiveBundesland(items)
+        self.getLiveSpecials(html)
+
+    def getLiveBundesland(self, items):
+        for item in items:
+            channel = parseDOM(item, name='img', attrs={'class': 'channel-logo'}, ret="alt")
+            channel = replaceHTMLCodes(channel[0])
+
+            debugLog("Processing %s Livestream" % channel)
+            articles = parseDOM(item, name='li', attrs={'class': 'lane-item.*?', 'data-jsb': '*'})
+            articles_data = parseDOM(item, name='li', attrs={'class': 'lane-item.*?'}, ret='data-jsb')
+            for article_index, article in enumerate(articles):
+                livestream = parseDOM(article, name='article', attrs={'class': 'b-livestream-teaser is-live'}, ret=False)
+                if livestream:
                     data = articles_data[article_index]
                     bundesland_data = replaceHTMLCodes(data)
                     bundesland_data = json.loads(bundesland_data)
                     for bundesland_stream in bundesland_data:
-                        bundesland_title = bundesland_data[bundesland_stream]['title']
-                        bundesland_link = bundesland_data[bundesland_stream]['url']
-                        bundesland_image = bundesland_data[bundesland_stream]['img']
-                        self.buildLivestream(bundesland_title, bundesland_link, "", True, channel, bundesland_image, True)
-        self.getLiveSpecials()
+                       bundesland_title = bundesland_data[bundesland_stream]['title']
+                       bundesland_link = bundesland_data[bundesland_stream]['url']
+                       bundesland_image = bundesland_data[bundesland_stream]['img']
+                       self.buildLivestream(bundesland_title, bundesland_link, "", True, channel, bundesland_image, True)
 
 
     def buildLivestream(self, title, link, time, restart, channel, banner, online, description = ""):
