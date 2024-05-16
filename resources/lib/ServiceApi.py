@@ -113,7 +113,7 @@ class serviceAPI(Scraper):
 
         if responseCode == 200:
             for result in json.loads(response.read().decode('UTF-8')).get('highlight_teasers'):
-                if result.get('target').get('model') == 'Segment':
+                if result.get('target').get('model') == 'Segment' or result.get('target').get('model') == 'Episode':
                     self.JSONSegment2ListItem(result.get('target'))
 
     def getMostViewed(self):
@@ -160,17 +160,27 @@ class serviceAPI(Scraper):
         if JSONSegment.get('killdate') is not None and time.strptime(JSONSegment.get('killdate')[0:19], '%Y-%m-%dT%H:%M:%S') < time.localtime():
             return
         title = JSONSegment.get('title').encode('UTF-8')
-        image = self.JSONImage(JSONSegment.get('_embedded').get('image'))
+        image = self.JSONImage(JSONSegment)
         description = JSONSegment.get('description')
         duration = JSONSegment.get('duration_seconds')
-        date = time.strptime(JSONSegment.get('episode_date')[0:19], '%Y-%m-%dT%H:%M:%S')
+        if JSONSegment.get('episode_date'):
+            date = time.strptime(JSONSegment.get('episode_date')[0:19], '%Y-%m-%dT%H:%M:%S')
+        elif JSONSegment.get('date'):
+            date = time.strptime(JSONSegment.get('date')[0:19], '%Y-%m-%dT%H:%M:%S')
+        else:
+            date = ""
         streamingURL = self.JSONStreamingURL(JSONSegment.get('sources'))
-        subtitles = [x.get('src') for x in JSONSegment.get('playlist').get('subtitles')]
+        if JSONSegment.get('playlist').get('subtitles'):
+            subtitles = [x.get('src') for x in JSONSegment.get('playlist').get('subtitles')]
+        else:
+            subtitles = []
         return [streamingURL, createListItem(title, image, description, duration, time.strftime('%Y-%m-%d', date), '', streamingURL, True, False, self.defaultbackdrop, self.pluginhandle, subtitles)]
 
     @staticmethod
     def JSONImage(jsonImages, name='image_full'):
-        return jsonImages.get('public_urls').get('highlight_teaser').get('url')
+        if jsonImages.get('playlist'):
+            return jsonImages.get('playlist').get('preview_image_url')
+        return ""
 
     def JSONStreamingURL(self, jsonVideos):
         source = None
@@ -507,7 +517,7 @@ class serviceAPI(Scraper):
         # Direcotory should be set to False, that the Duration is shown, but then there is an error with the Pluginhandle
         createListItem(
             JSONEpisode.get('title'),
-            self.JSONImage(JSONEpisode.get('_embedded').get('image')),
+            self.JSONImage(JSONEpisode),
             JSONEpisode.get('description'),
             JSONEpisode.get('duration_seconds'),
             time.strftime('%Y-%m-%d', time.strptime(JSONEpisode.get('date')[0:19], '%Y-%m-%dT%H:%M:%S')),
@@ -522,7 +532,7 @@ class serviceAPI(Scraper):
     def __JSONProfile2ListItem(self, jsonProfile):
         createListItem(
             jsonProfile.get('title'),
-            self.JSONImage(jsonProfile.get('_embedded').get('image')),
+            self.JSONImage(jsonProfile),
             jsonProfile.get('description'),
             None,
             None,
