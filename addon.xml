@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="plugin.video.orftvthek" name="ORF TVthek" version="0.12.7" provider-name="sofaking">
+<addon id="plugin.video.orftvthek" name="ORF TVthek" version="0.12.12" provider-name="sofaking">
     <requires>
         <import addon="xbmc.python" version="2.26.0"/>
         <import addon="script.module.future" version="0.17.1"/>
         <import addon="script.module.kodi-six" version="0.0.7"/>
         <import addon="script.module.simplejson" version="3.16.1"/>
-        <import addon="script.module.inputstreamhelper" version="0.5.5" optional="true"/>
+        <import addon="script.module.inputstreamhelper" version="0.5.5"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="default.py">
         <provides>video</provides>
@@ -26,9 +26,9 @@
             <icon>resources/icon.png</icon>
             <fanart>resources/fanart.jpg</fanart>
         </assets>
-        <news>v0.12.7 (25/11/2022)
-            [fix] fixed url parameters for drm live streams
-            [feature] added UHD 50fps option for livestreams
+        <news>v0.12.12 (23/05/2024)
+            [info] ORF TVthek is down and replaced by ORF On
+            [fix] ServiceAPI is forced on this version
         </news>
     </extension>
 </addon>

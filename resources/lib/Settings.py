@@ -33,3 +33,6 @@ def autoPlayPrompt():
 
 def playAllPlaylist():
     return __addon__.getSetting('usePlayAllPlaylist') == 'true'
+
+def showWarning():
+    return __addon__.getSetting('showWarning') == 'true'

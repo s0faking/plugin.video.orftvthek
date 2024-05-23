@@ -244,3 +244,23 @@ msgstr ""
 msgctxt "#30064"
 msgid "older than"
 msgstr ""
+
+msgctxt "#30065"
+msgid "Install Inputstream Adaptive to see more Livestreams"
+msgstr ""
+
+msgctxt "#30066"
+msgid "Inputstream Adaptive not installed. Cant play DRM content."
+msgstr ""
+
+msgctxt "#30067"
+msgid "Inputstream Helper not installed. Cant play DRM content."
+msgstr ""
+
+msgctxt "#30068"
+msgid "ORF TVthek offline"
+msgstr "
+
+msgctxt "#30069"
+msgid "The ORF TVthek has been discontinued and is being replaced by ORF ON. From now on the addon only works with the ServiceAPI."
+msgstr "

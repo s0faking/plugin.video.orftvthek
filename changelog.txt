@@ -1,3 +1,19 @@
+* 0.12.12
+ - ORF TVthek is down and replaced by ORF On
+ - ServiceAPI is forced on this version
+
+* 0.12.11
+ - Major API Change on ServiceAPI regarding assets and json structure (#137)
+
+* 0.12.10
+ - fixed livestream multistream not available #133
+
+* 0.12.9
+ - fixed livestream endpoint changes serviceapi
+
+* 0.12.8
+ - added direct uri for simple iptv (livestreams) #108
+
 * 0.12.7
  - fixed url parameters for drm livestreams
  - added UHD 50fps option for livestreams

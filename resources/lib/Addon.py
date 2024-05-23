@@ -48,9 +48,10 @@ focus_banner = os.path.join(media_path, "focus_banner_v2.jpg")
 defaultbackdrop = os.path.join(media_path, "fanart_v2.jpg")
 
 # load settings
-useServiceAPI = Settings.serviceAPI()
+useServiceAPI = True
 autoPlayPrompt = Settings.autoPlayPrompt()
 usePlayAllPlaylist = Settings.playAllPlaylist()
+showWarning = Settings.showWarning()
 
 # init scrapers
 if useServiceAPI:
@@ -62,6 +63,10 @@ else:
 
 
 def getMainMenu():
+    if showWarning:
+        d = xbmcgui.Dialog()
+        d.ok((translation(30068)).encode("utf-8"), (translation(30069)).encode("utf-8"))
+        xbmcaddon.Addon('plugin.video.orftvthek').setSettingBool('showWarning', 0)
     debugLog("Building Main Menu")
     addDirectory((translation(30001)).encode("utf-8"), news_banner, defaultbackdrop, "", "", "getAktuelles", pluginhandle)
     addDirectory((translation(30000)).encode("utf-8"), recently_added_banner, defaultbackdrop, "", "", "getNewShows", pluginhandle)
@@ -205,19 +210,19 @@ def run():
                 link = unqoute_url(link)
                 debugLog("Restart Source Link: %s" % link)
                 headers = "User-Agent=%s&Content-Type=%s" % (Settings.userAgent(), input_stream_lic_content_type)
+
                 if params.get('lic_url'):
                     lic_url = unqoute_url(params.get('lic_url'))
                     debugLog("Playing DRM protected Restart Stream")
                     debugLog("Restart License URL: %s" % lic_url)
                     streaming_url, play_item = scraper.liveStreamRestart(link, 'dash')
-                    play_item = xbmcgui.ListItem(path=streaming_url, offscreen=True)
                     play_item.setContentLookup(False)
                     play_item.setMimeType(input_stream_mime)
                     play_item.setProperty('inputstream.adaptive.stream_headers', headers)
                     play_item.setProperty('inputstream', is_helper.inputstream_addon)
                     play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
                     play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
-                    play_item.setProperty('inputstream.adaptive.license_key', lic_url + '|' + headers + '|R{SSM}|')
+                    play_item.setProperty('inputstream.adaptive.license_key', lic_url + '|' + headers +'|R{SSM}|')
                 else:
                     streaming_url, play_item = scraper.liveStreamRestart(link, 'hls')
                     debugLog("Playing Non-DRM protected Restart Stream")
@@ -225,13 +230,12 @@ def run():
                     play_item.setProperty('inputstream.adaptive.stream_headers', headers)
                     play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
                 debugLog("Restart Stream Url: %s; play_item: %s" % (streaming_url, play_item))
-                #This works on matrix. On Kodi <19 the stream wont play
-                #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
-                #listCallback(False, pluginhandle)
                 xbmc.Player().play(streaming_url, play_item)
+            else:
+                userNotification((translation(30066)).encode("utf-8"))
         except Exception as e:
-            debugLog("Exception: %s" % ( e, ), xbmc.LOGDEBUG)
-            debugLog("TB: %s" % ( traceback.format_exc(), ), xbmc.LOGDEBUG)
+            debugLog("Exception: %s" % ( e, ), xbmc.LOGINFO)
+            debugLog("TB: %s" % ( traceback.format_exc(), ), xbmc.LOGINFO)
             userNotification((translation(30067)).encode("utf-8"))
     elif mode == 'playlist':
         startPlaylist(tvthekplayer, playlist)
@@ -245,25 +249,76 @@ def run():
             import inputstreamhelper
             stream_url = unqoute_url(params.get('link'))
             lic_url = unqoute_url(params.get('lic_url'))
-            headers = "User-Agent=%s&Content-Type=%s" % (Settings.userAgent(), input_stream_lic_content_type)
+
             is_helper = inputstreamhelper.Helper(input_stream_protocol, drm=input_stream_drm_version)
             if is_helper.check_inputstream():
                 debugLog("Video Url: %s" % stream_url)
                 debugLog("DRM License Url: %s" % lic_url)
                 play_item = xbmcgui.ListItem(path=stream_url, offscreen=True)
+                headers = "User-Agent=%s&Content-Type=%s" % (Settings.userAgent(), input_stream_lic_content_type)
+
                 play_item.setContentLookup(False)
                 play_item.setMimeType(input_stream_mime)
                 play_item.setProperty('inputstream.adaptive.stream_headers', headers)
                 play_item.setProperty('inputstreamaddon', is_helper.inputstream_addon)
+                play_item.setProperty('inputstream', is_helper.inputstream_addon)
                 play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
                 play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
                 play_item.setProperty('inputstream.adaptive.license_key', lic_url + '|' + headers + '|R{SSM}|')
                 xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
-                listCallback(False, pluginhandle)
             else:
                 userNotification((translation(30066)).encode("utf-8"))
+            listCallback(False, pluginhandle)
         except:
             userNotification((translation(30067)).encode("utf-8"))
+    elif mode == 'pvr':
+        channel = params.get('channel')
+        debugLog("Loading channel %s" % channel)
+        data = scraper.getLivestreamByChannel(channel)
+        if data:
+            video_url = "%s|User-Agent=%s" % (data['url'], Settings.userAgent())
+
+            if 'license' in data:
+                import inputstreamhelper
+                license = data['license']
+
+                is_helper = inputstreamhelper.Helper(input_stream_protocol, drm=input_stream_drm_version)
+                if is_helper.check_inputstream():
+                    debugLog("Video Url: %s" % video_url)
+                    debugLog("DRM License Url: %s" % license)
+                    play_item = xbmcgui.ListItem(path=video_url)
+                    play_item.setLabel(data['title'])
+                    play_item.setLabel2(channel)
+                    play_item.setProperty('IsPlayable', 'true')
+                    item_infos = {
+                        'title': data['title'],
+                        'plot': data['description'],
+                        'plotoutline': data['description'],
+                    }
+                    play_item.setInfo(type="Video", infoLabels=item_infos)
+
+                    if 'logo' in data:
+                        item_art = {
+                            'clearlogo': data['logo'],
+                            'icon': data['logo'],
+                        }
+                        play_item.setArt(item_art)
+
+                    headers = "User-Agent=%s&Content-Type=%s" % (Settings.userAgent(), input_stream_lic_content_type)
+
+                    play_item.setContentLookup(False)
+                    play_item.setMimeType(input_stream_mime)
+                    play_item.setProperty('inputstream.adaptive.stream_headers', headers)
+                    play_item.setProperty('inputstream', is_helper.inputstream_addon)
+                    play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
+                    play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
+                    play_item.setProperty('inputstream.adaptive.license_key', license + '|' + headers + '|R{SSM}|')
+                    xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
+                else:
+                    userNotification((translation(30066)).encode("utf-8"))
+            else:
+                play_item = xbmcgui.ListItem(path=video_url)
+                xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
     elif sys.argv[2] == '':
         getMainMenu()
     else:
