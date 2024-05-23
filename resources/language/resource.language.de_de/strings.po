@@ -256,3 +256,11 @@ msgstr ""
 msgctxt "#30067"
 msgid "Inputstream Helper ist nicht aktiviert. DRM Inhalte können nicht abgespielt werden."
 msgstr "
+
+msgctxt "#30068"
+msgid "ORF TVthek offline"
+msgstr "
+
+msgctxt "#30069"
+msgid "Die ORF TVthek wurde eingestellt und wird von ORF ON ersetzt. Das Addon funktioniert ab sofort nur mehr mit der ServiceAPI."
+msgstr "

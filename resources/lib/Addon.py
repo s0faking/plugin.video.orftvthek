@@ -48,9 +48,10 @@ focus_banner = os.path.join(media_path, "focus_banner_v2.jpg")
 defaultbackdrop = os.path.join(media_path, "fanart_v2.jpg")
 
 # load settings
-useServiceAPI = Settings.serviceAPI()
+useServiceAPI = True
 autoPlayPrompt = Settings.autoPlayPrompt()
 usePlayAllPlaylist = Settings.playAllPlaylist()
+showWarning = Settings.showWarning()
 
 # init scrapers
 if useServiceAPI:
@@ -62,6 +63,10 @@ else:
 
 
 def getMainMenu():
+    if showWarning:
+        d = xbmcgui.Dialog()
+        d.ok((translation(30068)).encode("utf-8"), (translation(30069)).encode("utf-8"))
+        xbmcaddon.Addon('plugin.video.orftvthek').setSettingBool('showWarning', 0)
     debugLog("Building Main Menu")
     addDirectory((translation(30001)).encode("utf-8"), news_banner, defaultbackdrop, "", "", "getAktuelles", pluginhandle)
     addDirectory((translation(30000)).encode("utf-8"), recently_added_banner, defaultbackdrop, "", "", "getNewShows", pluginhandle)
