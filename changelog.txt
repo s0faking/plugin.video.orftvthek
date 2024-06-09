@@ -2,6 +2,9 @@ v1.0.2 (2024-06-08)
 - new Livestream (timeshift)
 - added setting to use old livestream format
 - LF conversion
+- list callback fix main menu
+- add license
+- forum fix addon.xml
 
 v1.0.1 beta (2024-06-05)
 - fix routing requirement

@@ -42,7 +42,7 @@ def get_main_menu():
         kodi_worker.render(index_directory)
     if not kodi_worker.hide_accessibility_menu():
         kodi_worker.render(Directory(kodi_worker.get_translation(30147, 'Accessibility'), '', '/accessibility', '', 'accessibility', translator=kodi_worker))
-    kodi_worker.list_callback()
+    kodi_worker.list_callback(None)
 
 
 @route_plugin.route('/page/start')

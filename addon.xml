@@ -17,7 +17,7 @@
         <description lang="de_DE">ORF ON - Dieses Plugin ermöglicht den Zugriff auf den österreichischen Streamingdienst ORF ON</description>
         <description lang="en_GB">ORF ON - This plugin provides access to the Austrian ORF ON streaming service</description>
         <license>GPL-2.0-only</license>
-        <forum>https://forum.kodi.tv/</forum>
+        <forum>https://forum.kodi.tv/showthread.php?tid=159835</forum>
         <email>sofaking@gettingmoney.at</email>
         <website>https://on.orf.at</website>
         <source>https://github.com/s0faking/plugin.video.orftvthek</source>
@@ -29,6 +29,9 @@
             - new Livestream (timeshift)
             - added setting to use old livestream format
             - LF conversion
+            - list callback fix main menu
+            - add license
+            - forum fix addon.xml
         </news>
     </extension>
 </addon>
