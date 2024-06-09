@@ -1,16 +1,14 @@
 import json
 import re
-from datetime import date, timedelta
-try:
-    from directory import *
-except ModuleNotFoundError:
-    from resources.lib.directory import *
+from datetime import date, datetime, timedelta
 
 from urllib.request import Request as urllib_Request
 from urllib.request import urlopen as urllib_urlopen
 from urllib.error import HTTPError as urllib_HTTPError
 from urllib.error import URLError as urllib_URLError
 from urllib.parse import quote_plus
+
+from directory import Directory
 
 
 class OrfOn:
