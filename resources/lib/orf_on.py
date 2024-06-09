@@ -219,7 +219,7 @@ class OrfOn:
 
     def get_last_uploads(self, last_upload_range=12):
         current_date = datetime.now()
-        current_delta = (current_date - timedelta(hours=last_upload_range))
+        current_delta = current_date - timedelta(hours=last_upload_range)
 
         today_filter = current_date.strftime("%Y-%m-%d")
         yesterday_filter = current_delta.strftime("%Y-%m-%d")
@@ -249,7 +249,7 @@ class OrfOn:
         day_items = []
         filter_items = []
         for day in range(replay_days):
-            days_before = (current_date - timedelta(days=day))
+            days_before = current_date - timedelta(days=day)
             isodate = days_before.isoformat()
             prettydate = days_before.strftime("%A, %d.%m.%Y")
             day_items.append(prettydate)
