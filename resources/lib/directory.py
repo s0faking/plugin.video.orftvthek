@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 
 class Directory:
-    def __init__(self, title, description, link, content_id="", content_type="", thumbnail="", backdrop="", poster="", source={}, translator=None, proxy=False):
+    def __init__(self, title, description, link, content_id="", content_type="", thumbnail="", backdrop="", poster="", source={}, translator=None):
         self.translator = translator
         self.title = title
         if description:
@@ -70,8 +70,8 @@ class Directory:
     def translate_string(self, translation_id, fallback, replace=None):
         if self.translator:
             return self.translator.get_translation(translation_id, fallback, replace)
-        else:
-            return fallback
+
+        return fallback
 
     @staticmethod
     def build_meta(item) -> dict:
@@ -245,8 +245,8 @@ class Directory:
     def get_resolution(self):
         if self.meta.get('uhd'):
             return 3840, 2160
-        else:
-            return 1280, 720
+
+        return 1280, 720
 
     def set_stream(self, sources):
         self.videos = sources
@@ -266,8 +266,8 @@ class Directory:
     def get_description(self) -> str:
         if self.description is not None:
             return self.description
-        else:
-            return ""
+
+        return ""
 
     def get_meta_description(self):
         meta_description = {}
@@ -353,7 +353,7 @@ class Directory:
         try:
             if part is not None and len(part) > 1:
                 matches = re.findall(cast_extract_pattern, part[1], re.DOTALL)
-                for name, dirty_role, role in matches:
+                for name, _, role in matches:
                     if name.strip() != "":
                         if '\r\n' in name.strip() or 'Regie:' in name.strip():
                             break
@@ -362,7 +362,7 @@ class Directory:
                         else:
                             cast.append(name.strip())
             return cast
-        except re.error as e:
+        except re.error:
             return cast
 
     def url(self) -> str:
@@ -414,8 +414,8 @@ class Directory:
         self.log('Thumbnail: %s' % self.thumbnail)
         self.log('Backdrop: %s' % self.backdrop)
         self.log('Poster: %s' % self.poster)
-        for item in self.meta:
-            self.log("%s: %s" % (item.capitalize().replace("_", " "), self.meta[item]))
+        for (key, value) in self.meta.items():
+            self.log("%s: %s" % (key.capitalize().replace("_", " "), value))
 
         for context_menu_item in self.context_menu:
             self.log('Context Menu Item: %s' % context_menu_item.get('title'))

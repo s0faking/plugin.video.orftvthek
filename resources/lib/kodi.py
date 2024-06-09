@@ -1,19 +1,19 @@
+import json
+import os
+import re
+import sys
+import time
+from urllib.parse import unquote
+
 import xbmcaddon
 from xbmc import PlayList, PLAYLIST_VIDEO, Player, Keyboard, executebuiltin, log, LOGDEBUG
 from xbmcgui import ListItem, Dialog, DialogProgress
 from xbmcaddon import Addon
 from xbmcplugin import addDirectoryItem, endOfDirectory, setContent, setResolvedUrl, addSortMethod, SORT_METHOD_VIDEO_TITLE, SORT_METHOD_DATE
 import xbmcvfs
-import sys
-import os
-import time
 import inputstreamhelper
-from urllib.parse import unquote
 
-try:
-    from OrfOn import *
-except ModuleNotFoundError:
-    from resources.lib.OrfOn import *
+from directory import Directory
 
 
 class Kodi:
@@ -58,8 +58,8 @@ class Kodi:
         if translation:
             if replace is not None:
                 return replace % translation
-            else:
-                return translation
+
+            return translation
         return fallback
 
     def is_geo_locked(self) -> bool:
@@ -95,10 +95,7 @@ class Kodi:
                 list_item = self.render_video(item)
                 link = item.url()
                 route = self.plugin.url_for_path(link)
-                if self.use_segments and self.show_segments and item.has_segments():
-                    folder = True
-                else:
-                    folder = False
+                folder = self.use_segments and self.show_segments and item.has_segments()
                 addDirectoryItem(self.plugin.handle, url=route, listitem=list_item, isFolder=folder)
             else:
                 list_item = self.render_directory(item)
@@ -219,7 +216,7 @@ class Kodi:
                 context_menu.append(self.build_context_menu(context_menu_item))
             list_item.addContextMenuItems(context_menu, replaceItems=True)
             return list_item
-        elif not teaser.get_stream():
+        if not teaser.get_stream():
             Dialog().notification('No Stream available', 'Unable to find a stream for %s' % title, xbmcaddon.Addon().getAddonInfo('icon'))
         elif not is_helper.check_inputstream():
             Dialog().notification('Inputstream Adaptive not available', 'Install Inputstream Adaptive and Inputstream Helper', xbmcaddon.Addon().getAddonInfo('icon'))
@@ -259,8 +256,8 @@ class Kodi:
         route = self.plugin.url_for_path(item.get('url'))
         if item.get('type') == 'run':
             return item.get('title'), 'RunPlugin(%s)' % route
-        else:
-            return item.get('title'), 'Container.Update(%s)' % route
+
+        return item.get('title'), 'Container.Update(%s)' % route
 
     def list_callback(self, content_type="movies", sort=False) -> None:
         if content_type:

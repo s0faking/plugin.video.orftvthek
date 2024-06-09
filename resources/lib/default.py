@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import Addon
+import addon
 
-Addon.run()
+addon.run()
