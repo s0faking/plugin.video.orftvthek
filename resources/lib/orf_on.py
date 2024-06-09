@@ -111,8 +111,8 @@ class OrfOn:
     def translate_string(self, translation_id, fallback, replace=None):
         if self.kodi_worker:
             return self.kodi_worker.get_translation(translation_id, fallback, replace)
-        else:
-            return fallback
+
+        return fallback
 
     def set_pager_limit(self, limit):
         self.api_pager_limit = limit
@@ -572,23 +572,23 @@ class OrfOn:
             video_item = item['_embedded']['video_item']['_embedded']['item']
             link = item['_embedded']['video_item']['_links']['self']['href']
             return self.build_video(video_item, link)
-        elif 'sources' in item and 'segments' in item['_links']:
+        if 'sources' in item and 'segments' in item['_links']:
             link = item['_links']['segments']['href']
             return self.build_video(item, link)
-        elif 'sources' in item and 'playlist' in item['_links']:
+        if 'sources' in item and 'playlist' in item['_links']:
             link = item['_links']['playlist']['href']
             return self.build_video(item, link)
-        elif 'id' in item and 'type' in item:
+        if 'id' in item and 'type' in item:
             return self.build_directory(item)
-        elif 'id' in item and 'videos' in item:
+        if 'id' in item and 'videos' in item:
             return self.build_directory(item)
-        elif 'video_type' in item:
+        if 'video_type' in item:
             video_item = item
             link = item['_links']['self']['href']
             return self.build_video(video_item, link)
-        else:
-            self.log("Unknown Type", 'error')
-            self.print_obj(item)
+
+        self.log("Unknown Type", 'error')
+        self.print_obj(item)
 
     def build_directory(self, item) -> Directory:
         self.log("Building Directory %s (%s)" % (item['title'], item['id']))
@@ -619,17 +619,17 @@ class OrfOn:
         if item_type == 'genre':
             link = "%s/profiles?limit=%d" % (link, self.api_pager_limit)
             return Directory(item['title'], description, link, item['id'], item['type'], banner, backdrop, poster, item, translator=self.kodi_worker)
-        elif item_id == 'lane':
+        if item_id == 'lane':
             return Directory(item['title'], description, link, item['id'], item['type'], banner, backdrop, poster, item, translator=self.kodi_worker)
-        elif item_id == 'highlights':
+        if item_id == 'highlights':
             return Directory(self.type_map['highlights'], description, link, item['id'], item['type'], banner, backdrop, poster, item, translator=self.kodi_worker)
-        elif item_id == 'genres':
+        if item_id == 'genres':
             return Directory(self.type_map['genres'], description, link, item['id'], item['type'], banner, backdrop, poster, item, translator=self.kodi_worker)
-        elif item_id == 'orflive':
+        if item_id == 'orflive':
             return Directory(self.type_map['orflive'], description, link, item['id'], item['type'], banner, backdrop, poster, item, translator=self.kodi_worker)
-        elif 'title' in item and item['title'] and 'type' in item:
+        if 'title' in item and item['title'] and 'type' in item:
             return Directory(item['title'], description, link, item['id'], item['type'], banner, backdrop, poster, item, translator=self.kodi_worker)
-        elif 'title' in item and item['title'] and 'children_count' in item:
+        if 'title' in item and item['title'] and 'children_count' in item:
             return Directory(item['title'], description, link, item['id'], 'directory', banner, backdrop, poster, item, translator=self.kodi_worker)
 
     def build_video(self, item, link) -> Directory:

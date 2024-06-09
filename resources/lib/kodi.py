@@ -58,8 +58,8 @@ class Kodi:
         if translation:
             if replace is not None:
                 return replace % translation
-            else:
-                return translation
+
+            return translation
         return fallback
 
     def is_geo_locked(self) -> bool:
@@ -219,7 +219,7 @@ class Kodi:
                 context_menu.append(self.build_context_menu(context_menu_item))
             list_item.addContextMenuItems(context_menu, replaceItems=True)
             return list_item
-        elif not teaser.get_stream():
+        if not teaser.get_stream():
             Dialog().notification('No Stream available', 'Unable to find a stream for %s' % title, xbmcaddon.Addon().getAddonInfo('icon'))
         elif not is_helper.check_inputstream():
             Dialog().notification('Inputstream Adaptive not available', 'Install Inputstream Adaptive and Inputstream Helper', xbmcaddon.Addon().getAddonInfo('icon'))
@@ -259,8 +259,8 @@ class Kodi:
         route = self.plugin.url_for_path(item.get('url'))
         if item.get('type') == 'run':
             return item.get('title'), 'RunPlugin(%s)' % route
-        else:
-            return item.get('title'), 'Container.Update(%s)' % route
+
+        return item.get('title'), 'Container.Update(%s)' % route
 
     def list_callback(self, content_type="movies", sort=False) -> None:
         if content_type:

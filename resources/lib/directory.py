@@ -70,8 +70,8 @@ class Directory:
     def translate_string(self, translation_id, fallback, replace=None):
         if self.translator:
             return self.translator.get_translation(translation_id, fallback, replace)
-        else:
-            return fallback
+
+        return fallback
 
     @staticmethod
     def build_meta(item) -> dict:
@@ -245,8 +245,8 @@ class Directory:
     def get_resolution(self):
         if self.meta.get('uhd'):
             return 3840, 2160
-        else:
-            return 1280, 720
+
+        return 1280, 720
 
     def set_stream(self, sources):
         self.videos = sources
@@ -266,8 +266,8 @@ class Directory:
     def get_description(self) -> str:
         if self.description is not None:
             return self.description
-        else:
-            return ""
+
+        return ""
 
     def get_meta_description(self):
         meta_description = {}
