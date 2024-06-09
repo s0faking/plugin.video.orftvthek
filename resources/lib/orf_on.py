@@ -10,7 +10,7 @@ from urllib.request import Request as urllib_Request
 from urllib.request import urlopen as urllib_urlopen
 from urllib.error import HTTPError as urllib_HTTPError
 from urllib.error import URLError as urllib_URLError
-from urllib.parse import urlparse, urlencode, quote_plus
+from urllib.parse import quote_plus
 
 
 class OrfOn:
