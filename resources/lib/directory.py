@@ -353,7 +353,7 @@ class Directory:
         try:
             if part is not None and len(part) > 1:
                 matches = re.findall(cast_extract_pattern, part[1], re.DOTALL)
-                for name, dirty_role, role in matches:
+                for name, _, role in matches:
                     if name.strip() != "":
                         if '\r\n' in name.strip() or 'Regie:' in name.strip():
                             break
@@ -362,7 +362,7 @@ class Directory:
                         else:
                             cast.append(name.strip())
             return cast
-        except re.error as e:
+        except re.error:
             return cast
 
     def url(self) -> str:
