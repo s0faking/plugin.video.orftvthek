@@ -1,5 +1,9 @@
 import json
+import os
 import re
+import sys
+import time
+from urllib.parse import unquote
 
 import xbmcaddon
 from xbmc import PlayList, PLAYLIST_VIDEO, Player, Keyboard, executebuiltin, log, LOGDEBUG
@@ -7,11 +11,7 @@ from xbmcgui import ListItem, Dialog, DialogProgress
 from xbmcaddon import Addon
 from xbmcplugin import addDirectoryItem, endOfDirectory, setContent, setResolvedUrl, addSortMethod, SORT_METHOD_VIDEO_TITLE, SORT_METHOD_DATE
 import xbmcvfs
-import sys
-import os
-import time
 import inputstreamhelper
-from urllib.parse import unquote
 
 from directory import Directory
 
