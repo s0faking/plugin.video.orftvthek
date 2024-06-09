@@ -95,10 +95,7 @@ class Kodi:
                 list_item = self.render_video(item)
                 link = item.url()
                 route = self.plugin.url_for_path(link)
-                if self.use_segments and self.show_segments and item.has_segments():
-                    folder = True
-                else:
-                    folder = False
+                folder = self.use_segments and self.show_segments and item.has_segments()
                 addDirectoryItem(self.plugin.handle, url=route, listitem=list_item, isFolder=folder)
             else:
                 list_item = self.render_directory(item)
