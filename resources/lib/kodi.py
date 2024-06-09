@@ -1,3 +1,6 @@
+import json
+import re
+
 import xbmcaddon
 from xbmc import PlayList, PLAYLIST_VIDEO, Player, Keyboard, executebuiltin, log, LOGDEBUG
 from xbmcgui import ListItem, Dialog, DialogProgress
@@ -10,10 +13,7 @@ import time
 import inputstreamhelper
 from urllib.parse import unquote
 
-try:
-    from orf_on import *
-except ModuleNotFoundError:
-    from resources.lib.orf_on import *
+from directory import Directory
 
 
 class Kodi:

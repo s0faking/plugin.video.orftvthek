@@ -1,7 +1,11 @@
+import re
 import sys
 
-from kodi import *
 import routing
+
+from directory import Directory
+from kodi import Kodi
+from orf_on import OrfOn
 
 SETTINGS_FILE = 'settings.json'
 CHANNEL_MAP_FILE = 'channels.json'
