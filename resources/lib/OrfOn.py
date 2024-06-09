@@ -494,9 +494,9 @@ class OrfOn:
     def get_preferred_source(self, item):
         if self.supported_delivery in item['sources']:
             for source in item['sources'][self.supported_delivery]:
-                for quality in self.quality_definitions:
+                for (quality, values) in self.quality_definitions.items():
                     if quality in source['quality_key']:
-                        self.log("Found Stream %s" % self.quality_definitions[quality]['name'])
+                        self.log("Found Stream %s" % values['name'])
                         return source
 
     def render(self, data) -> list:

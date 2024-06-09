@@ -414,8 +414,8 @@ class Directory:
         self.log('Thumbnail: %s' % self.thumbnail)
         self.log('Backdrop: %s' % self.backdrop)
         self.log('Poster: %s' % self.poster)
-        for item in self.meta:
-            self.log("%s: %s" % (item.capitalize().replace("_", " "), self.meta[item]))
+        for (key, value) in self.meta.items():
+            self.log("%s: %s" % (key.capitalize().replace("_", " "), value))
 
         for context_menu_item in self.context_menu:
             self.log('Context Menu Item: %s' % context_menu_item.get('title'))
