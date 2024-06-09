@@ -1,324 +1,283 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+import sys
 
-import socket
-import traceback
-import xbmcplugin
+from Kodi import *
+import routing
 
-from resources.lib.ServiceApi import *
-from resources.lib.HtmlScraper import *
+settings_file = 'settings.json'
+channel_map_file = 'channels.json'
+search_history_file = 'search_history'
 
-socket.setdefaulttimeout(30)
+route_plugin = routing.Plugin()
+kodi_worker = Kodi(route_plugin)
+if not sys.argv[0].startswith('plugin://' + kodi_worker.addon_id + '/dialog'):
+    channel_map, channel_map_cached = kodi_worker.get_cached_file(channel_map_file)
+    settings, settings_cached = kodi_worker.get_cached_file(settings_file)
+    api = OrfOn(channel_map=channel_map, settings=settings, useragent=kodi_worker.useragent, kodi_worker=kodi_worker)
+    api.set_pager_limit(kodi_worker.pager_limit)
+    api.set_segments_behaviour(kodi_worker.use_segments)
 
-plugin = "ORF-TVthek-" + xbmcaddon.Addon().getAddonInfo('version')
+    kodi_worker.set_geo_lock(api.is_geo_locked())
+    channel_map = api.get_channel_map()
+    settings = api.get_settings()
 
-# initial
-settings = xbmcaddon.Addon()
-pluginhandle = int(sys.argv[1])
-basepath = settings.getAddonInfo('path')
-translation = settings.getLocalizedString
+    # Only overwrite if cache was invalidated
+    if not channel_map_cached:
+        kodi_worker.save_json(channel_map, channel_map_file)
 
-# hardcoded
-videoProtocol = "http"
-videoQuality = "QXB"
-videoDelivery = "HLS"
-
-input_stream_protocol = 'mpd'
-input_stream_drm_version = 'com.widevine.alpha'
-input_stream_mime = 'application/dash+xml'
-input_stream_lic_content_type = 'application/octet-stream'
-
-# media resources
-resource_path = os.path.join(basepath, "resources")
-media_path = os.path.join(resource_path, "media")
-defaultbanner = os.path.join(media_path, "default_banner_v2.jpg")
-news_banner = os.path.join(media_path, "news_banner_v2.jpg")
-recently_added_banner = os.path.join(media_path, "recently_added_banner_v2.jpg")
-shows_banner = os.path.join(media_path, "shows_banner_v2.jpg")
-topics_banner = os.path.join(media_path, "topics_banner_v2.jpg")
-live_banner = os.path.join(media_path, "live_banner_v2.jpg")
-tips_banner = os.path.join(media_path, "tips_banner_v2.jpg")
-most_popular_banner = os.path.join(media_path, "most_popular_banner_v2.jpg")
-schedule_banner = os.path.join(media_path, "schedule_banner_v2.jpg")
-archive_banner = os.path.join(media_path, "archive_banner_v2.jpg")
-search_banner = os.path.join(media_path, "search_banner_v2.jpg")
-trailer_banner = os.path.join(media_path, "trailer_banner_v2.jpg")
-blacklist_banner = os.path.join(media_path, "blacklist_banner_v2.jpg")
-focus_banner = os.path.join(media_path, "focus_banner_v2.jpg")
-defaultbackdrop = os.path.join(media_path, "fanart_v2.jpg")
-
-# load settings
-useServiceAPI = True
-autoPlayPrompt = Settings.autoPlayPrompt()
-usePlayAllPlaylist = Settings.playAllPlaylist()
-showWarning = Settings.showWarning()
-
-# init scrapers
-if useServiceAPI:
-    debugLog("Service API activated")
-    scraper = serviceAPI(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop, usePlayAllPlaylist)
-else:
-    debugLog("HTML Scraper activated")
-    scraper = htmlScraper(xbmc, settings, pluginhandle, videoQuality, videoProtocol, videoDelivery, defaultbanner, defaultbackdrop, usePlayAllPlaylist)
+    if not settings_cached:
+        kodi_worker.save_json(settings, settings_file)
 
 
-def getMainMenu():
-    if showWarning:
-        d = xbmcgui.Dialog()
-        d.ok((translation(30068)).encode("utf-8"), (translation(30069)).encode("utf-8"))
-        xbmcaddon.Addon('plugin.video.orftvthek').setSettingBool('showWarning', 0)
-    debugLog("Building Main Menu")
-    addDirectory((translation(30001)).encode("utf-8"), news_banner, defaultbackdrop, "", "", "getAktuelles", pluginhandle)
-    addDirectory((translation(30000)).encode("utf-8"), recently_added_banner, defaultbackdrop, "", "", "getNewShows", pluginhandle)
-    addDirectory((translation(30002)).encode("utf-8"), shows_banner, defaultbackdrop, "", "", "getSendungen", pluginhandle)
-    if useServiceAPI:
-        addDirectory((translation(30003)).encode("utf-8"), topics_banner, defaultbackdrop, "", "", "getThemen", pluginhandle)
-    addDirectory((translation(30004)).encode("utf-8"), live_banner, defaultbackdrop, "", "", "getLive", pluginhandle)
-    if not useServiceAPI:
-        addDirectory((translation(30057)).encode("utf-8"), focus_banner, defaultbackdrop, "", "", "getFocus", pluginhandle)
-    addDirectory((translation(30006)).encode("utf-8"), most_popular_banner, defaultbackdrop, "", "", "getMostViewed", pluginhandle)
-    addDirectory((translation(30018)).encode("utf-8"), schedule_banner, defaultbackdrop, "", "", "getSchedule", pluginhandle)
-    if not useServiceAPI:
-        addDirectory((translation(30049)).encode("utf-8"), archive_banner, defaultbackdrop, "", "", "getArchiv", pluginhandle)
-    addDirectory((translation(30027)).encode("utf-8"), trailer_banner, defaultbackdrop, "", "", "openTrailers", pluginhandle)
-    if not useServiceAPI:
-        addDirectory((translation(30007)).encode("utf-8"), search_banner, defaultbackdrop, "", "", "getSearchHistory", pluginhandle)
-    if Settings.blacklist() and not useServiceAPI:
-        addDirectory((translation(30037)).encode("utf-8"), blacklist_banner, defaultbackdrop, "", "", "openBlacklist", pluginhandle)
-    listCallback(False, pluginhandle)
+@route_plugin.route('/')
+def get_main_menu():
+    kodi_worker.log("Loading Main Menu", 'route')
+    if kodi_worker.is_geo_locked():
+        kodi_worker.render(
+            Directory(
+                kodi_worker.get_translation(30128, 'Geo lock active', ' [COLOR red]*** %s ***[/COLOR]'),
+                kodi_worker.get_translation(30129, 'Some content may not be available in your country'),
+                '/', translator=kodi_worker))
+    index_directories = api.get_main_menu()
+    for index_directory in index_directories:
+        kodi_worker.render(index_directory)
+    if not kodi_worker.hide_accessibility_menu():
+        kodi_worker.render(Directory(kodi_worker.get_translation(30147, 'Accessibility'), '', '/accessibility', '', 'accessibility', translator=kodi_worker))
+    kodi_worker.list_callback()
 
 
-def listCallback(sort, pluginhandle):
-    xbmcplugin.setContent(pluginhandle, 'episodes')
-    if sort:
-        xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_VIDEO_TITLE)
-    xbmcplugin.endOfDirectory(pluginhandle)
+@route_plugin.route('/page/start')
+def get_frontpage():
+    kodi_worker.log("Loading Frontpage Teasers", 'route')
+    teasers = api.get_frontpage()
+    for teaser in teasers:
+        kodi_worker.render(teaser)
+    kodi_worker.list_callback()
 
 
-def startPlaylist(player, playlist):
-    if playlist is not None:
-        player.play(playlist)
+@route_plugin.route('/accessibility')
+def get_accessibility_menu():
+    if not kodi_worker.hide_sign_language():
+        kodi_worker.render(api.get_sign_language_menu())
+    if not kodi_worker.hide_audio_description():
+        kodi_worker.render(api.get_audio_description_menu())
+    if kodi_worker.use_subtitles:
+        kodi_worker.render(api.get_subtitles_menu())
+    kodi_worker.list_callback()
+
+
+@route_plugin.route('/livestreams')
+def get_livestreams():
+    kodi_worker.log("Loading Livestream Overview", 'route')
+    streams = api.get_live_schedule()
+    for stream in streams:
+        kodi_worker.render(stream)
+    kodi_worker.list_callback()
+
+
+@route_plugin.route('/restart/<livestreamid>')
+def get_live_restart(livestreamid):
+    kodi_worker.log("Playing Livestream Restart %s" % livestreamid, 'route')
+    livestream_item = api.get_livestream(livestreamid)
+    livestream_item = api.get_restart_stream(livestream_item)
+    kodi_worker.restart(livestream_item)
+
+
+@route_plugin.route('/profile/<profileid>')
+def get_profile(profileid):
+    kodi_worker.log("Loading Profile %s" % profileid, 'route')
+    request_url = '/profile/%s' % profileid
+    directories = api.get_url(request_url)
+    if len(directories) > 1:
+        for directory in directories:
+            kodi_worker.render(directory)
+        kodi_worker.list_callback()
     else:
-        d = xbmcgui.Dialog()
-        d.ok((translation(30051)).encode("utf-8"), (translation(30050)).encode("utf-8"))
+        videos = api.load_stream_data('/profile/%s/episodes' % profileid)
+        kodi_worker.play(videos)
+
+
+@route_plugin.route('/episode/<episodeid>')
+def get_episode(episodeid):
+    kodi_worker.log("Playing Episode %s" % episodeid, 'route')
+    videos = api.load_stream_data('/episode/%s' % episodeid)
+    kodi_worker.play(videos)
+
+
+@route_plugin.route('/episode/<episodeid>/more')
+def get_show_from_episode(episodeid):
+    kodi_worker.log("Loading Shows from Episode %s" % episodeid, 'route')
+    other_episodes = api.get_related(episodeid)
+    for other_episode in other_episodes:
+        kodi_worker.render(other_episode)
+    kodi_worker.list_callback()
+
+
+@route_plugin.route('/episode/<episodeid>/segments')
+def get_segements(episodeid):
+    kodi_worker.log("Playing Episode %s" % episodeid, 'route')
+    videos = api.load_stream_data('/episode/%s/segments?limit=500' % episodeid)
+    if kodi_worker.use_segments and kodi_worker.show_segments:
+        for video in videos:
+            kodi_worker.render(video)
+        kodi_worker.list_callback()
+    else:
+        kodi_worker.play(videos)
+
+
+@route_plugin.route('/segment/<segmentid>')
+def get_segement(segmentid):
+    kodi_worker.log("Playing Segment %s" % segmentid, 'route')
+    videos = api.load_stream_data('/segment/%s' % segmentid)
+    kodi_worker.play(videos)
+
+
+@route_plugin.route('/videoitem/<videoid>')
+def get_videoitem(videoid):
+    kodi_worker.log("Playing Video %s" % videoid, 'route')
+    videos = api.load_stream_data('/videoitem/%s' % videoid)
+    kodi_worker.play(videos)
+
+
+@route_plugin.route('/livestream/<videoid>')
+def get_livestream(videoid):
+    kodi_worker.log("Playing Livestream %s" % videoid, 'route')
+    videos = api.load_stream_data('/livestream/%s' % videoid)
+    kodi_worker.play(videos)
+
+
+@route_plugin.route('/pvr/<channelreel>')
+def get_pvr_livestream(channelreel):
+    kodi_worker.log("Playing PVR Livestream %s" % channelreel, 'route')
+    livestream = api.get_pvr(channelreel)
+    if livestream:
+        kodi_worker.play([livestream])
+
+
+@route_plugin.route('/recent')
+def get_recently_added():
+    videos = api.get_last_uploads()
+    for video in videos:
+        kodi_worker.render(video)
+    kodi_worker.list_callback()
+
+
+@route_plugin.route('/schedule')
+def get_schedule_selection():
+    kodi_worker.log("Opening Schedule Selection", 'route')
+    items, filters = api.get_schedule_dates()
+    selected = kodi_worker.select_dialog(kodi_worker.get_translation(30130, 'Select a date'), items)
+    api.log(selected)
+    if selected is not False and selected > -1:
+        api.log("Loading %s Schedule" % filters[selected])
+        request_url = api.api_endpoint_schedule % filters[selected]
+        target_url = kodi_worker.plugin.url_for_path(request_url)
+        kodi_worker.list_callback()
+        kodi_worker.execute('Container.Update(%s, replace)' % target_url)
+    else:
+        api.log("Canceled selection")
+
+
+@route_plugin.route('/schedule/<scheduledate>')
+def get_schedule(scheduledate):
+    kodi_worker.log("Opening Schedule %s" % scheduledate, 'route')
+    request_url = api.api_endpoint_schedule % scheduledate
+    directories = api.get_url(request_url)
+    for directory in directories:
+        directory.annotate_channel()
+        directory.annotate_time()
+        kodi_worker.render(directory)
+    kodi_worker.list_callback()
+
+
+@route_plugin.route('/search')
+def get_search():
+    kodi_worker.log("Opening Search History", 'route')
+    search_link = '/search/query'
+    search_dir = Directory(kodi_worker.get_translation(30131, 'Enter search ...', '%s ...'), "", search_link, translator=kodi_worker)
+    kodi_worker.render(search_dir)
+    directories = kodi_worker.get_stored_directories(search_history_file)
+    for directory in directories:
+        kodi_worker.render(directory)
+    kodi_worker.list_callback()
+
+
+@route_plugin.route('/search/results/<query>')
+def get_search_results(query):
+    directories = api.get_search(query)
+    for directory in directories:
+        kodi_worker.render(directory)
+    kodi_worker.list_callback()
+
+
+@route_plugin.route('/search-partial/<section>/<query>')
+def get_search_partial(section, query):
+    directories = api.get_search_partial(section, query, route_plugin.args)
+    for directory in directories:
+        kodi_worker.render(directory)
+    kodi_worker.list_callback()
+
+
+@route_plugin.route('/search/query')
+def get_search_dialog():
+    kodi_worker.log("Opening Search Dialog", 'route')
+    query = kodi_worker.get_keyboard_input()
+    search_url = "/search/results/%s" % query
+    search_history_dir = Directory(query, "", search_url, translator=kodi_worker)
+    kodi_worker.list_callback()
+    if query and query.strip() != "":
+        kodi_worker.store_directory(search_history_dir, 'search_history')
+        target_url = kodi_worker.plugin.url_for_path(search_url)
+    else:
+        error_url = '/search'
+        target_url = kodi_worker.plugin.url_for_path(error_url)
+    kodi_worker.execute('Container.Update(%s, replace)' % target_url)
+
+
+@route_plugin.route('/dialog/clear_search_history')
+def clear_search_history():
+    dialog = kodi_worker.get_progress_dialog(kodi_worker.get_translation(30132, 'Clearing search history'))
+    dialog.update(0, kodi_worker.get_translation(30133, 'Clearing ...', '%s ...'))
+    kodi_worker.clear_stored_directories(search_history_file)
+    dialog.update(100, kodi_worker.get_translation(30134, 'Done'))
+    dialog.close()
+
+
+@route_plugin.route('/dialog/reload_cache')
+def clear_cache():
+    dialog = kodi_worker.get_progress_dialog('Reloading cache')
+    dialog.update(0, kodi_worker.get_translation(30136, 'Reloading cache ...', '%s ...'))
+    kodi_worker.log("Reloading channel/settings cache", 'route')
+    tmp_channel_map, tmp_channel_map_cached = kodi_worker.get_cached_file(channel_map_file)
+    tmp_settings, tmp_settings_cached = kodi_worker.get_cached_file(settings_file)
+    kodi_worker.remove_file(settings_file)
+    kodi_worker.remove_file(channel_map_file)
+    tmp_api = OrfOn(channel_map=tmp_channel_map, settings=tmp_settings, useragent=kodi_worker.useragent, kodi_worker=kodi_worker)
+    tmp_api.channel_map = False
+    tmp_api.settings = False
+    dialog.update(33, kodi_worker.get_translation(30137, 'Loading channels'))
+    tmp_channel_map = tmp_api.get_channel_map()
+    kodi_worker.save_json(tmp_channel_map, channel_map_file)
+    dialog.update(66, kodi_worker.get_translation(30138, 'Loading settings'))
+    tmp_settings = tmp_api.get_settings()
+    kodi_worker.save_json(tmp_settings, settings_file)
+    dialog.update(100, kodi_worker.get_translation(30134, 'Done'))
+    dialog.close()
+
+
+@route_plugin.route('<path:url>')
+def get_url(url):
+    if re.search(r"^/https?://", url):
+        url = url[1:]
+        kodi_worker.log("Opening Video Url %s" % url, 'route')
+        kodi_worker.play_url(url)
+    else:
+        kodi_worker.log("Opening Generic Url %s" % url, 'route')
+        request_url = kodi_worker.build_url(url, route_plugin.args)
+        directories = api.get_url(request_url)
+        for directory in directories:
+            kodi_worker.render(directory)
+        kodi_worker.list_callback()
 
 
 def run():
-    # video playback
-    tvthekplayer = xbmc.Player()
-    playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-
-    # parameters
-    params = parameters_string_to_dict(sys.argv[2])
-    mode = params.get('mode')
-    link = params.get('link')
-    if mode == 'openSeries':
-        playlist.clear()
-        playlist = scraper.getLinks(link, params.get('banner'), playlist)
-        if autoPlayPrompt and playlist is not None:
-            listCallback(False, pluginhandle)
-            ok = xbmcgui.Dialog().yesno((translation(30047)).encode("utf-8"), (translation(30048)).encode("utf-8"))
-            listCallback(False, pluginhandle)
-            if ok:
-                debugLog("Starting Playlist for %s" % unqoute_url(link))
-                tvthekplayer.play(playlist)
-        else:
-            debugLog("Running Listcallback from no autoplay openseries")
-            listCallback(False, pluginhandle)
-    elif mode == 'unblacklistShow':
-        heading = translation(30040).encode('UTF-8') % unqoute_url(link).replace('+', ' ').strip()
-        if isBlacklisted(link) and xbmcgui.Dialog().yesno(heading, heading):
-            unblacklistItem(link)
-            xbmc.executebuiltin('Container.Refresh')
-    elif mode == 'blacklistShow':
-        blacklistItem(link)
-        xbmc.executebuiltin('Container.Refresh')
-    if mode == 'openBlacklist':
-        printBlacklist(defaultbanner, defaultbackdrop, translation, pluginhandle)
-        xbmcplugin.endOfDirectory(pluginhandle)
-    elif mode == 'getSendungen':
-        scraper.getCategories()
-        listCallback(True, pluginhandle)
-    elif mode == 'getAktuelles':
-        scraper.getHighlights()
-        listCallback(False, pluginhandle)
-    elif mode == 'getLive':
-        scraper.getLiveStreams()
-        listCallback(False, pluginhandle)
-    elif mode == 'getTipps':
-        scraper.getTips()
-        listCallback(False, pluginhandle)
-    elif mode == 'getFocus':
-        scraper.getFocus()
-        listCallback(False, pluginhandle)
-    elif mode == 'getNewShows':
-        scraper.getNewest()
-        listCallback(False, pluginhandle)
-    elif mode == 'getMostViewed':
-        scraper.getMostViewed()
-        listCallback(False, pluginhandle)
-    elif mode == 'getThemen':
-        scraper.getThemen()
-        listCallback(True, pluginhandle)
-    elif mode == 'getSendungenDetail':
-        scraper.getCategoriesDetail(link, params.get('banner'))
-        listCallback(False, pluginhandle)
-    elif mode == 'getThemenDetail':
-        scraper.getArchiveDetail(link)
-        listCallback(False, pluginhandle)
-    elif mode == 'getArchiveDetail':
-        scraper.getArchiveDetail(link)
-        listCallback(False, pluginhandle)
-    elif mode == 'getSchedule':
-        scraper.getSchedule()
-        listCallback(False, pluginhandle)
-    elif mode == 'getArchiv':
-        scraper.getArchiv()
-        listCallback(False, pluginhandle)
-    elif mode == 'getScheduleDetail':
-        scraper.openArchiv(link)
-        listCallback(True, pluginhandle)
-    elif mode == 'openTrailers':
-        scraper.getTrailers()
-        listCallback(False, pluginhandle)
-    elif mode == 'getSearchHistory':
-        scraper.getSearchHistory()
-        listCallback(False, pluginhandle)
-    elif mode == 'getSearchResults':
-        if link is not None:
-            scraper.getSearchResults(unqoute_url(link))
-        else:
-            scraper.getSearchResults("")
-        listCallback(False, pluginhandle)
-    elif mode == 'openDate':
-        scraper.getDate(link, params.get('from'))
-        listCallback(False, pluginhandle)
-    elif mode == 'openProgram':
-        scraper.getProgram(link, playlist)
-        listCallback(False, pluginhandle)
-    elif mode == 'openTopic':
-        scraper.getTopic(link)
-        listCallback(False, pluginhandle)
-    elif mode == 'openEpisode':
-        scraper.getEpisode(link, playlist)
-        listCallback(False, pluginhandle)
-    elif mode == 'liveStreamRestart':
-        try:
-            import inputstreamhelper
-            is_helper = inputstreamhelper.Helper(input_stream_protocol, drm=input_stream_drm_version)
-            if is_helper.check_inputstream():
-                link = unqoute_url(link)
-                debugLog("Restart Source Link: %s" % link)
-                headers = "User-Agent=%s&Content-Type=%s" % (Settings.userAgent(), input_stream_lic_content_type)
-
-                if params.get('lic_url'):
-                    lic_url = unqoute_url(params.get('lic_url'))
-                    debugLog("Playing DRM protected Restart Stream")
-                    debugLog("Restart License URL: %s" % lic_url)
-                    streaming_url, play_item = scraper.liveStreamRestart(link, 'dash')
-                    play_item.setContentLookup(False)
-                    play_item.setMimeType(input_stream_mime)
-                    play_item.setProperty('inputstream.adaptive.stream_headers', headers)
-                    play_item.setProperty('inputstream', is_helper.inputstream_addon)
-                    play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
-                    play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
-                    play_item.setProperty('inputstream.adaptive.license_key', lic_url + '|' + headers +'|R{SSM}|')
-                else:
-                    streaming_url, play_item = scraper.liveStreamRestart(link, 'hls')
-                    debugLog("Playing Non-DRM protected Restart Stream")
-                    play_item.setProperty('inputstreamaddon', 'inputstream.adaptive')
-                    play_item.setProperty('inputstream.adaptive.stream_headers', headers)
-                    play_item.setProperty('inputstream.adaptive.manifest_type', 'hls')
-                debugLog("Restart Stream Url: %s; play_item: %s" % (streaming_url, play_item))
-                xbmc.Player().play(streaming_url, play_item)
-            else:
-                userNotification((translation(30066)).encode("utf-8"))
-        except Exception as e:
-            debugLog("Exception: %s" % ( e, ), xbmc.LOGINFO)
-            debugLog("TB: %s" % ( traceback.format_exc(), ), xbmc.LOGINFO)
-            userNotification((translation(30067)).encode("utf-8"))
-    elif mode == 'playlist':
-        startPlaylist(tvthekplayer, playlist)
-    elif mode == 'play':
-        link = "%s|User-Agent=%s" % (link, Settings.userAgent())
-        play_item = xbmcgui.ListItem(path=link, offscreen=True)
-        xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
-        listCallback(False, pluginhandle)
-    elif mode == 'playDRM':
-        try:
-            import inputstreamhelper
-            stream_url = unqoute_url(params.get('link'))
-            lic_url = unqoute_url(params.get('lic_url'))
-
-            is_helper = inputstreamhelper.Helper(input_stream_protocol, drm=input_stream_drm_version)
-            if is_helper.check_inputstream():
-                debugLog("Video Url: %s" % stream_url)
-                debugLog("DRM License Url: %s" % lic_url)
-                play_item = xbmcgui.ListItem(path=stream_url, offscreen=True)
-                headers = "User-Agent=%s&Content-Type=%s" % (Settings.userAgent(), input_stream_lic_content_type)
-
-                play_item.setContentLookup(False)
-                play_item.setMimeType(input_stream_mime)
-                play_item.setProperty('inputstream.adaptive.stream_headers', headers)
-                play_item.setProperty('inputstream', is_helper.inputstream_addon)
-                play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
-                play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
-                play_item.setProperty('inputstream.adaptive.license_key', lic_url + '|' + headers + '|R{SSM}|')
-                xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
-            else:
-                userNotification((translation(30066)).encode("utf-8"))
-            listCallback(False, pluginhandle)
-        except:
-            userNotification((translation(30067)).encode("utf-8"))
-    elif mode == 'pvr':
-        channel = params.get('channel')
-        debugLog("Loading channel %s" % channel)
-        data = scraper.getLivestreamByChannel(channel)
-        if data:
-            video_url = "%s|User-Agent=%s" % (data['url'], Settings.userAgent())
-
-            if 'license' in data:
-                import inputstreamhelper
-                license = data['license']
-
-                is_helper = inputstreamhelper.Helper(input_stream_protocol, drm=input_stream_drm_version)
-                if is_helper.check_inputstream():
-                    debugLog("Video Url: %s" % video_url)
-                    debugLog("DRM License Url: %s" % license)
-                    play_item = xbmcgui.ListItem(path=video_url)
-                    play_item.setLabel(data['title'])
-                    play_item.setLabel2(channel)
-                    play_item.setProperty('IsPlayable', 'true')
-                    item_infos = {
-                        'title': data['title'],
-                        'plot': data['description'],
-                        'plotoutline': data['description'],
-                    }
-                    play_item.setInfo(type="Video", infoLabels=item_infos)
-
-                    if 'logo' in data:
-                        item_art = {
-                            'clearlogo': data['logo'],
-                            'icon': data['logo'],
-                        }
-                        play_item.setArt(item_art)
-
-                    headers = "User-Agent=%s&Content-Type=%s" % (Settings.userAgent(), input_stream_lic_content_type)
-
-                    play_item.setContentLookup(False)
-                    play_item.setMimeType(input_stream_mime)
-                    play_item.setProperty('inputstream.adaptive.stream_headers', headers)
-                    play_item.setProperty('inputstream', is_helper.inputstream_addon)
-                    play_item.setProperty('inputstream.adaptive.manifest_type', input_stream_protocol)
-                    play_item.setProperty('inputstream.adaptive.license_type', input_stream_drm_version)
-                    play_item.setProperty('inputstream.adaptive.license_key', license + '|' + headers + '|R{SSM}|')
-                    xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
-                else:
-                    userNotification((translation(30066)).encode("utf-8"))
-            else:
-                play_item = xbmcgui.ListItem(path=video_url)
-                xbmcplugin.setResolvedUrl(pluginhandle, True, listitem=play_item)
-    elif sys.argv[2] == '':
-        getMainMenu()
-    else:
-        listCallback(False, pluginhandle)
+    route_plugin.run()

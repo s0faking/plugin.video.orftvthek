@@ -1,0 +1,30 @@
+on: [push, pull_request]
+
+jobs:
+  kodi-addon-checker:
+    runs-on: ubuntu-latest
+    name: Kodi Addon-Checker
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+    - name: Run Kodi Addon-Checker
+      id: kodi-addon-checker
+      uses: xbmc/action-kodi-addon-checker@v1.1
+      with:
+        kodi-version: matrix
+        addon-id: ${{ github.event.repository.name }}
+
+  autopep8:
+    runs-on: ubuntu-latest
+    name: autopep8
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+    - name: Run autopep8
+      id: autopep8
+      uses: peter-evans/autopep8@v2
+      with:
+        args: --aggressive --diff --exit-code --experimental --max-line-length 173 --recursive resources/lib
+    - name: Fail if autopep8 made changes
+      if: steps.autopep8.outputs.exit-code == 2
+      run: exit 1
