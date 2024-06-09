@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 
 class Directory:
-    def __init__(self, title, description, link, content_id="", content_type="", thumbnail="", backdrop="", poster="", source={}, translator=None, proxy=False):
+    def __init__(self, title, description, link, content_id="", content_type="", thumbnail="", backdrop="", poster="", source={}, translator=None):
         self.translator = translator
         self.title = title
         if description:
