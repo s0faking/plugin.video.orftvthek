@@ -2,9 +2,9 @@ import json
 import re
 from datetime import date, timedelta
 try:
-    from Directory import *
+    from directory import *
 except ModuleNotFoundError:
-    from resources.lib.Directory import *
+    from resources.lib.directory import *
 
 from urllib.request import Request as urllib_Request
 from urllib.request import urlopen as urllib_urlopen

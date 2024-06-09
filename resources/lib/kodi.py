@@ -11,9 +11,9 @@ import inputstreamhelper
 from urllib.parse import unquote
 
 try:
-    from OrfOn import *
+    from orf_on import *
 except ModuleNotFoundError:
-    from resources.lib.OrfOn import *
+    from resources.lib.orf_on import *
 
 
 class Kodi:
