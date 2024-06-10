@@ -1,0 +1,43 @@
+on:
+  push:
+    tags: '*'
+
+jobs:
+  kodi-addon-submitter:
+    if: github.repository == 's0faking/plugin.video.orftvthek'
+    runs-on: ubuntu-latest
+    name: Kodi addon submitter
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+    - name: Generate distribution zip and submit to official kodi repository
+      id: kodi-addon-submitter
+      uses: xbmc/action-kodi-addon-submitter@v1.3
+      with:
+        addon-id: ${{ github.event.repository.name }}
+        kodi-repository: repo-plugins
+        kodi-version: matrix
+      env:
+        GH_USERNAME: ${{ github.repository_owner }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        EMAIL: ${{ secrets.EMAIL }}
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref_name }}
+        release_name: Release ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+    - name: Upload Addon zip to GitHub Release
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ steps.kodi-addon-submitter.outputs.addon-zip }}
+        asset_name: ${{ steps.kodi-addon-submitter.outputs.addon-zip }}
+        asset_content_type: application/zip
