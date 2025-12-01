@@ -169,16 +169,10 @@ def get_recently_added():
 def get_schedule_selection():
     kodi_worker.log("Opening Schedule Selection", 'route')
     items, filters = api.get_schedule_dates()
-    selected = kodi_worker.select_dialog(kodi_worker.get_translation(30130, 'Select a date'), items)
-    api.log(selected)
-    if selected is not False and selected > -1:
-        api.log("Loading %s Schedule" % filters[selected])
-        request_url = api.api_endpoint_schedule % filters[selected]
-        target_url = kodi_worker.plugin.url_for_path(request_url)
-        kodi_worker.list_callback()
-        kodi_worker.execute('Container.Update(%s, replace)' % target_url)
-    else:
-        api.log("Canceled selection")
+    for item_iso, item in zip(filters, items):
+        schedule_dir = Directory(item, description=item, link='/schedule/%s' % item_iso, translator=kodi_worker)
+        kodi_worker.render(schedule_dir)
+    kodi_worker.list_callback()
 
 
 @route_plugin.route('/schedule/<scheduledate>')
