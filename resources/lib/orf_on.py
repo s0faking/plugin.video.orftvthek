@@ -158,7 +158,11 @@ class OrfOn:
                  Directory(self.translate_string(30112, 'Shows'), '', self.api_endpoint_shows % self.api_pager_limit, '', 'shows', translator=self.kodi_worker),
                  Directory(self.translate_string(30113, 'Livestream'), '', self.api_endpoint_livestreams, '', 'live', translator=self.kodi_worker),
                  Directory(self.translate_string(30114, 'Search'), '', '/search', '', 'search', translator=self.kodi_worker)]
-        items += self.get_frontpage(lanes=False)
+        additional_items = self.get_frontpage(lanes=False)
+        ignore_items = [self.api_endpoint_home, self.api_endpoint_shows, self.api_endpoint_livestreams, '/page/start/orflive']
+        for additional_item in additional_items:
+            if not additional_item.url() in ignore_items:
+                items.append(additional_item)
         return items
 
     def get_sign_language_menu(self):
@@ -577,16 +581,27 @@ class OrfOn:
             link = item['_links']['playlist']['href']
             return self.build_video(item, link)
         if 'id' in item and 'type' in item:
-            return self.build_directory(item)
+            if self.has_valid_link(item):
+                return self.build_directory(item)
         if 'id' in item and 'videos' in item:
-            return self.build_directory(item)
+            if self.has_valid_link(item):
+                return self.build_directory(item)
         if 'video_type' in item:
             video_item = item
             link = item['_links']['self']['href']
             return self.build_video(video_item, link)
+        self.log("Unknown Type or empty item found", 'info')
 
-        self.log("Unknown Type", 'error')
-        self.print_obj(item)
+    @staticmethod
+    def has_valid_link(item):
+        if 'self' in item['_links'] and 'href' in item['_links']['self']:
+            return True
+        elif '_self' in item['_links'] and isinstance(item['_links']['_self'], str):
+            return True
+        elif 'self' in item['_links'] and isinstance(item['_links']['self'], str):
+            return True
+        else:
+            return False
 
     def build_directory(self, item) -> Directory:
         self.log("Building Directory %s (%s)" % (item['title'], item['id']))
