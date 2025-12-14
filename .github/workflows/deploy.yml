@@ -14,7 +14,7 @@ jobs:
       id: kodi-addon-submitter
       uses: xbmc/action-kodi-addon-submitter@v1.3
       with:
-        addon-id: ${{ github.event.repository.name }}
+        addon-id: plugin.video.orftvthek
         kodi-repository: repo-plugins
         kodi-version: matrix
       env:
