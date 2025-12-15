@@ -3,16 +3,18 @@ on: [push, pull_request]
 jobs:
   kodi-addon-checker:
     runs-on: ubuntu-latest
-    name: Kodi Addon-Checker
     steps:
-    - name: checkout
-      uses: actions/checkout@v4
-    - name: Run Kodi Addon-Checker
-      id: kodi-addon-checker
-      uses: xbmc/action-kodi-addon-checker@v1.2
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v4
       with:
-        kodi-version: matrix
-        addon-id: ${{ github.event.repository.name }}
+        python-version: '3.8'
+    - name: Install kodi-addon-checker
+      run: |
+        pip install kodi-addon-checker
+    - name: Run addon checker
+      run: |
+        kodi-addon-checker --branch matrix .
 
   autopep8:
     runs-on: ubuntu-latest
