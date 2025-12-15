@@ -596,12 +596,11 @@ class OrfOn:
     def has_valid_link(item):
         if 'self' in item['_links'] and 'href' in item['_links']['self']:
             return True
-        elif '_self' in item['_links'] and isinstance(item['_links']['_self'], str):
+        if '_self' in item['_links'] and isinstance(item['_links']['_self'], str):
             return True
-        elif 'self' in item['_links'] and isinstance(item['_links']['self'], str):
+        if 'self' in item['_links'] and isinstance(item['_links']['self'], str):
             return True
-        else:
-            return False
+        return False
 
     def build_directory(self, item) -> Directory:
         self.log("Building Directory %s (%s)" % (item['title'], item['id']))
