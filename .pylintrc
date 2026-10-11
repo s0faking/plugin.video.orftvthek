@@ -9,7 +9,9 @@ source-roots=resources/lib
 
 [FORMAT]
 
-# Maximum number of characters on a single line.
+# Maximum number of characters on a single line. Pylint's default of 100 is
+# based on PEP 8's guidance that teams may choose line lengths up to 99
+# characters.
 max-line-length=173
 
 
@@ -43,3 +45,9 @@ disable=
         too-many-statements,
         unspecified-encoding,
         use-implicit-booleaness-not-len,
+
+# Enable the message, report, category or checker with the given id(s). You can
+# either give multiple identifier separated by comma (,) or put this option
+# multiple time (only on the command line, not in the configuration file where
+# it should appear only once). See also the "--disable" option for examples.
+enable=suppressed-message,useless-suppression
