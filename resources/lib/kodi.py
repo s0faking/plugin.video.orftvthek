@@ -132,11 +132,26 @@ class Kodi:
                 for track in tracks:
                     self.render(track)
             else:
+                items = []
                 for track in tracks:
                     play_item = self.render_video(track)
                     play_stream = self.build_stream_url(unquote(track.get_stream().get('url')))
-                    playlist.add(play_stream, play_item)
-                self.log("Playing Playlist %s from position %d" % (playlist.size(), playlist.getposition()))
+                    play_item.setPath(play_stream)
+                    items.append((play_stream, play_item))
+                plugin_url = sys.argv[0] + sys.argv[2]
+                position = playlist.getposition()
+                if 0 <= position < playlist.size() and playlist[position].getPath() == plugin_url:
+                    self.log("Resolving Playlist item %d with %d segments" % (position, len(items)))
+                    for index, (play_stream, play_item) in enumerate(items[1:], start=position + 1):
+                        playlist.add(play_stream, play_item, index)
+                    setResolvedUrl(self.plugin.handle, True, items[0][1])
+                else:
+                    self.log("Starting new Playlist with %d segments" % len(items))
+                    playlist.clear()
+                    for play_stream, play_item in items:
+                        playlist.add(play_stream, play_item)
+                    setResolvedUrl(self.plugin.handle, False, ListItem(offscreen=True))
+                    Player().play(playlist)
         else:
             self.log("Playing Single Video")
             for track in tracks:
