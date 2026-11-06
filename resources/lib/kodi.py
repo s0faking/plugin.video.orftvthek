@@ -213,7 +213,7 @@ class Kodi:
                     self.log("Video %s is DRM protected. Adding DRM relevant parameters" % teaser.label())
                     list_item.setMimeType(self.input_stream_mime)
                     license_url = "%s?BrandGuid=%s&userToken=%s" % (stream_data.get('drm_widewine_url'), stream_data.get('drm_widewine_brand'), stream_data.get('drm_token'))
-                    init_data = self.get_widevine_init_data(unquote(teaser.url())) if playback else None
+                    init_data = self.get_widevine_init_data(unquote(stream_data.get('url') or teaser.url())) if playback else None
                     if init_data and self.kodi_major_version >= 22:
                         drm_config = {self.input_stream_drm_version: {'init_data': init_data, 'license': {'server_url': license_url, 'req_headers': license_headers}}}
                         list_item.setProperty('inputstream.adaptive.drm', json.dumps(drm_config))
